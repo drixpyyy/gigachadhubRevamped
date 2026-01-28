@@ -17260,7 +17260,7 @@ print(string.rep("=", 50))
 })
 
 local Button = Tab:CreateButton({
-   Name = "BGetPT(Better getproperties) wesd",
+   Name = "BGetPT(Better getproperties) (wesd)",
    Callback = function()
 
 -- better getproperties
@@ -17321,7 +17321,7 @@ end
 })
 
 local Button = Tab:CreateButton({
-   Name = "FE goon",
+   Name = "FE goon(Gazer)",
    Callback = function()
 
 local Players, CoreGui, RunService = game:GetService("Players"), game:GetService("CoreGui"), game:GetService("RunService")
