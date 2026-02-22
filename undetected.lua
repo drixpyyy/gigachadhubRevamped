@@ -20571,6 +20571,963 @@ return(function(B,e,o,n,a,C,l)local d=select;local o=table.insert;local S=unpack
    end,
 })
 
-local Tab = Window:CreateTab("CDs", 4483362458) -- Title, Image
-local Section = Tab:CreateSection("condox")
+local Tab = Window:CreateTab("Game Destroyers", 4483362458) -- Title, Image
+local Section = Tab:CreateSection("games with destroyers are here")
 
+local Button = Tab:CreateButton({
+   Name = "condo slapfighting .gg/condox",
+   Callback = function()
+
+   local sg = Instance.new("ScreenGui")
+local fr = Instance.new("Frame")
+local tl = Instance.new("TextLabel")
+local at = Instance.new("TextButton")
+local sa = Instance.new("TextButton")
+local ri = Instance.new("TextBox")
+local vt = Instance.new("TextButton")
+local ab = Instance.new("TextButton")
+
+sg.Parent = game.CoreGui
+fr.Name = "DolphinGui"
+fr.Parent = sg
+fr.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+fr.Position = UDim2.new(0.1, 0, 0.1, 0)
+fr.Size = UDim2.new(0, 200, 0, 300)
+fr.Active = true
+fr.Draggable = true
+
+tl.Parent = fr
+tl.Size = UDim2.new(1, 0, 0, 30)
+tl.Text = "destroyer"
+tl.TextColor3 = Color3.new(1, 1, 1)
+tl.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+
+at.Parent = fr
+at.Position = UDim2.new(0, 10, 0, 40)
+at.Size = UDim2.new(0, 180, 0, 40)
+at.Text = "Slap Aura: OFF"
+at.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+
+ri.Parent = fr
+ri.Position = UDim2.new(0, 10, 0, 90)
+ri.Size = UDim2.new(0, 180, 0, 40)
+ri.PlaceholderText = "Visualizer Range"
+ri.Text = "20"
+
+vt.Parent = fr
+vt.Position = UDim2.new(0, 10, 0, 140)
+vt.Size = UDim2.new(0, 180, 0, 40)
+vt.Text = "Visualizer: OFF"
+
+sa.Parent = fr
+sa.Position = UDim2.new(0, 10, 0, 190)
+sa.Size = UDim2.new(0, 180, 0, 40)
+sa.Text = "Slap All"
+
+ab.Parent = fr
+ab.Position = UDim2.new(0, 10, 0, 240)
+ab.Size = UDim2.new(0, 180, 0, 40)
+ab.Text = "ac bypass"
+
+local lp = game.Players.LocalPlayer
+local rs = game:GetService("ReplicatedStorage")
+local rns = game:GetService("RunService")
+
+local aen = false
+local ven = false
+local arg = 20
+
+local sr = rs:WaitForChild("gloves"):WaitForChild("Non"):WaitForChild("Slap")
+local hr = rs:WaitForChild("gloves"):WaitForChild("Non"):WaitForChild("Hitter")
+local htr = rs:WaitForChild("Hit")
+
+local vis = Instance.new("Part")
+vis.Shape = Enum.PartType.Ball
+vis.Color = Color3.new(0, 1, 0)
+vis.Transparency = 1
+vis.CanCollide = false
+vis.Anchored = true
+vis.Material = Enum.Material.ForceField
+vis.Parent = workspace
+
+local function slp(t)
+    if t and t:FindFirstChild("HumanoidRootPart") then
+        sr:FireServer("Active", "Normal")
+        local a = lp.Character:FindFirstChild("Right Arm") or lp.Character:FindFirstChild("Left Arm")
+        sr:FireServer("Swing", "Normal", a, 1)
+        htr:FireServer(t, 7, 10, 2, 0.15, false, true)
+        hr:FireServer(t, "Normal")
+    end
+end
+
+at.MouseButton1Click:Connect(function()
+    aen = not aen
+    at.Text = aen and "Slap Aura: ON" or "Slap Aura: OFF"
+    at.BackgroundColor3 = aen and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
+end)
+
+vt.MouseButton1Click:Connect(function()
+    ven = not ven
+    vis.Transparency = ven and 0.8 or 1
+    vt.Text = ven and "Visualizer: ON" or "Visualizer: OFF"
+end)
+
+ri:GetPropertyChangedSignal("Text"):Connect(function()
+    arg = tonumber(ri.Text) or 20
+end)
+
+sa.MouseButton1Click:Connect(function()
+    for _, v in pairs(game.Players:GetPlayers()) do
+        if v ~= lp and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+            slp(v.Character)
+        end
+    end
+end)
+
+ab.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Pixeluted/adoniscries/refs/heads/main/Source.lua"))()
+end)
+
+rns.Heartbeat:Connect(function()
+    if ven and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+        vis.Position = lp.Character.HumanoidRootPart.Position
+        vis.Size = Vector3.new(arg * 2, arg * 2, arg * 2)
+    end
+
+    if aen then
+        for _, v in pairs(game.Players:GetPlayers()) do
+            if v ~= lp and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                if not v.Character:FindFirstChild("HitDuration") and not v.Character:FindFirstChild("Ragdoll") then
+                    task.spawn(slp, v.Character)
+                end
+            end
+        end
+    end
+end)local sg = Instance.new("ScreenGui")
+local fr = Instance.new("Frame")
+local tl = Instance.new("TextLabel")
+local at = Instance.new("TextButton")
+local sa = Instance.new("TextButton")
+local ri = Instance.new("TextBox")
+local vt = Instance.new("TextButton")
+local ab = Instance.new("TextButton")
+
+sg.Parent = game.CoreGui
+fr.Name = "DolphinGui"
+fr.Parent = sg
+fr.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+fr.Position = UDim2.new(0.1, 0, 0.1, 0)
+fr.Size = UDim2.new(0, 200, 0, 300)
+fr.Active = true
+fr.Draggable = true
+
+tl.Parent = fr
+tl.Size = UDim2.new(1, 0, 0, 30)
+tl.Text = "destroyer"
+tl.TextColor3 = Color3.new(1, 1, 1)
+tl.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+
+at.Parent = fr
+at.Position = UDim2.new(0, 10, 0, 40)
+at.Size = UDim2.new(0, 180, 0, 40)
+at.Text = "Slap Aura: OFF"
+at.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+
+ri.Parent = fr
+ri.Position = UDim2.new(0, 10, 0, 90)
+ri.Size = UDim2.new(0, 180, 0, 40)
+ri.PlaceholderText = "Visualizer Range"
+ri.Text = "20"
+
+vt.Parent = fr
+vt.Position = UDim2.new(0, 10, 0, 140)
+vt.Size = UDim2.new(0, 180, 0, 40)
+vt.Text = "Visualizer: OFF"
+
+sa.Parent = fr
+sa.Position = UDim2.new(0, 10, 0, 190)
+sa.Size = UDim2.new(0, 180, 0, 40)
+sa.Text = "Slap All"
+
+ab.Parent = fr
+ab.Position = UDim2.new(0, 10, 0, 240)
+ab.Size = UDim2.new(0, 180, 0, 40)
+ab.Text = "ac bypass"
+
+local lp = game.Players.LocalPlayer
+local rs = game:GetService("ReplicatedStorage")
+local rns = game:GetService("RunService")
+
+local aen = false
+local ven = false
+local arg = 20
+
+local sr = rs:WaitForChild("gloves"):WaitForChild("Non"):WaitForChild("Slap")
+local hr = rs:WaitForChild("gloves"):WaitForChild("Non"):WaitForChild("Hitter")
+local htr = rs:WaitForChild("Hit")
+
+local vis = Instance.new("Part")
+vis.Shape = Enum.PartType.Ball
+vis.Color = Color3.new(0, 1, 0)
+vis.Transparency = 1
+vis.CanCollide = false
+vis.Anchored = true
+vis.Material = Enum.Material.ForceField
+vis.Parent = workspace
+
+local function slp(t)
+    if t and t:FindFirstChild("HumanoidRootPart") then
+        sr:FireServer("Active", "Normal")
+        local a = lp.Character:FindFirstChild("Right Arm") or lp.Character:FindFirstChild("Left Arm")
+        sr:FireServer("Swing", "Normal", a, 1)
+        htr:FireServer(t, 7, 10, 2, 0.15, false, true)
+        hr:FireServer(t, "Normal")
+    end
+end
+
+at.MouseButton1Click:Connect(function()
+    aen = not aen
+    at.Text = aen and "Slap Aura: ON" or "Slap Aura: OFF"
+    at.BackgroundColor3 = aen and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
+end)
+
+vt.MouseButton1Click:Connect(function()
+    ven = not ven
+    vis.Transparency = ven and 0.8 or 1
+    vt.Text = ven and "Visualizer: ON" or "Visualizer: OFF"
+end)
+
+ri:GetPropertyChangedSignal("Text"):Connect(function()
+    arg = tonumber(ri.Text) or 20
+end)
+
+sa.MouseButton1Click:Connect(function()
+    for _, v in pairs(game.Players:GetPlayers()) do
+        if v ~= lp and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+            slp(v.Character)
+        end
+    end
+end)
+
+ab.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Pixeluted/adoniscries/refs/heads/main/Source.lua"))()
+end)
+
+rns.Heartbeat:Connect(function()
+    if ven and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+        vis.Position = lp.Character.HumanoidRootPart.Position
+        vis.Size = Vector3.new(arg * 2, arg * 2, arg * 2)
+    end
+
+    if aen then
+        for _, v in pairs(game.Players:GetPlayers()) do
+            if v ~= lp and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                if not v.Character:FindFirstChild("HitDuration") and not v.Character:FindFirstChild("Ragdoll") then
+                    task.spawn(slp, v.Character)
+                end
+            end
+        end
+    end
+end)
+
+   end,
+})
+
+local Button = Tab:CreateButton({
+   Name = "Smooth Slicing",
+   Callback = function()
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+local Events = ReplicatedStorage:WaitForChild("Events")
+local Remote = Events:WaitForChild("_lPJIlII")
+
+-- Settings with better defaults
+local SETTINGS = {
+    FIRE_RATES = {
+        "1e-20",  -- Ultra Fast
+        "1e-10",  -- Very Fast  
+        "1e-6",   -- Fast
+        "1e-3",   -- Medium
+        "0.001",  -- Slow
+        "0.01"    -- Very Slow
+    },
+    CURRENT_FIRE_RATE = 1,
+    PROJECTILE_SPEED = 300,
+    USE_HITSCAN = true,
+    SHOCKWAVE_RADIUS = 50,
+    SHOCKWAVE_DENSITY = 36,
+    AUTO_AIM_RANGE = 200,
+    SHOCKWAVE_SHAPE = "circle"
+}
+
+-- === STATE MANAGEMENT ===
+local State = {
+    isSpamming = false,
+    isSpamShockwave = false,
+    isShockwaveBurst = false,
+    target = nil,
+    stats = {
+        shotsFired = 0,
+        targetsHit = 0,
+        sessionTime = 0
+    },
+    antiLagEnabled = false,
+    spellbookProjectiles = {}
+}
+
+-- === UI ELEMENTS ===
+local UI = {
+    Window = nil,
+    Title = nil,
+    CloseButton = nil,
+    StatusPanel = nil,
+    StatsPanel = nil,
+    SettingsPanel = nil,
+    Buttons = {},
+    Toggles = {},
+    Indicators = {},
+    ShapeSelector = nil,
+    FireRateSelector = nil,
+    AntiLagToggle = nil
+}
+
+-- =======================================================================================
+-- CORE FUNCTIONS
+-- =======================================================================================
+
+local function getNearestTarget(range)
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local best, bestDist = nil, range or math.huge
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character then
+            local th = plr.Character:FindFirstChild("HumanoidRootPart")
+            if th and (th.Position - hrp.Position).Magnitude <= bestDist then
+                bestDist = (th.Position - hrp.Position).Magnitude
+                best = th
+            end
+        end
+    end
+    return best, hrp
+end
+
+local function predict(targetHrp, origin)
+    local v = targetHrp.AssemblyLinearVelocity
+    local dist = (targetHrp.Position - origin).Magnitude
+    local t = dist / SETTINGS.PROJECTILE_SPEED
+    return targetHrp.Position + v * t
+end
+
+local function hitscan(origin, dir, ignore)
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Blacklist
+    params.FilterDescendantsInstances = ignore
+    params.IgnoreWater = true
+    local r = Workspace:Raycast(origin, dir, params)
+    return r and r.Position
+end
+
+-- =======================================================================================
+-- ANTI-LAG FUNCTIONS
+-- =======================================================================================
+
+local function storeSpellbookProjectiles()
+    State.spellbookProjectiles = {}
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj.Name == "SpellBookProjectile" or obj:IsA("SpellBookProjectile") then
+            table.insert(State.spellbookProjectiles, obj)
+            obj:Destroy()
+        end
+    end
+end
+
+local function restoreSpellbookProjectiles()
+    for _, projectile in ipairs(State.spellbookProjectiles) do
+        if not projectile.Parent then
+            projectile.Parent = Workspace
+        end
+    end
+    State.spellbookProjectiles = {}
+end
+
+local function toggleAntiLag(enable)
+    State.antiLagEnabled = enable
+    
+    if enable then
+        storeSpellbookProjectiles()
+    else
+        restoreSpellbookProjectiles()
+    end
+end
+
+-- =======================================================================================
+-- SHOCKWAVE PATTERNS
+-- =======================================================================================
+
+local function getShockwavePositions(shape, origin, radius, density)
+    local positions = {}
+    
+    if shape == "circle" then
+        for i = 1, density do
+            local angle = (i - 1) * (360 / density)
+            local rad = math.rad(angle)
+            local x = origin.X + math.cos(rad) * radius
+            local z = origin.Z + math.sin(rad) * radius
+            table.insert(positions, Vector3.new(x, origin.Y, z))
+        end
+        
+    elseif shape == "square" then
+        local sidePoints = math.floor(density / 4)
+        -- Top side
+        for i = 1, sidePoints do
+            local x = origin.X - radius + (i / sidePoints) * radius * 2
+            table.insert(positions, Vector3.new(x, origin.Y, origin.Z - radius))
+        end
+        -- Right side
+        for i = 1, sidePoints do
+            local z = origin.Z - radius + (i / sidePoints) * radius * 2
+            table.insert(positions, Vector3.new(origin.X + radius, origin.Y, z))
+        end
+        -- Bottom side
+        for i = 1, sidePoints do
+            local x = origin.X + radius - (i / sidePoints) * radius * 2
+            table.insert(positions, Vector3.new(x, origin.Y, origin.Z + radius))
+        end
+        -- Left side
+        for i = 1, sidePoints do
+            local z = origin.Z + radius - (i / sidePoints) * radius * 2
+            table.insert(positions, Vector3.new(origin.X - radius, origin.Y, z))
+        end
+        
+    elseif shape == "triangle" then
+        local pointsPerSide = math.floor(density / 3)
+        -- Bottom side
+        for i = 1, pointsPerSide do
+            local x = origin.X - radius + (i / pointsPerSide) * radius * 2
+            table.insert(positions, Vector3.new(x, origin.Y, origin.Z - radius))
+        end
+        -- Right side
+        for i = 1, pointsPerSide do
+            local ratio = i / pointsPerSide
+            local x = origin.X + radius * (1 - ratio)
+            local z = origin.Z - radius + ratio * radius * 2
+            table.insert(positions, Vector3.new(x, origin.Y, z))
+        end
+        -- Left side
+        for i = 1, pointsPerSide do
+            local ratio = i / pointsPerSide
+            local x = origin.X - radius * (1 - ratio)
+            local z = origin.Z - radius + ratio * radius * 2
+            table.insert(positions, Vector3.new(x, origin.Y, z))
+        end
+        
+    elseif shape == "star" then
+        local points = math.floor(density / 2)
+        for i = 1, points do
+            local angle1 = (i - 1) * (360 / points)
+            local angle2 = (i - 0.5) * (360 / points)
+            local rad1 = math.rad(angle1)
+            local rad2 = math.rad(angle2)
+            
+            -- Outer points
+            local x1 = origin.X + math.cos(rad1) * radius
+            local z1 = origin.Z + math.sin(rad1) * radius
+            table.insert(positions, Vector3.new(x1, origin.Y, z1))
+            
+            -- Inner points
+            local x2 = origin.X + math.cos(rad2) * (radius * 0.5)
+            local z2 = origin.Z + math.sin(rad2) * (radius * 0.5)
+            table.insert(positions, Vector3.new(x2, origin.Y, z2))
+        end
+        
+    elseif shape == "spiral" then
+        for i = 1, density do
+            local angle = (i - 1) * (360 / density) * 3
+            local rad = math.rad(angle)
+            local spiralRadius = radius * (i / density)
+            local x = origin.X + math.cos(rad) * spiralRadius
+            local z = origin.Z + math.sin(rad) * spiralRadius
+            table.insert(positions, Vector3.new(x, origin.Y, z))
+        end
+        
+    elseif shape == "random" then
+        for i = 1, density do
+            local angle = math.random() * 360
+            local rad = math.rad(angle)
+            local x = origin.X + math.cos(rad) * radius
+            local z = origin.Z + math.sin(rad) * radius
+            table.insert(positions, Vector3.new(x, origin.Y, z))
+        end
+    end
+    
+    return positions
+end
+
+-- =======================================================================================
+-- ATTACK FUNCTIONS
+-- =======================================================================================
+
+local function doShockwaveBurst()
+    State.isShockwaveBurst = true
+    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local origin = hrp.Position
+    local positions = getShockwavePositions(SETTINGS.SHOCKWAVE_SHAPE, origin, SETTINGS.SHOCKWAVE_RADIUS, SETTINGS.SHOCKWAVE_DENSITY)
+    
+    -- Fire all shots in a single loop at max speed
+    for _, finalPoint in ipairs(positions) do
+        Remote:FireServer({
+            AttackInfo = { AttackIndex = 0, ComboIndex = 0 }, 
+            WorldTargetPoint = finalPoint
+        })
+        
+        State.stats.shotsFired += 1
+    end
+    
+    -- Visual feedback
+    UI.Indicators.Shockwave.Visible = true
+    task.delay(0.5, function() UI.Indicators.Shockwave.Visible = false end)
+end
+
+local function doAutoAim()
+    local targetHrp, hrp = getNearestTarget(SETTINGS.AUTO_AIM_RANGE)
+    if not hrp or not targetHrp then return end
+
+    State.target = targetHrp
+    local origin = hrp.Position
+    local finalPoint = predict(targetHrp, origin)
+
+    if SETTINGS.USE_HITSCAN then
+        local hit = hitscan(origin, finalPoint - origin, {LocalPlayer.Character})
+        if hit then finalPoint = hit end
+    end
+
+    Remote:FireServer({
+        AttackInfo = { AttackIndex = 0, ComboIndex = 0 }, 
+        WorldTargetPoint = finalPoint
+    })
+    
+    State.stats.shotsFired += 1
+    State.stats.targetsHit += 1
+end
+
+local function doSpamShockwave()
+    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local origin = hrp.Position
+    local positions = getShockwavePositions(SETTINGS.SHOCKWAVE_SHAPE, origin, SETTINGS.SHOCKWAVE_RADIUS, SETTINGS.SHOCKWAVE_DENSITY)
+    
+    -- Fire all positions at once for true spam effect
+    for _, finalPoint in ipairs(positions) do
+        Remote:FireServer({
+            AttackInfo = { AttackIndex = 0, ComboIndex = 0 }, 
+            WorldTargetPoint = finalPoint
+        })
+        
+        State.stats.shotsFired += 1
+    end
+end
+
+-- =======================================================================================
+-- UI CREATION - COMPLETELY REDESIGNED
+-- =======================================================================================
+
+local function createUI()
+    -- Main Window
+    UI.Window = Instance.new("ScreenGui")
+    UI.Window.Name = "SpamAbuseGUI"
+    UI.Window.Parent = CoreGui
+    UI.Window.ResetOnSpawn = false
+    UI.Window.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+    -- Window Frame with modern design
+    local WindowFrame = Instance.new("Frame")
+    WindowFrame.Size = UDim2.new(0, 450, 0, 550)
+    WindowFrame.Position = UDim2.new(0.5, -225, 0.5, -275)
+    WindowFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    WindowFrame.BorderSizePixel = 0
+    WindowFrame.Active = true
+    WindowFrame.Draggable = true
+    WindowFrame.Parent = UI.Window
+
+    -- Title Bar with gradient effect
+    local TitleBar = Instance.new("Frame")
+    TitleBar.Size = UDim2.new(1, 0, 0, 45)
+    TitleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    TitleBar.BorderSizePixel = 0
+    TitleBar.Parent = WindowFrame
+
+    -- Title with glow effect
+    UI.Title = Instance.new("TextLabel")
+    UI.Title.Size = UDim2.new(1, -50, 1, 0)
+    UI.Title.BackgroundTransparency = 1
+    UI.Title.TextColor3 = Color3.fromRGB(255, 120, 0)
+    UI.Title.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+    UI.Title.TextStrokeTransparency = 0.3
+    UI.Title.Text = "Remote Spam Abuser Pro"
+    UI.Title.Font = Enum.Font.GothamBold
+    UI.Title.TextSize = 22
+    UI.Title.TextXAlignment = Enum.TextXAlignment.Left
+    UI.Title.Parent = TitleBar
+
+    -- Close Button with hover effect
+    UI.CloseButton = Instance.new("TextButton")
+    UI.CloseButton.Size = UDim2.new(0, 45, 0, 45)
+    UI.CloseButton.Position = UDim2.new(1, -45, 0, 0)
+    UI.CloseButton.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    UI.CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    UI.CloseButton.Text = "X"
+    UI.CloseButton.Font = Enum.Font.GothamBold
+    UI.CloseButton.TextSize = 18
+    UI.CloseButton.Parent = TitleBar
+    UI.CloseButton.MouseButton1Click:Connect(function() UI.Window:Destroy() end)
+    UI.CloseButton.MouseEnter:Connect(function() UI.CloseButton.BackgroundColor3 = Color3.fromRGB(80, 0, 0) end)
+    UI.CloseButton.MouseLeave:Connect(function() UI.CloseButton.BackgroundColor3 = Color3.fromRGB(60, 0, 0) end)
+
+    -- Status Panel with modern design
+    UI.StatusPanel = Instance.new("Frame")
+    UI.StatusPanel.Size = UDim2.new(1, -15, 0, 90)
+    UI.StatusPanel.Position = UDim2.new(0, 7.5, 0, 55)
+    UI.StatusPanel.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    UI.StatusPanel.BorderSizePixel = 0
+    UI.StatusPanel.Parent = WindowFrame
+
+    -- Status Indicators with better design
+    UI.Indicators = {
+        Spam = Instance.new("Frame"),
+        Shockwave = Instance.new("Frame"),
+        Burst = Instance.new("Frame"),
+        AntiLag = Instance.new("Frame")
+    }
+
+    for i, indicator in ipairs(UI.Indicators) do
+        indicator.Size = UDim2.new(0, 20, 0, 20)
+        indicator.Position = UDim2.new(0, 15 + (i-1) * 100, 0, 15)
+        indicator.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        indicator.BorderSizePixel = 0
+        indicator.Visible = false
+        indicator.Parent = UI.StatusPanel
+    end
+
+    UI.Indicators.Spam.Name = "SpamIndicator"
+    UI.Indicators.Shockwave.Name = "ShockwaveIndicator"
+    UI.Indicators.Burst.Name = "BurstIndicator"
+    UI.Indicators.AntiLag.Name = "AntiLagIndicator"
+
+    -- Stats Panel with modern design
+    UI.StatsPanel = Instance.new("Frame")
+    UI.StatsPanel.Size = UDim2.new(1, -15, 0, 110)
+    UI.StatsPanel.Position = UDim2.new(0, 7.5, 0, 150)
+    UI.StatsPanel.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    UI.StatsPanel.BorderSizePixel = 0
+    UI.StatsPanel.Parent = WindowFrame
+
+    -- Stats Labels with better styling
+    local statsLabels = {
+        "Shots Fired: " .. State.stats.shotsFired,
+        "Targets Hit: " .. State.stats.targetsHit,
+        "Session Time: " .. string.format("%.1f", State.stats.sessionTime) .. "s"
+    }
+
+    for i, label in ipairs(statsLabels) do
+        local statLabel = Instance.new("TextLabel")
+        statLabel.Size = UDim2.new(1, -20, 0, 30)
+        statLabel.Position = UDim2.new(0, 10, 0, (i-1) * 30)
+        statLabel.BackgroundTransparency = 1
+        statLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+        statLabel.Text = label
+        statLabel.Font = Enum.Font.Gotham
+        statLabel.TextSize = 16
+        statLabel.TextXAlignment = Enum.TextXAlignment.Left
+        statLabel.Parent = UI.StatsPanel
+    end
+
+    -- Buttons Panel with modern design
+    local ButtonsPanel = Instance.new("Frame")
+    ButtonsPanel.Size = UDim2.new(1, -15, 0, 200)
+    ButtonsPanel.Position = UDim2.new(0, 7.5, 0, 270)
+    ButtonsPanel.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    ButtonsPanel.BorderSizePixel = 0
+    ButtonsPanel.Parent = WindowFrame
+
+    -- Shockwave Burst Button with hover effects
+    UI.Buttons.Shockwave = Instance.new("TextButton")
+    UI.Buttons.Shockwave.Name = "ShockwaveButton"
+    UI.Buttons.Shockwave.Size = UDim2.new(1, -15, 0, 50)
+    UI.Buttons.Shockwave.Position = UDim2.new(0, 7.5, 0, 10)
+    UI.Buttons.Shockwave.BackgroundColor3 = Color3.fromRGB(160, 0, 0)
+    UI.Buttons.Shockwave.TextColor3 = Color3.fromRGB(255, 255, 255)
+    UI.Buttons.Shockwave.Text = "SHOCKWAVE BURST"
+    UI.Buttons.Shockwave.Font = Enum.Font.GothamBold
+    UI.Buttons.Shockwave.TextSize = 18
+    UI.Buttons.Shockwave.Parent = ButtonsPanel
+    UI.Buttons.Shockwave.MouseButton1Click:Connect(doShockwaveBurst)
+    UI.Buttons.Shockwave.MouseEnter:Connect(function() UI.Buttons.Shockwave.BackgroundColor3 = Color3.fromRGB(180, 0, 0) end)
+    UI.Buttons.Shockwave.MouseLeave:Connect(function() UI.Buttons.Shockwave.BackgroundColor3 = Color3.fromRGB(160, 0, 0) end)
+
+    -- Spam Shooting Toggle with better state management
+    UI.Toggles.Spam = Instance.new("TextButton")
+    UI.Toggles.Spam.Name = "SpamToggle"
+    UI.Toggles.Spam.Size = UDim2.new(1, -15, 0, 50)
+    UI.Toggles.Spam.Position = UDim2.new(0, 7.5, 0, 65)
+    UI.Toggles.Spam.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    UI.Toggles.Spam.TextColor3 = Color3.fromRGB(255, 255, 255)
+    UI.Toggles.Spam.Text = "SPAM SHOOTING: OFF"
+    UI.Toggles.Spam.Font = Enum.Font.GothamBold
+    UI.Toggles.Spam.TextSize = 16
+    UI.Toggles.Spam.Parent = ButtonsPanel
+    UI.Toggles.Spam.MouseButton1Click:Connect(function()
+        State.isSpamming = not State.isSpamming
+        State.isSpamShockwave = false
+        updateUI()
+    end)
+    UI.Toggles.Spam.MouseEnter:Connect(function() UI.Toggles.Spam.BackgroundColor3 = Color3.fromRGB(70, 70, 70) end)
+    UI.Toggles.Spam.MouseLeave:Connect(function() 
+        if not State.isSpamming then
+            UI.Toggles.Spam.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        end
+    end)
+
+    -- Spam Shockwave Toggle with better state management
+    UI.Toggles.Shockwave = Instance.new("TextButton")
+    UI.Toggles.Shockwave.Name = "SpamShockwaveToggle"
+    UI.Toggles.Shockwave.Size = UDim2.new(1, -15, 0, 50)
+    UI.Toggles.Shockwave.Position = UDim2.new(0, 7.5, 0, 120)
+    UI.Toggles.Shockwave.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    UI.Toggles.Shockwave.TextColor3 = Color3.fromRGB(255, 255, 255)
+    UI.Toggles.Shockwave.Text = "SPAM SHOCKWAVE: OFF"
+    UI.Toggles.Shockwave.Font = Enum.Font.GothamBold
+    UI.Toggles.Shockwave.TextSize = 16
+    UI.Toggles.Shockwave.Parent = ButtonsPanel
+    UI.Toggles.Shockwave.MouseButton1Click:Connect(function()
+        State.isSpamShockwave = not State.isSpamShockwave
+        State.isSpamming = false
+        updateUI()
+    end)
+    UI.Toggles.Shockwave.MouseEnter:Connect(function() UI.Toggles.Shockwave.BackgroundColor3 = Color3.fromRGB(70, 70, 70) end)
+    UI.Toggles.Shockwave.MouseLeave:Connect(function() 
+        if not State.isSpamShockwave then
+            UI.Toggles.Shockwave.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        end
+    end)
+
+    -- Shape Selector with better design
+    UI.ShapeSelector = Instance.new("Frame")
+    UI.ShapeSelector.Size = UDim2.new(1, -15, 0, 50)
+    UI.ShapeSelector.Position = UDim2.new(0, 7.5, 0, 175)
+    UI.ShapeSelector.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    UI.ShapeSelector.Parent = ButtonsPanel
+
+    local shapeLabel = Instance.new("TextLabel")
+    shapeLabel.Size = UDim2.new(0.35, 0, 1, 0)
+    shapeLabel.Position = UDim2.new(0, 10, 0, 0)
+    shapeLabel.BackgroundTransparency = 1
+    shapeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    shapeLabel.Text = "Shape:"
+    shapeLabel.Font = Enum.Font.GothamBold
+    shapeLabel.TextSize = 16
+    shapeLabel.TextXAlignment = Enum.TextXAlignment.Left
+    shapeLabel.Parent = UI.ShapeSelector
+
+    local shapeDropdown = Instance.new("TextButton")
+    shapeDropdown.Size = UDim2.new(0.65, 0, 1, 0)
+    shapeDropdown.Position = UDim2.new(0.35, 0, 0, 0)
+    shapeDropdown.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+    shapeDropdown.TextColor3 = Color3.fromRGB(255, 255, 255)
+    shapeDropdown.Text = SETTINGS.SHOCKWAVE_SHAPE:upper()
+    shapeDropdown.Font = Enum.Font.GothamBold
+    shapeDropdown.TextSize = 16
+    shapeDropdown.Parent = UI.ShapeSelector
+
+    local shapes = {"circle", "square", "triangle", "star", "spiral", "random"}
+    local currentShapeIndex = 1
+
+    shapeDropdown.MouseButton1Click:Connect(function()
+        currentShapeIndex = (currentShapeIndex % #shapes) + 1
+        SETTINGS.SHOCKWAVE_SHAPE = shapes[currentShapeIndex]
+        shapeDropdown.Text = SETTINGS.SHOCKWAVE_SHAPE:upper()
+    end)
+    shapeDropdown.MouseEnter:Connect(function() shapeDropdown.BackgroundColor3 = Color3.fromRGB(50, 50, 55) end)
+    shapeDropdown.MouseLeave:Connect(function() shapeDropdown.BackgroundColor3 = Color3.fromRGB(40, 40, 45) end)
+
+    -- Fire Rate Selector with better design
+    UI.FireRateSelector = Instance.new("Frame")
+    UI.FireRateSelector.Size = UDim2.new(1, -15, 0, 50)
+    UI.FireRateSelector.Position = UDim2.new(0, 7.5, 0, 230)
+    UI.FireRateSelector.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    UI.FireRateSelector.Parent = ButtonsPanel
+
+    local fireRateLabel = Instance.new("TextLabel")
+    fireRateLabel.Size = UDim2.new(0.35, 0, 1, 0)
+    fireRateLabel.Position = UDim2.new(0, 10, 0, 0)
+    fireRateLabel.BackgroundTransparency = 1
+    fireRateLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    fireRateLabel.Text = "Fire Rate:"
+    fireRateLabel.Font = Enum.Font.GothamBold
+    fireRateLabel.TextSize = 16
+    fireRateLabel.TextXAlignment = Enum.TextXAlignment.Left
+    fireRateLabel.Parent = UI.FireRateSelector
+
+    local fireRateDropdown = Instance.new("TextButton")
+    fireRateDropdown.Size = UDim2.new(0.65, 0, 1, 0)
+    fireRateDropdown.Position = UDim2.new(0.35, 0, 0, 0)
+    fireRateDropdown.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+    fireRateDropdown.TextColor3 = Color3.fromRGB(255, 255, 255)
+    fireRateDropdown.Text = SETTINGS.FIRE_RATES[SETTINGS.CURRENT_FIRE_RATE]
+    fireRateDropdown.Font = Enum.Font.GothamBold
+    fireRateDropdown.TextSize = 16
+    fireRateDropdown.Parent = UI.FireRateSelector
+
+    fireRateDropdown.MouseButton1Click:Connect(function()
+        SETTINGS.CURRENT_FIRE_RATE = (SETTINGS.CURRENT_FIRE_RATE % #SETTINGS.FIRE_RATES) + 1
+        fireRateDropdown.Text = SETTINGS.FIRE_RATES[SETTINGS.CURRENT_FIRE_RATE]
+    end)
+    fireRateDropdown.MouseEnter:Connect(function() fireRateDropdown.BackgroundColor3 = Color3.fromRGB(50, 50, 55) end)
+    fireRateDropdown.MouseLeave:Connect(function() fireRateDropdown.BackgroundColor3 = Color3.fromRGB(40, 40, 45) end)
+
+    -- Anti-Lag Toggle with better design
+    UI.AntiLagToggle = Instance.new("TextButton")
+    UI.AntiLagToggle.Name = "AntiLagToggle"
+    UI.AntiLagToggle.Size = UDim2.new(1, -15, 0, 50)
+    UI.AntiLagToggle.Position = UDim2.new(0, 7.5, 0, 285)
+    UI.AntiLagToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    UI.AntiLagToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    UI.AntiLagToggle.Text = "ANTI-LAG (SpellBookProjectile): OFF"
+    UI.AntiLagToggle.Font = Enum.Font.GothamBold
+    UI.AntiLagToggle.TextSize = 16
+    UI.AntiLagToggle.Parent = ButtonsPanel
+    UI.AntiLagToggle.MouseButton1Click:Connect(function()
+        State.antiLagEnabled = not State.antiLagEnabled
+        toggleAntiLag(State.antiLagEnabled)
+        updateUI()
+    end)
+    UI.AntiLagToggle.MouseEnter:Connect(function() UI.AntiLagToggle.BackgroundColor3 = Color3.fromRGB(70, 70, 70) end)
+    UI.AntiLagToggle.MouseLeave:Connect(function() 
+        if not State.antiLagEnabled then
+            UI.AntiLagToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        end
+    end)
+
+    -- Settings Panel with better design
+    UI.SettingsPanel = Instance.new("Frame")
+    UI.SettingsPanel.Size = UDim2.new(1, -15, 0, 100)
+    UI.SettingsPanel.Position = UDim2.new(0, 7.5, 0, 340)
+    UI.SettingsPanel.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    UI.SettingsPanel.BorderSizePixel = 0
+    UI.SettingsPanel.Parent = WindowFrame
+
+    -- Settings Labels with better styling
+    local settingsLabels = {
+        "Projectile Speed: " .. SETTINGS.PROJECTILE_SPEED,
+        "Auto Aim Range: " .. SETTINGS.AUTO_AIM_RANGE,
+        "Shockwave Density: " .. SETTINGS.SHOCKWAVE_DENSITY
+    }
+
+    for i, label in ipairs(settingsLabels) do
+        local settingLabel = Instance.new("TextLabel")
+        settingLabel.Size = UDim2.new(1, -20, 0, 30)
+        settingLabel.Position = UDim2.new(0, 10, 0, (i-1) * 30)
+        settingLabel.BackgroundTransparency = 1
+        settingLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+        settingLabel.Text = label
+        settingLabel.Font = Enum.Font.Gotham
+        settingLabel.TextSize = 14
+        settingLabel.TextXAlignment = Enum.TextXAlignment.Left
+        settingLabel.Parent = UI.SettingsPanel
+    end
+end
+
+local function updateUI()
+    -- Update toggle buttons with smooth color transitions
+    if State.isSpamming then
+        UI.Toggles.Spam.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        UI.Toggles.Spam.Text = "SPAM SHOOTING: ON"
+        UI.Indicators.Spam.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        UI.Indicators.Spam.Visible = true
+    else
+        UI.Toggles.Spam.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        UI.Toggles.Spam.Text = "SPAM SHOOTING: OFF"
+        UI.Indicators.Spam.Visible = false
+    end
+
+    if State.isSpamShockwave then
+        UI.Toggles.Shockwave.BackgroundColor3 = Color3.fromRGB(170, 0, 170)
+        UI.Toggles.Shockwave.Text = "SPAM SHOCKWAVE: ON"
+        UI.Indicators.Shockwave.BackgroundColor3 = Color3.fromRGB(255, 0, 255)
+        UI.Indicators.Shockwave.Visible = true
+    else
+        UI.Toggles.Shockwave.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        UI.Toggles.Shockwave.Text = "SPAM SHOCKWAVE: OFF"
+        UI.Indicators.Shockwave.Visible = false
+    end
+
+    if State.antiLagEnabled then
+        UI.AntiLagToggle.BackgroundColor3 = Color3.fromRGB(170, 0, 170)
+        UI.AntiLagToggle.Text = "ANTI-LAG (SpellBookProjectile): ON"
+        UI.Indicators.AntiLag.BackgroundColor3 = Color3.fromRGB(255, 0, 255)
+        UI.Indicators.AntiLag.Visible = true
+    else
+        UI.AntiLagToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        UI.AntiLagToggle.Text = "ANTI-LAG (SpellBookProjectile): OFF"
+        UI.Indicators.AntiLag.Visible = false
+    end
+
+    -- Update stats
+    local statsLabels = UI.StatsPanel:GetChildren()
+    if statsLabels[1] then statsLabels[1].Text = "Shots Fired: " .. State.stats.shotsFired end
+    if statsLabels[2] then statsLabels[2].Text = "Targets Hit: " .. State.stats.targetsHit end
+    if statsLabels[3] then statsLabels[3].Text = "Session Time: " .. string.format("%.1f", State.stats.sessionTime) .. "s" end
+end
+
+-- =======================================================================================
+-- MAIN LOOP WITH BETTER PERFORMANCE
+-- =======================================================================================
+
+local function mainLoop()
+    RunService.RenderStepped:Connect(function(dt)
+        State.stats.sessionTime += dt
+        
+        if State.isShockwaveBurst then
+            State.isShockwaveBurst = false
+            return
+        end
+
+        if not State.isSpamming and not State.isSpamShockwave then return end
+        
+        -- Apply fire rate with better timing
+        local fireRate = tonumber(SETTINGS.FIRE_RATES[SETTINGS.CURRENT_FIRE_RATE])
+        if fireRate and fireRate > 0 then
+            if dt < fireRate then return end
+        end
+        
+        if State.isSpamShockwave then
+            doSpamShockwave()
+        elseif State.isSpamming then
+            doAutoAim()
+        end
+        
+        updateUI()
+    end)
+end
+
+-- =======================================================================================
+-- INITIALIZATION
+-- =======================================================================================
+
+createUI()
+mainLoop()
+
+   end,
+})
