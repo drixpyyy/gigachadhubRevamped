@@ -50,6 +50,13 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/ocfi/aqua-hub-is-a-sk
    end,
 })
 
+local Button = Tab:CreateButton({
+   Name = "Tall Guy V2(Wesd)",
+   Callback = function()
+   -- The function that takes place when the button is pressed
+   end,
+})
+
 
 local Button = Tab:CreateButton({
    Name = "Tall Guy(Wesd)",
@@ -20254,7 +20261,7 @@ local Tab = Window:CreateTab("Hubs", 4483362458) -- Title, Image
 local Section = Tab:CreateSection("Script Hubs")
 
 local Button = Tab:CreateButton({
-   Name = "Orca Hub",
+   Name = "Orca Hub(richie0866)",
    Callback = function()
    
 loadstring(
@@ -20265,14 +20272,14 @@ loadstring(
 })
 
 local Button = Tab:CreateButton({
-   Name = "IY",
+   Name = "IY(Peyton and some others)",
    Callback = function()
    loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
    end,
 })
 
 local Button = Tab:CreateButton({
-   Name = "Placeholder Game Script",
+   Name = "Placeholder Game Script(wesd)",
    Callback = function()
 
 -- Roblox placeholder game script
@@ -20553,7 +20560,7 @@ print("Placeholder Hub Loaded.")
 
 
 local Button = Tab:CreateButton({
-   Name = "Owl Hub",
+   Name = "Owl Hub(CriShoux)",
    Callback = function()
 
 --[[
@@ -20575,7 +20582,7 @@ local Tab = Window:CreateTab("Game Destroyers", 4483362458) -- Title, Image
 local Section = Tab:CreateSection("games with destroyers are here")
 
 local Button = Tab:CreateButton({
-   Name = "condo slapfighting .gg/condox",
+   Name = "condo slapfighting .gg/condox(wesd)",
    Callback = function()
 
    local sg = Instance.new("ScreenGui")
@@ -20834,7 +20841,7 @@ end)
 })
 
 local Button = Tab:CreateButton({
-   Name = "Smooth Slicing",
+   Name = "Smooth Slicing(Wesd)",
    Callback = function()
 
 local Players = game:GetService("Players")
