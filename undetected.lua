@@ -53,7 +53,393 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/ocfi/aqua-hub-is-a-sk
 local Button = Tab:CreateButton({
    Name = "Tall Guy V2(Wesd)",
    Callback = function()
-   -- The function that takes place when the button is pressed
+
+-- tall guy scriptv2
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local animator = humanoid:WaitForChild("Animator")
+
+local function toggleDefaultAnimate(enabled)
+    local animate = character:FindFirstChild("Animate")
+    if animate then
+        animate.Disabled = not enabled
+    end
+    if not enabled then
+        for _, track in pairs(animator:GetPlayingAnimationTracks()) do
+            track:Stop(0.2)
+        end
+    end
+end
+
+local InsertService = game:GetService("InsertService")
+
+local function resolveOnce(strId)
+    -- Attempt 1: GetObjects
+    local ok, assets = pcall(game.GetObjects, game, "rbxassetid://" .. strId)
+    if ok and assets then
+        for _, a in ipairs(assets) do
+            if a:IsA("Animation") then return a.AnimationId end
+            local child = a:FindFirstChildWhichIsA("Animation", true)
+            if child then return child.AnimationId end
+        end
+    end
+
+    -- Attempt 2: InsertService (handles more catalog/UGC asset types)
+    local ok2, model = pcall(InsertService.LoadAsset, InsertService, tonumber(strId))
+    if ok2 and model then
+        local anim = model:FindFirstChildWhichIsA("Animation", true)
+        if anim then
+            local result = anim.AnimationId
+            model:Destroy()
+            return result
+        end
+        model:Destroy()
+    end
+
+    return nil
+end
+
+local function ensureAnimationId(id)
+    local strId = tostring(id)
+    -- First pass
+    local result = resolveOnce(strId)
+    if result then
+        -- Strip "rbxassetid://" to get just the numeric part for a second pass
+        local inner = result:match("rbxassetid://(%d+)")
+        if inner and inner ~= strId then
+            -- Second pass in case the first result was still a catalog/bundle ID
+            local result2 = resolveOnce(inner)
+            if result2 then return result2 end
+        end
+        return result
+    end
+    -- Fallback: use raw id
+    return "rbxassetid://" .. strId
+end
+
+local animations = {
+    idle        = 120226970303860,   -- v1 (v2 76622684003043 is down)
+    idle2       = 116293835056448,   -- 2nd idle variant
+    idle3       = 90323564107529,    -- 3rd idle variant
+    walk        = 71303649590318,
+    run         = 128364104022657,   -- real run anim / also 50/50 idle
+    headless    = 76746775961797,
+    lookAround  = 79216795769647,
+    chilling    = 98248319097752,
+    chilling2   = 114353590132838,   -- 50/50 alternate chill
+    transform   = 93875137466223,
+    transform2  = 115198702257755,   -- 50/50 alternate transform (chaotic)
+    dance       = 91599477703129,    -- monster V
+    emoteN      = 79020146923673,    -- monster N
+    -- Human mode
+    humanChill  = 99207491913621,    -- human idle chill (plays after standing still)
+    humanV      = 125928732780921,   -- human emote V
+    humanN      = 129843344424281,   -- human emote N
+}
+
+local keybinds = {
+    Headless        = "q",
+    LookAround      = "e",
+    ReEnableDefault = "r",
+    MonsterMode     = "f",
+    Dance           = "v",
+    EmoteN          = "n",
+}
+
+local tracks = {}
+for name, id in pairs(animations) do
+    local animId = ensureAnimationId(id)
+    if animId then
+        local a = Instance.new("Animation")
+        a.AnimationId = animId
+        tracks[name] = animator:LoadAnimation(a)
+
+        if name == "walk" or name == "run" then
+            tracks[name].Priority = Enum.AnimationPriority.Movement
+        elseif name == "transform" or name == "transform2" then
+            tracks[name].Priority = Enum.AnimationPriority.Action4
+        elseif name == "humanChill" or name == "humanV" or name == "humanN" then
+            tracks[name].Priority = Enum.AnimationPriority.Action2
+        else
+            tracks[name].Priority = Enum.AnimationPriority.Action
+        end
+    end
+end
+
+local isMonster        = false
+local isEmoting        = false
+local isHumanEmoting   = false
+local currentActive    = nil
+local idleTime         = 0
+local humanIdleTime    = 0
+local humanChillActive = false   -- true while humanChill loop is playing
+local defaultWalkSpeed = 16
+
+-- Stores the randomised choices so they don't re-roll every frame
+local chosenIdle  = "idle"   -- one of idle / idle2 / idle3 / run
+local chosenChill = "chilling"
+
+local function rerollChoices()
+    -- 3-way equal chance between the three idle anims (run is sprint-only now)
+    local r = math.random(3)
+    chosenIdle = (r == 1) and "idle" or (r == 2) and "idle2" or "idle3"
+    -- 50/50 chilling variant
+    chosenChill = math.random(2) == 1 and "chilling" or "chilling2"
+end
+
+rerollChoices()
+
+-- ── Main loop ──────────────────────────────────────────────────────────────
+RunService.RenderStepped:Connect(function(dt)
+    local moving = humanoid.MoveDirection.Magnitude > 0.1
+
+    -- ── Human mode idle/chill ─────────────────────────────────────────────
+    if not isMonster then
+        humanoid.WalkSpeed = defaultWalkSpeed
+
+        if isHumanEmoting then return end  -- don't interrupt a human emote
+
+        if moving then
+            humanIdleTime = 0
+            if humanChillActive then
+                -- Player started walking; fade out the chill loop
+                if tracks["humanChill"] then tracks["humanChill"]:Stop(0.4) end
+                humanChillActive = false
+            end
+        else
+            humanIdleTime += dt
+            if humanIdleTime >= 5 and not humanChillActive then
+                humanChillActive = true
+                if tracks["humanChill"] then
+                    tracks["humanChill"].Looped = true
+                    tracks["humanChill"]:Play(0.5)
+                end
+            elseif humanIdleTime < 5 and humanChillActive then
+                -- shouldn't normally happen but guard anyway
+                if tracks["humanChill"] then tracks["humanChill"]:Stop(0.3) end
+                humanChillActive = false
+            end
+        end
+        return
+    end
+
+    -- ── Monster mode ──────────────────────────────────────────────────────
+    if isEmoting then
+        idleTime = 0
+        humanoid.WalkSpeed = defaultWalkSpeed
+        return
+    end
+
+    local shiftHeld = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift)
+    local target
+
+    if moving then
+        idleTime = 0
+        if shiftHeld then
+            target = "run"
+            humanoid.WalkSpeed = defaultWalkSpeed * 1.5
+        else
+            target = "walk"
+            humanoid.WalkSpeed = defaultWalkSpeed
+            if tracks["run"] and tracks["run"].IsPlaying then
+                tracks["run"]:Stop(0.35)
+            end
+        end
+    else
+        humanoid.WalkSpeed = defaultWalkSpeed
+        idleTime += dt
+        target = idleTime >= 5 and chosenChill or chosenIdle
+    end
+
+    if currentActive ~= target then
+        if currentActive and tracks[currentActive] then
+            tracks[currentActive]:Stop(0.4)
+        end
+        if tracks[target] then
+            tracks[target].Looped = true
+            tracks[target]:Play(0.45)
+            currentActive = target
+        end
+        if target == "walk" or target == "run" then
+            rerollChoices()
+        end
+    end
+end)
+
+-- ── One-shot emote helper (monster) ───────────────────────────────────────
+local function playOneShot(name)
+    if not tracks[name] or isEmoting or not isMonster then return end
+    isEmoting = true
+    idleTime   = 0
+
+    if currentActive and tracks[currentActive] then
+        tracks[currentActive]:Stop(0.25)
+    end
+
+    local t = tracks[name]
+    t.Looped = false
+    t:Play(0.25)
+    t.Stopped:Wait()
+
+    isEmoting     = false
+    currentActive = nil
+end
+
+-- ── One-shot emote helper (human) ─────────────────────────────────────────
+local function playHumanEmote(name)
+    if not tracks[name] or isHumanEmoting or isMonster then return end
+    isHumanEmoting = true
+
+    -- Fade out chill if it was playing
+    if humanChillActive then
+        if tracks["humanChill"] then tracks["humanChill"]:Stop(0.25) end
+        humanChillActive = false
+        humanIdleTime    = 0
+    end
+
+    local t = tracks[name]
+    t.Looped = false
+    t:Play(0.25)
+    t.Stopped:Wait()
+
+    isHumanEmoting = false
+end
+
+-- ── Transformation helper ──────────────────────────────────────────────────
+local function doTransform(entering)
+    local useAlt = math.random(2) == 1   -- 50/50 between transform variants
+
+    isEmoting = true
+
+    if entering then
+        -- Kill human chill before disabling animate so it doesn't bleed through
+        if humanChillActive and tracks["humanChill"] then
+            tracks["humanChill"]:Stop(0)
+        end
+        humanChillActive = false
+        humanIdleTime    = 0
+
+        toggleDefaultAnimate(false)
+
+        if useAlt then
+            -- Chaotic air-tweak transform: smooth long blend, ride most of it out
+            local t = tracks["transform2"]
+            if t then
+                t.Looped = false
+                t:Play(0.6)                        -- longer blend-in = smoother start
+
+                local length = t.Length
+                if length == 0 then task.wait(0.1) length = t.Length end
+
+                task.wait(math.max(length * 0.72, 0.5))  -- wait ~72% through
+                isMonster = true
+                isEmoting = false
+                t:Stop(1.0)                        -- long fade so it doesn't snap
+            else
+                isMonster = true
+                isEmoting = false
+            end
+        else
+            -- Original transform: play to halfway, then snap into monster
+            local t = tracks["transform"]
+            if t then
+                t.Looped = false
+                t:Play(0.2)
+
+                local length = t.Length
+                if length == 0 then task.wait() length = t.Length end
+
+                task.wait(length / 2)
+                isMonster = true
+                isEmoting = false
+                t:Stop(0.5)
+            else
+                isMonster = true
+                isEmoting = false
+            end
+        end
+
+        currentActive = nil
+
+    else
+        -- Exiting monster mode
+        if currentActive and tracks[currentActive] then
+            tracks[currentActive]:Stop(0.3)
+        end
+
+        if useAlt then
+            local t = tracks["transform2"]
+            if t then
+                t.Looped = false
+                t:Play(0.5)
+
+                local length = t.Length
+                if length == 0 then task.wait(0.1) length = t.Length end
+
+                task.wait(math.max(length * 0.65, 0.5))
+                t:Stop(0.9)
+            end
+        else
+            local t = tracks["transform"]
+            if t then
+                t.Looped = false
+                t:Play(0.1)
+
+                local length = t.Length
+                if length == 0 then task.wait() length = t.Length end
+
+                t.TimePosition = length / 2
+                task.wait(length / 2)
+                t:Stop(0.5)
+            end
+        end
+
+        isMonster     = false
+        isEmoting     = false
+        currentActive = nil
+        humanIdleTime = 0       -- reset so chill doesn't fire immediately
+        humanChillActive = false
+        toggleDefaultAnimate(true)
+    end
+end
+
+-- ── Input ──────────────────────────────────────────────────────────────────
+UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    local k = input.KeyCode.Name:lower()
+
+    if k == keybinds.MonsterMode then
+        if not isMonster then
+            doTransform(true)
+        else
+            doTransform(false)
+        end
+
+    elseif k == keybinds.ReEnableDefault then
+        isMonster = false
+        idleTime  = 0
+        humanIdleTime    = 0
+        humanChillActive = false
+        if currentActive and tracks[currentActive] then tracks[currentActive]:Stop(0.3) end
+        currentActive = nil
+        toggleDefaultAnimate(true)
+
+    elseif k == keybinds.Headless   and isMonster then playOneShot("headless")
+    elseif k == keybinds.LookAround and isMonster then playOneShot("lookAround")
+    elseif k == keybinds.Dance      and isMonster then playOneShot("dance")
+    elseif k == keybinds.EmoteN     and isMonster then playOneShot("emoteN")
+    -- Human mode emotes (same keys, different anims)
+    elseif k == keybinds.Dance  and not isMonster then task.spawn(playHumanEmote, "humanV")
+    elseif k == keybinds.EmoteN and not isMonster then task.spawn(playHumanEmote, "humanN")
+    end
+end)
+
+			
    end,
 })
 
