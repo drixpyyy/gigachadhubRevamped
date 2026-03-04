@@ -54,387 +54,641 @@ local Button = Tab:CreateButton({
    Name = "Tall Guy V2(Wesd)",
    Callback = function()
 
--- tall guy scriptv2
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local InsertService = game:GetService("InsertService")
+local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-local animator = humanoid:WaitForChild("Animator")
-local rootPart = character:WaitForChild("HumanoidRootPart")
-
-local function toggleDefaultAnimate(enabled)
-    local animate = character:FindFirstChild("Animate")
-    if animate then
-        animate.Disabled = not enabled
-    end
-    if not enabled then
-        for _, track in pairs(animator:GetPlayingAnimationTracks()) do
-            track:Stop(0.2)
-        end
-    end
-end
-
-local InsertService = game:GetService("InsertService")
-
-local function resolveOnce(strId)
-    local ok, assets = pcall(game.GetObjects, game, "rbxassetid://" .. strId)
-    if ok and assets then
-        for _, a in ipairs(assets) do
-            if a:IsA("Animation") then return a.AnimationId end
-            local child = a:FindFirstChildWhichIsA("Animation", true)
-            if child then return child.AnimationId end
-        end
-    end
-
-    local ok2, model = pcall(InsertService.LoadAsset, InsertService, tonumber(strId))
-    if ok2 and model then
-        local anim = model:FindFirstChildWhichIsA("Animation", true)
-        if anim then
-            local result = anim.AnimationId
-            model:Destroy()
-            return result
-        end
-        model:Destroy()
-    end
-
-    return nil
-end
-
-local function ensureAnimationId(id)
-    local strId = tostring(id)
-    local result = resolveOnce(strId)
-    if result then
-        local inner = result:match("rbxassetid://(%d+)")
-        if inner and inner ~= strId then
-            local result2 = resolveOnce(inner)
-            if result2 then return result2 end
-        end
-        return result
-    end
-    return "rbxassetid://" .. strId
-end
-
-local animations = {
-    idle        = 120226970303860,
-    idle2       = 116293835056448,
-    idle3       = 90323564107529,
-    walk        = 89226066017009,   -- Springtrap Walk (speed-matched)
-    run         = 128364104022657,
-    headless    = 76746775961797,
-    lookAround  = 79216795769647,
-    chilling    = 98248319097752,
-    chilling2   = 114353590132838,
-    transform   = 93875137466223,
-    transform2  = 115198702257755,
-    dance       = 91599477703129,
-    emoteN      = 79020146923673,
-    -- Human mode
-    humanChill  = 99207491913621,
-    humanV      = 125928732780921,
-    humanN      = 129843344424281,
-}
-
-local keybinds = {
-    Headless        = "q",
-    LookAround      = "e",
-    ReEnableDefault = "r",
-    MonsterMode     = "f",
-    Dance           = "v",
-    EmoteN          = "n",
-}
-
-local tracks = {}
-for name, id in pairs(animations) do
-    local animId = ensureAnimationId(id)
-    if animId then
-        local a = Instance.new("Animation")
-        a.AnimationId = animId
-        tracks[name] = animator:LoadAnimation(a)
-
-        if name == "walk" or name == "run" then
-            tracks[name].Priority = Enum.AnimationPriority.Movement
-        elseif name == "transform" or name == "transform2" then
-            tracks[name].Priority = Enum.AnimationPriority.Action4
-        elseif name == "humanChill" or name == "humanV" or name == "humanN" then
-            tracks[name].Priority = Enum.AnimationPriority.Action2
-        else
-            tracks[name].Priority = Enum.AnimationPriority.Action
-        end
-    end
-end
 
 local isMonster        = false
 local isEmoting        = false
 local isHumanEmoting   = false
 local currentActive    = nil
-local idleTime         = 0
-local humanIdleTime    = 0
+local idleTimer        = 0
+local humanIdleTimer   = 0
 local humanChillActive = false
-local defaultWalkSpeed = 16
+local baseSpeed        = 16
+local runSpeed         = 32
+local currentRunSpeed  = 16
+local idleName         = "Idle"
+local chillName        = "Chill"
 
-local chosenIdle  = "idle"
-local chosenChill = "chilling"
+local humanoid, animator, rootPart, anims
+local renderConn, inputConn
 
-local function rerollChoices()
-    local r = math.random(3)
-    chosenIdle = (r == 1) and "idle" or (r == 2) and "idle2" or "idle3"
-    chosenChill = math.random(2) == 1 and "chilling" or "chilling2"
+local function resolveOnce(strId)
+	local ok, assets = pcall(game.GetObjects, game, "rbxassetid://" .. strId)
+	if ok and assets then
+		for _, a in ipairs(assets) do
+			if a:IsA("Animation") then return a.AnimationId end
+			local child = a:FindFirstChildWhichIsA("Animation", true)
+			if child then return child.AnimationId end
+		end
+	end
+	local ok2, model = pcall(InsertService.LoadAsset, InsertService, tonumber(strId))
+	if ok2 and model then
+		local anim = model:FindFirstChildWhichIsA("Animation", true)
+		if anim then
+			local id = anim.AnimationId
+			model:Destroy()
+			return id
+		end
+		model:Destroy()
+	end
 end
 
-rerollChoices()
-
--- ── Main loop ──────────────────────────────────────────────────────────────
-RunService.RenderStepped:Connect(function(dt)
-    local moving = humanoid.MoveDirection.Magnitude > 0.1
-
-    -- ── Human mode idle/chill ─────────────────────────────────────────────
-    if not isMonster then
-        humanoid.WalkSpeed = defaultWalkSpeed
-
-        if isHumanEmoting then return end
-
-        if moving then
-            humanIdleTime = 0
-            if humanChillActive then
-                if tracks["humanChill"] then tracks["humanChill"]:Stop(0.4) end
-                humanChillActive = false
-            end
-        else
-            humanIdleTime += dt
-            if humanIdleTime >= 5 and not humanChillActive then
-                humanChillActive = true
-                if tracks["humanChill"] then
-                    tracks["humanChill"].Looped = true
-                    tracks["humanChill"]:Play(0.5)
-                end
-            elseif humanIdleTime < 5 and humanChillActive then
-                if tracks["humanChill"] then tracks["humanChill"]:Stop(0.3) end
-                humanChillActive = false
-            end
-        end
-        return
-    end
-
-    -- ── Monster mode ──────────────────────────────────────────────────────
-    if isEmoting then
-        idleTime = 0
-        humanoid.WalkSpeed = defaultWalkSpeed
-        return
-    end
-
-    local shiftHeld = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift)
-    local target
-
-    if moving then
-        idleTime = 0
-        if shiftHeld then
-            target = "run"
-            humanoid.WalkSpeed = defaultWalkSpeed * 1.5
-        else
-            target = "walk"
-            humanoid.WalkSpeed = defaultWalkSpeed
-            if tracks["run"] and tracks["run"].IsPlaying then
-                tracks["run"]:Stop(0.35)
-            end
-        end
-    else
-        humanoid.WalkSpeed = defaultWalkSpeed
-        idleTime += dt
-        target = idleTime >= 5 and chosenChill or chosenIdle
-    end
-
-    if currentActive ~= target then
-        if currentActive and tracks[currentActive] then
-            tracks[currentActive]:Stop(0.4)
-        end
-        if tracks[target] then
-            tracks[target].Looped = true
-            tracks[target]:Play(0.45)
-            currentActive = target
-        end
-        if target == "walk" or target == "run" then
-            rerollChoices()
-        end
-    end
-
-    -- ── Walk speed matching ───────────────────────────────────────────────
-    -- Scale the Springtrap walk animation's playback speed to the character's
-    -- actual ground velocity so footsteps always land correctly and there are
-    -- no half-steps when decelerating to a stop.
-    if currentActive == "walk" and tracks["walk"] then
-        local vel = rootPart.AssemblyLinearVelocity
-        -- Only use horizontal speed so slopes/jumping don't throw off the rate
-        local groundSpeed = Vector3.new(vel.X, 0, vel.Z).Magnitude
-        local speedRatio = groundSpeed / defaultWalkSpeed
-        -- Clamp: never go below 0.05 (avoids a frozen mid-step pose) or above 2
-        tracks["walk"]:AdjustSpeed(math.clamp(speedRatio, 0.05, 2))
-    end
-end)
-
--- ── One-shot emote helper (monster) ───────────────────────────────────────
-local function playOneShot(name)
-    if not tracks[name] or isEmoting or not isMonster then return end
-    isEmoting = true
-    idleTime   = 0
-
-    if currentActive and tracks[currentActive] then
-        tracks[currentActive]:Stop(0.25)
-    end
-
-    local t = tracks[name]
-    t.Looped = false
-    t:Play(0.25)
-    t.Stopped:Wait()
-
-    isEmoting     = false
-    currentActive = nil
+local function resolveId(id)
+	local strId = tostring(id)
+	local result = resolveOnce(strId)
+	if result then
+		local inner = result:match("rbxassetid://(%d+)")
+		if inner and inner ~= strId then
+			local r2 = resolveOnce(inner)
+			if r2 then return r2 end
+		end
+		return result
+	end
+	return "rbxassetid://" .. strId
 end
 
--- ── One-shot emote helper (human) ─────────────────────────────────────────
-local function playHumanEmote(name)
-    if not tracks[name] or isHumanEmoting or isMonster then return end
-    isHumanEmoting = true
-
-    if humanChillActive then
-        if tracks["humanChill"] then tracks["humanChill"]:Stop(0.25) end
-        humanChillActive = false
-        humanIdleTime    = 0
-    end
-
-    local t = tracks[name]
-    t.Looped = false
-    t:Play(0.25)
-    t.Stopped:Wait()
-
-    isHumanEmoting = false
+local function waitForLength(track)
+	while track.Length == 0 do task.wait() end
+	return track.Length
 end
 
--- ── Transformation helper ──────────────────────────────────────────────────
-local function doTransform(entering)
-    local useAlt = math.random(2) == 1
+local animIds = {
+	Idle           = 87939300658851,
+	IdleAlt1       = 116293835056448,
+	IdleAlt2       = 90323564107529,
+	Walk           = 89226066017009,
+	Run            = 128364104022657,
+	Headless       = 76746775961797,
+	LookAround     = 79216795769647,
+	Chill          = 98248319097752,
+	ChillAlt1      = 114353590132838,
+	ChillAlt2      = 81694095869045,
+	ChillAlt3      = 102642633024928,
+	Transform      = 93875137466223,
+	TransformEnter = 106370760824973,
+	Dance          = 91599477703129,
+	HoldingHead    = 79020146923673,
+	HumanChill     = 99207491913621,
+	NeckTurn       = 125928732780921,
+	Shake          = 129843344424281,
+}
 
-    isEmoting = true
+local keys = {
+	Transform   = "f",
+	Reset       = "r",
+	Headless    = "q",
+	LookAround  = "e",
+	Dance       = "v",
+	HoldingHead = "n",
+}
 
-    if entering then
-        if humanChillActive and tracks["humanChill"] then
-            tracks["humanChill"]:Stop(0)
-        end
-        humanChillActive = false
-        humanIdleTime    = 0
-
-        toggleDefaultAnimate(false)
-
-        if useAlt then
-            local t = tracks["transform2"]
-            if t then
-                t.Looped = false
-                t:Play(0.6)
-
-                local length = t.Length
-                if length == 0 then task.wait(0.1) length = t.Length end
-
-                task.wait(math.max(length * 0.72, 0.5))
-                isMonster = true
-                isEmoting = false
-                t:Stop(1.0)
-            else
-                isMonster = true
-                isEmoting = false
-            end
-        else
-            local t = tracks["transform"]
-            if t then
-                t.Looped = false
-                t:Play(0.2)
-
-                local length = t.Length
-                if length == 0 then task.wait() length = t.Length end
-
-                task.wait(length / 2)
-                isMonster = true
-                isEmoting = false
-                t:Stop(0.5)
-            else
-                isMonster = true
-                isEmoting = false
-            end
-        end
-
-        currentActive = nil
-
-    else
-        if currentActive and tracks[currentActive] then
-            tracks[currentActive]:Stop(0.3)
-        end
-
-        if useAlt then
-            local t = tracks["transform2"]
-            if t then
-                t.Looped = false
-                t:Play(0.5)
-
-                local length = t.Length
-                if length == 0 then task.wait(0.1) length = t.Length end
-
-                task.wait(math.max(length * 0.65, 0.5))
-                t:Stop(0.9)
-            end
-        else
-            local t = tracks["transform"]
-            if t then
-                t.Looped = false
-                t:Play(0.1)
-
-                local length = t.Length
-                if length == 0 then task.wait() length = t.Length end
-
-                t.TimePosition = length / 2
-                task.wait(length / 2)
-                t:Stop(0.5)
-            end
-        end
-
-        isMonster     = false
-        isEmoting     = false
-        currentActive = nil
-        humanIdleTime = 0
-        humanChillActive = false
-        toggleDefaultAnimate(true)
-    end
+local function reroll()
+	local r = math.random(3)
+	idleName  = r == 1 and "Idle" or r == 2 and "IdleAlt1" or "IdleAlt2"
+	local c = math.random(4)
+	chillName = c == 1 and "Chill" or c == 2 and "ChillAlt1" or c == 3 and "ChillAlt2" or "ChillAlt3"
 end
 
--- ── Input ──────────────────────────────────────────────────────────────────
+reroll()
+
+local function disableDefaultAnims(disabled)
+	local char = player.Character
+	if not char then return end
+	local animate = char:FindFirstChild("Animate")
+	if animate then animate.Disabled = disabled end
+	if disabled then
+		for _, t in pairs(animator:GetPlayingAnimationTracks()) do
+			t:Stop(0.1)
+		end
+	end
+end
+
+local function stopHumanAnims()
+	if not anims then return end
+	for _, name in ipairs({"HumanChill", "NeckTurn", "Shake"}) do
+		if anims[name] and anims[name].IsPlaying then
+			anims[name]:Stop(0.15)
+		end
+	end
+	humanChillActive = false
+	humanIdleTimer   = 0
+	isHumanEmoting   = false
+end
+
+local function loadAnims()
+	anims = {}
+	for name, id in pairs(animIds) do
+		local resolved = resolveId(id)
+		if resolved then
+			local a = Instance.new("Animation")
+			a.AnimationId = resolved
+			anims[name] = animator:LoadAnimation(a)
+			anims[name].Priority =
+				(name == "Walk" or name == "Run") and Enum.AnimationPriority.Movement
+				or (name == "Transform" or name == "TransformEnter") and Enum.AnimationPriority.Action4
+				or (name == "HumanChill" or name == "NeckTurn" or name == "Shake") and Enum.AnimationPriority.Action2
+				or Enum.AnimationPriority.Action
+		end
+	end
+end
+
+local tw = TweenService
+local function tween(obj, t, props)
+	return tw:Create(obj, t, props)
+end
+
+local T35 = TweenInfo.new(0.35, Enum.EasingStyle.Quint)
+local T55 = TweenInfo.new(0.55, Enum.EasingStyle.Quint)
+local T80 = TweenInfo.new(0.8,  Enum.EasingStyle.Exponential)
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "TallGuyHUD"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = player.PlayerGui
+
+local panel = Instance.new("Frame")
+panel.Name = "Panel"
+panel.Size = UDim2.new(0, 195, 0, 0)
+panel.AutomaticSize = Enum.AutomaticSize.Y
+panel.Position = UDim2.new(1, -210, 1, -15)
+panel.AnchorPoint = Vector2.new(0, 1)
+panel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+panel.BackgroundTransparency = 0.3
+panel.BorderSizePixel = 0
+panel.ClipsDescendants = false
+panel.Parent = gui
+
+do
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, 9)
+	c.Parent = panel
+
+	local g = Instance.new("UIGradient")
+	g.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 40)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(5, 5, 5)),
+	})
+	g.Rotation = 120
+	g.Parent = panel
+
+	local p = Instance.new("UIPadding")
+	p.PaddingTop    = UDim.new(0, 11)
+	p.PaddingBottom = UDim.new(0, 11)
+	p.PaddingLeft   = UDim.new(0, 10)
+	p.PaddingRight  = UDim.new(0, 10)
+	p.Parent = panel
+
+	local l = Instance.new("UIListLayout")
+	l.Padding = UDim.new(0, 5)
+	l.SortOrder = Enum.SortOrder.LayoutOrder
+	l.Parent = panel
+
+
+
+end
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(255, 255, 255)
+stroke.Thickness = 1
+stroke.Transparency = 0.92
+stroke.Parent = panel
+
+local strokeGradient = Instance.new("UIGradient")
+strokeGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(120, 120, 120)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 40, 40)),
+})
+strokeGradient.Rotation = 120
+strokeGradient.Parent = stroke
+
+local modeLabel = Instance.new("TextLabel")
+modeLabel.Size = UDim2.new(1, 0, 0, 18)
+modeLabel.BackgroundTransparency = 1
+modeLabel.Text = "HUMAN"
+modeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+modeLabel.TextTransparency = 0
+modeLabel.TextSize = 11
+modeLabel.Font = Enum.Font.GothamBold
+modeLabel.TextXAlignment = Enum.TextXAlignment.Left
+modeLabel.LayoutOrder = 0
+modeLabel.Parent = panel
+
+do
+	local sep = Instance.new("Frame")
+	sep.Size = UDim2.new(1, 0, 0, 1)
+	sep.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	sep.BackgroundTransparency = 0.88
+	sep.BorderSizePixel = 0
+	sep.LayoutOrder = 1
+	sep.Parent = panel
+end
+
+local humanRows   = {}
+local monsterRows = {}
+
+local function makeRow(key, label, order, bucket)
+	local row = Instance.new("Frame")
+	row.Size = UDim2.new(1, 0, 0, 32)
+	row.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	row.BackgroundTransparency = 0.96
+	row.BorderSizePixel = 0
+	row.LayoutOrder = order
+	row.Parent = panel
+
+	do
+		local rc = Instance.new("UICorner")
+		rc.CornerRadius = UDim.new(0, 6)
+		rc.Parent = row
+
+		local rs = Instance.new("UIStroke")
+		rs.Color = Color3.fromRGB(255, 255, 255)
+		rs.Thickness = 1
+		rs.Transparency = 0.88
+		rs.Parent = row
+	end
+
+	local badge = Instance.new("Frame")
+	badge.Size = UDim2.new(0, 22, 0, 22)
+	badge.Position = UDim2.new(0, 7, 0.5, -11)
+	badge.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	badge.BackgroundTransparency = 0.92
+	badge.BorderSizePixel = 0
+	badge.Parent = row
+
+	do
+		local bc = Instance.new("UICorner")
+		bc.CornerRadius = UDim.new(0, 5)
+		bc.Parent = badge
+
+		local bg = Instance.new("UIGradient")
+		bg.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 80, 80)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 30)),
+		})
+		bg.Rotation = 90
+		bg.Parent = badge
+
+		local bs = Instance.new("UIStroke")
+		bs.Color = Color3.fromRGB(255, 255, 255)
+		bs.Thickness = 1
+		bs.Transparency = 0.78
+		bs.Parent = badge
+	end
+
+	local keyLabel = Instance.new("TextLabel")
+	keyLabel.Size = UDim2.new(1, 0, 1, 0)
+	keyLabel.BackgroundTransparency = 1
+	keyLabel.Text = key
+	keyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	keyLabel.TextTransparency = 0.1
+	keyLabel.TextSize = 11
+	keyLabel.Font = Enum.Font.GothamBold
+	keyLabel.Parent = badge
+
+	local desc = Instance.new("TextLabel")
+	desc.Size = UDim2.new(1, -38, 1, 0)
+	desc.Position = UDim2.new(0, 36, 0, 0)
+	desc.BackgroundTransparency = 1
+	desc.Text = label
+	desc.TextColor3 = Color3.fromRGB(255, 255, 255)
+	desc.TextTransparency = 0.45
+	desc.TextSize = 12
+	desc.Font = Enum.Font.Gotham
+	desc.TextXAlignment = Enum.TextXAlignment.Left
+	desc.Parent = row
+
+	if bucket then
+		table.insert(bucket, row)
+	end
+
+	return row
+end
+
+makeRow("F", "Transform",  2, humanRows)
+makeRow("V", "Neck Turn",  3, humanRows)
+makeRow("N", "Shake",      4, humanRows)
+makeRow("R", "Reset",      5, humanRows)
+
+makeRow("F", "De-transform",  2, monsterRows)
+makeRow("Q", "Headless",      3, monsterRows)
+makeRow("E", "Look Around",   4, monsterRows)
+makeRow("V", "Dance",         5, monsterRows)
+makeRow("N", "Holding Head",  6, monsterRows)
+makeRow("R", "Reset",         7, monsterRows)
+
+local HUMAN_COLOR   = Color3.fromRGB(26, 148, 255)
+local MONSTER_COLOR = Color3.fromRGB(220, 50, 50)
+
+local function safeTween(obj, t, props)
+	pcall(function()
+		tw:Create(obj, t, props):Play()
+	end)
+end
+
+local function setMode(monster)
+	if monster then
+		modeLabel.Text = "MONSTER"
+		safeTween(modeLabel, T35, {TextColor3 = MONSTER_COLOR})
+		safeTween(stroke, T35, {Color = MONSTER_COLOR, Transparency = 0.7})
+		strokeGradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 80, 80)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 20, 20)),
+		})
+		for _, r in ipairs(humanRows)   do r.Visible = false end
+		for _, r in ipairs(monsterRows) do r.Visible = true  end
+	else
+		modeLabel.Text = "HUMAN"
+		safeTween(modeLabel, T35, {TextColor3 = HUMAN_COLOR})
+		safeTween(stroke, T35, {Color = Color3.fromRGB(255, 255, 255), Transparency = 0.92})
+		strokeGradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(120, 120, 120)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 40, 40)),
+		})
+		for _, r in ipairs(humanRows)   do r.Visible = true  end
+		for _, r in ipairs(monsterRows) do r.Visible = false end
+	end
+end
+
+local function showPanel()
+	panel.Visible = true
+	panel.BackgroundTransparency = 1
+	safeTween(panel, T55, {BackgroundTransparency = 0.3})
+end
+
+local function hidePanel()
+	safeTween(panel, T35, {BackgroundTransparency = 1})
+	task.delay(0.4, function() panel.Visible = false end)
+end
+
+setMode(false)
+
+local function initCharacter(char)
+	if renderConn then renderConn:Disconnect() end
+	if inputConn  then inputConn:Disconnect()  end
+
+	isMonster        = false
+	isEmoting        = false
+	isHumanEmoting   = false
+	currentActive    = nil
+	idleTimer        = 0
+	humanIdleTimer   = 0
+	humanChillActive = false
+
+	humanoid = char:WaitForChild("Humanoid")
+	animator = humanoid:WaitForChild("Animator")
+	rootPart = char:WaitForChild("HumanoidRootPart")
+
+	loadAnims()
+	setMode(false)
+	showPanel()
+
+	renderConn = RunService.RenderStepped:Connect(function(dt)
+		local moving = humanoid.MoveDirection.Magnitude > 0.1
+
+		if not isMonster then
+			humanoid.WalkSpeed = baseSpeed
+			if isHumanEmoting then
+				if moving then
+					isHumanEmoting = false
+					for _, name in ipairs({"NeckTurn", "Shake"}) do
+						if anims[name] and anims[name].IsPlaying then
+							anims[name]:Stop(0.3)
+						end
+					end
+				end
+				return
+			end
+
+			if moving then
+				humanIdleTimer = 0
+				if humanChillActive then
+					if anims.HumanChill then anims.HumanChill:Stop(0.4) end
+					humanChillActive = false
+				end
+			else
+				humanIdleTimer += dt
+				if humanIdleTimer >= 5 and not humanChillActive then
+					humanChillActive = true
+					if anims.HumanChill then
+						anims.HumanChill.Looped = true
+						anims.HumanChill:Play(0.5)
+					end
+				elseif humanIdleTimer < 5 and humanChillActive then
+					if anims.HumanChill then anims.HumanChill:Stop(0.3) end
+					humanChillActive = false
+				end
+			end
+			return
+		end
+
+		if anims.HumanChill and anims.HumanChill.IsPlaying then anims.HumanChill:Stop(0.2) humanChillActive = false end
+		if anims.NeckTurn   and anims.NeckTurn.IsPlaying   then anims.NeckTurn:Stop(0.2)   end
+		if anims.Shake      and anims.Shake.IsPlaying      then anims.Shake:Stop(0.2)      end
+
+		if isEmoting then
+			if moving then
+				isEmoting     = false
+				currentActive = nil
+				for _, name in ipairs({"Headless", "LookAround", "Dance", "HoldingHead"}) do
+					if anims[name] and anims[name].IsPlaying then
+						anims[name]:Stop(0.3)
+					end
+				end
+				humanoid.WalkSpeed = baseSpeed
+			else
+				idleTimer = 0
+				return
+			end
+		end
+
+		local target
+
+		if moving then
+			idleTimer = 0
+			if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+				target = "Run"
+				currentRunSpeed = currentRunSpeed + (runSpeed - currentRunSpeed) * 0.04
+				humanoid.WalkSpeed = currentRunSpeed
+				if anims.Run then
+					anims.Run:AdjustSpeed(math.clamp(currentRunSpeed / baseSpeed, 1, 2))
+				end
+			else
+				target = "Walk"
+				currentRunSpeed = currentRunSpeed + (baseSpeed - currentRunSpeed) * 0.1
+				humanoid.WalkSpeed = baseSpeed
+				if anims.Run and anims.Run.IsPlaying then anims.Run:Stop(0.35) end
+			end
+		else
+			humanoid.WalkSpeed = baseSpeed
+			currentRunSpeed = baseSpeed
+			idleTimer += dt
+			target = idleTimer >= 5 and chillName or idleName
+		end
+
+		if currentActive ~= target then
+			if currentActive and anims[currentActive] then anims[currentActive]:Stop(0.4) end
+			if anims[target] then
+				anims[target].Looped = true
+				anims[target]:Play(0.45)
+				currentActive = target
+			end
+			if target == "Walk" or target == "Run" then reroll() end
+		end
+
+		if currentActive == "Walk" and anims.Walk then
+			local vel = rootPart.AssemblyLinearVelocity
+			anims.Walk:AdjustSpeed(math.clamp(
+				Vector3.new(vel.X, 0, vel.Z).Magnitude / baseSpeed, 0.05, 2
+			))
+		end
+	end)
+
+	local function play(name)
+		if not anims[name] or isEmoting or not isMonster then return end
+		isEmoting = true
+		idleTimer = 0
+		humanoid.WalkSpeed = 0
+		if currentActive and anims[currentActive] then anims[currentActive]:Stop(0.25) end
+		anims[name].Looped = false
+		anims[name]:Play(0.25)
+		anims[name].Stopped:Wait()
+		humanoid.WalkSpeed = baseSpeed
+		isEmoting     = false
+		currentActive = nil
+	end
+
+	local function playHuman(name)
+		if not anims[name] or isHumanEmoting or isMonster then return end
+		isHumanEmoting = true
+		if humanChillActive then
+			if anims.HumanChill then anims.HumanChill:Stop(0.25) end
+			humanChillActive = false
+			humanIdleTimer   = 0
+		end
+		anims[name].Looped = false
+		anims[name]:Play(0.25)
+		anims[name].Stopped:Wait()
+		isHumanEmoting = false
+	end
+
+	local function transform(entering)
+		if isEmoting then return end
+		isEmoting = true
+
+		if entering then
+			stopHumanAnims()
+			disableDefaultAnims(true)
+
+			local useAlt = math.random(2) == 1
+			local t = useAlt and anims.TransformEnter or anims.Transform
+			if t then
+				t.Looped = false
+				t:Play(0.15)
+				local len = waitForLength(t)
+				if useAlt then
+					task.wait(len * 0.85)
+				else
+					task.wait(len * 0.6)
+				end
+				isMonster = true
+				setMode(true)
+				t:Stop(0.5)
+			else
+				isMonster = true
+				setMode(true)
+			end
+			isEmoting     = false
+			currentActive = nil
+		else
+			if currentActive and anims[currentActive] then anims[currentActive]:Stop(0.3) end
+
+			local t = anims.Transform
+			if t then
+				t.Looped = false
+				t:Play(0.15)
+				local len = waitForLength(t)
+				t.TimePosition = len / 2
+				task.wait(len / 2)
+				t:Stop(0.5)
+			end
+
+			isMonster        = false
+			isEmoting        = false
+			currentActive    = nil
+			humanIdleTimer   = 0
+			humanChillActive = false
+			setMode(false)
+			disableDefaultAnims(false)
+		end
+	end
+
+	inputConn = UserInputService.InputBegan:Connect(function(input, gp)
+		if gp then return end
+		local k = input.KeyCode.Name:lower()
+
+		if k == keys.Transform then
+			task.spawn(transform, not isMonster)
+		elseif k == keys.Reset then
+			isMonster        = false
+			idleTimer        = 0
+			humanIdleTimer   = 0
+			humanChillActive = false
+			isHumanEmoting   = false
+			isEmoting        = false
+			humanoid.WalkSpeed = baseSpeed
+			if currentActive and anims[currentActive] then anims[currentActive]:Stop(0.3) end
+			currentActive = nil
+			setMode(false)
+			disableDefaultAnims(false)
+		elseif k == keys.Headless    and isMonster     then task.spawn(play, "Headless")
+		elseif k == keys.LookAround  and isMonster     then task.spawn(play, "LookAround")
+		elseif k == keys.Dance       and isMonster     then task.spawn(play, "Dance")
+		elseif k == keys.HoldingHead and isMonster     then task.spawn(play, "HoldingHead")
+		elseif k == keys.Dance       and not isMonster then task.spawn(playHuman, "NeckTurn")
+		elseif k == keys.HoldingHead and not isMonster then task.spawn(playHuman, "Shake")
+		end
+	end)
+end
+
+local panelVisible = true
 UserInputService.InputBegan:Connect(function(input, gp)
-    if gp then return end
-    local k = input.KeyCode.Name:lower()
-
-    if k == keybinds.MonsterMode then
-        if not isMonster then
-            doTransform(true)
-        else
-            doTransform(false)
-        end
-
-    elseif k == keybinds.ReEnableDefault then
-        isMonster = false
-        idleTime  = 0
-        humanIdleTime    = 0
-        humanChillActive = false
-        if currentActive and tracks[currentActive] then tracks[currentActive]:Stop(0.3) end
-        currentActive = nil
-        toggleDefaultAnimate(true)
-
-    elseif k == keybinds.Headless   and isMonster then playOneShot("headless")
-    elseif k == keybinds.LookAround and isMonster then playOneShot("lookAround")
-    elseif k == keybinds.Dance      and isMonster then playOneShot("dance")
-    elseif k == keybinds.EmoteN     and isMonster then playOneShot("emoteN")
-    elseif k == keybinds.Dance  and not isMonster then task.spawn(playHumanEmote, "humanV")
-    elseif k == keybinds.EmoteN and not isMonster then task.spawn(playHumanEmote, "humanN")
-    end
+	if gp then return end
+	if input.KeyCode == Enum.KeyCode.Period then
+		if panelVisible then
+			safeTween(panel, T35, {BackgroundTransparency = 1})
+			task.delay(0.35, function() panel.Visible = false end)
+		else
+			panel.Visible = true
+			safeTween(panel, T55, {BackgroundTransparency = 0.3})
+		end
+		panelVisible = not panelVisible
+	end
 end)
+
+player.CharacterAdded:Connect(function(char)
+	hidePanel()
+	isMonster        = false
+	isEmoting        = false
+	isHumanEmoting   = false
+	currentActive    = nil
+	idleTimer        = 0
+	humanIdleTimer   = 0
+	humanChillActive = false
+	task.wait(0.5)
+	initCharacter(char)
+end)
+
+if player.Character then
+	initCharacter(player.Character)
+end
 			
    end,
 })
