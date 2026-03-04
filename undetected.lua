@@ -54,7 +54,7 @@ local Button = Tab:CreateButton({
    Name = "Tall Guy V2(Wesd)",
    Callback = function()
 
-local Players = game:GetService("Players")
+			local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local InsertService = game:GetService("InsertService")
@@ -417,13 +417,17 @@ local function setMode(monster)
 	end
 end
 
+local panelVisible = true
+
 local function showPanel()
+	panelVisible = true
 	panel.Visible = true
 	panel.BackgroundTransparency = 1
 	safeTween(panel, T55, {BackgroundTransparency = 0.3})
 end
 
 local function hidePanel()
+	panelVisible = false
 	safeTween(panel, T35, {BackgroundTransparency = 1})
 	task.delay(0.4, function() panel.Visible = false end)
 end
@@ -515,20 +519,28 @@ local function initCharacter(char)
 			idleTimer = 0
 			if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
 				target = "Run"
-				currentRunSpeed = currentRunSpeed + (runSpeed - currentRunSpeed) * 0.04
+				currentRunSpeed = currentRunSpeed + (runSpeed - currentRunSpeed) * 0.012
 				humanoid.WalkSpeed = currentRunSpeed
+				local speedRatio = (currentRunSpeed - baseSpeed) / (runSpeed - baseSpeed)
+				local targetFov = 70 + speedRatio * 18
+				workspace.CurrentCamera.FieldOfView = workspace.CurrentCamera.FieldOfView
+					+ (targetFov - workspace.CurrentCamera.FieldOfView) * 0.06
 				if anims.Run then
 					anims.Run:AdjustSpeed(math.clamp(currentRunSpeed / baseSpeed, 1, 2))
 				end
 			else
 				target = "Walk"
-				currentRunSpeed = currentRunSpeed + (baseSpeed - currentRunSpeed) * 0.1
+				currentRunSpeed = currentRunSpeed + (baseSpeed - currentRunSpeed) * 0.08
 				humanoid.WalkSpeed = baseSpeed
+				workspace.CurrentCamera.FieldOfView = workspace.CurrentCamera.FieldOfView
+					+ (70 - workspace.CurrentCamera.FieldOfView) * 0.08
 				if anims.Run and anims.Run.IsPlaying then anims.Run:Stop(0.35) end
 			end
 		else
 			humanoid.WalkSpeed = baseSpeed
 			currentRunSpeed = baseSpeed
+			workspace.CurrentCamera.FieldOfView = workspace.CurrentCamera.FieldOfView
+				+ (70 - workspace.CurrentCamera.FieldOfView) * 0.08
 			idleTimer += dt
 			target = idleTimer >= 5 and chillName or idleName
 		end
@@ -658,10 +670,9 @@ local function initCharacter(char)
 	end)
 end
 
-local panelVisible = true
 UserInputService.InputBegan:Connect(function(input, gp)
 	if gp then return end
-	if input.KeyCode == Enum.KeyCode.Period then
+	if input.KeyCode == Enum.KeyCode.Quote then
 		if panelVisible then
 			safeTween(panel, T35, {BackgroundTransparency = 1})
 			task.delay(0.35, function() panel.Visible = false end)
