@@ -18053,6 +18053,7 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
@@ -18061,90 +18062,103 @@ Fly.__index = Fly
 
 function Fly.new()
     local self = setmetatable({}, Fly)
-    
+
     self.Speed = 50
-    self.Smoothness = 0.1
+    self.Smoothness = 0.15
     self.Offset = -3.5
-    
+
     self.Active = false
-    self.NoclipEnabled = false  
+    self.NoclipEnabled = false
     self.Target = nil
-    self.Inputs = {Fwd=false, Bwd=false, Left=false, Right=false, Up=false, Down=false}
-    self.Velocity = Vector3.new(0,0,0)
-    
+
+    self.Inputs = {
+        Fwd=false,
+        Bwd=false,
+        Left=false,
+        Right=false,
+        Up=false,
+        Down=false
+    }
+
+    self.Velocity = Vector3.zero
+
     self.BodyVel = nil
     self.BodyGyro = nil
     self.NoclipConnection = nil
     self.VisualField = nil
-    
+
+    self.CharacterParts = {}
+
     self.Gui = self:CreateUI()
     self:SetupKeyboardControls()
     self:Events()
-    
+
     return self
 end
 
--- VISUALS: Glowing force field
+function Fly:CacheCharacterParts()
+    table.clear(self.CharacterParts)
+
+    local char = LocalPlayer.Character
+    if not char then return end
+
+    for _,v in ipairs(char:GetDescendants()) do
+        if v:IsA("BasePart") then
+            table.insert(self.CharacterParts,v)
+        end
+    end
+end
+
 function Fly:ToggleVisuals(enabled)
-    if self.VisualField then 
-        self.VisualField:Destroy() 
+    if self.VisualField then
+        self.VisualField:Destroy()
         self.VisualField = nil
     end
 
     if enabled then
         local char = LocalPlayer.Character
         local root = char and char:FindFirstChild("HumanoidRootPart")
-        if root then
-            local ff = Instance.new("Part")
-            ff.Name = "GhostField"
-            ff.Shape = Enum.PartType.Ball
-            ff.Size = Vector3.new(9, 9, 9) 
-            ff.Material = Enum.Material.ForceField
-            ff.Color = Color3.fromRGB(0, 255, 255) 
-            ff.Transparency = 0
-            ff.CanCollide = false
-            ff.Massless = true
-            ff.CastShadow = false
-            ff.Parent = char
+        if not root then return end
 
-            local weld = Instance.new("WeldConstraint")
-            weld.Part0 = root
-            weld.Part1 = ff
-            weld.Parent = ff
-            
-            self.VisualField = ff
-        end
+        local ff = Instance.new("Part")
+        ff.Name = "GhostField"
+        ff.Shape = Enum.PartType.Ball
+        ff.Size = Vector3.new(9,9,9)
+        ff.Material = Enum.Material.ForceField
+        ff.Color = Color3.fromRGB(0,255,255)
+        ff.Transparency = 0
+        ff.CanCollide = false
+        ff.Massless = true
+        ff.CastShadow = false
+        ff.Parent = char
+
+        local weld = Instance.new("WeldConstraint")
+        weld.Part0 = root
+        weld.Part1 = ff
+        weld.Parent = ff
+
+        self.VisualField = ff
     end
 end
 
 function Fly:HandleNoclip()
-    if self.NoclipConnection then self.NoclipConnection:Disconnect() end
+    if self.NoclipConnection then
+        self.NoclipConnection:Disconnect()
+        self.NoclipConnection = nil
+    end
+
+    if not self.NoclipEnabled then
+        for _,p in ipairs(self.CharacterParts) do
+            p.CanCollide = true
+        end
+        return
+    end
 
     self.NoclipConnection = RunService.Stepped:Connect(function()
-        local char = LocalPlayer.Character
-        if not char then return end
-        local root = char:FindFirstChild("HumanoidRootPart")
-        if not root then return end
-
-        local shouldNoclip = self.NoclipEnabled and self.Active
-
-        for _, p in pairs(char:GetDescendants()) do
-            if p:IsA("BasePart") and p.Name ~= "GhostField" then 
-                p.CanCollide = not shouldNoclip
-            end
-        end
-
-        local parts = Workspace:GetPartBoundsInRadius(root.Position, 50)
-        for _, part in pairs(parts) do
-            if part:IsA("BasePart") and not part:IsDescendantOf(char) then
-                local isPlayer = false
-                for _, pl in pairs(Players:GetPlayers()) do
-                    if pl.Character and part:IsDescendantOf(pl.Character) then
-                        isPlayer = true
-                        break
-                    end
-                end
-                part.CanCollide = not (shouldNoclip and not isPlayer)
+        if not self.Active then return end
+        for _,p in ipairs(self.CharacterParts) do
+            if p and p.Parent then
+                p.CanCollide = false
             end
         end
     end)
@@ -18153,45 +18167,51 @@ end
 function Fly:Start(target)
     local char = LocalPlayer.Character
     if not char then return end
+
     local root = char:FindFirstChild("HumanoidRootPart")
-    local hum = char:FindFirstChild("Humanoid")
-    
-    if root and hum and target.Character then
-        self.Active = true
-        self.Target = target
-        
-        hum.PlatformStand = true
-        
-        self.BodyGyro = Instance.new("BodyGyro")
-        self.BodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-        self.BodyGyro.P = 20000
-        self.BodyGyro.Parent = root
-        
-        self.BodyVel = Instance.new("BodyVelocity")
-        self.BodyVel.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-        self.BodyVel.Velocity = Vector3.new(0,0,0)
-        self.BodyVel.Parent = root
-        
-        self:ToggleVisuals(true)
-        self:HandleNoclip() 
-        
-        task.spawn(function()
-            if target.Character:FindFirstChild("HumanoidRootPart") then
-                root.CFrame = target.Character.HumanoidRootPart.CFrame * CFrame.new(0, self.Offset, 0)
-            end
-        end)
+    local hum = char:FindFirstChildOfClass("Humanoid")
+
+    if not (root and hum and target and target.Character) then return end
+
+    self.Active = true
+    self.Target = target
+
+    self:CacheCharacterParts()
+
+    hum.PlatformStand = true
+
+    self.BodyGyro = Instance.new("BodyGyro")
+    self.BodyGyro.MaxTorque = Vector3.new(9e9,9e9,9e9)
+    self.BodyGyro.P = 20000
+    self.BodyGyro.Parent = root
+
+    self.BodyVel = Instance.new("BodyVelocity")
+    self.BodyVel.MaxForce = Vector3.new(9e9,9e9,9e9)
+    self.BodyVel.Velocity = Vector3.zero
+    self.BodyVel.Parent = root
+
+    self:ToggleVisuals(true)
+    self:HandleNoclip()
+
+    local targetRoot = target.Character:FindFirstChild("HumanoidRootPart")
+    if targetRoot then
+        root.CFrame = targetRoot.CFrame * CFrame.new(0,self.Offset,0)
     end
 end
 
 function Fly:Fix()
-    if not self.Active or not self.Target then return end
+    if not (self.Active and self.Target) then return end
+
     local char = LocalPlayer.Character
-    local tChar = self.Target.Character
-    
-    if char and tChar and tChar:FindFirstChild("HumanoidRootPart") then
-        local root = char:FindFirstChild("HumanoidRootPart")
-        root.CFrame = tChar.HumanoidRootPart.CFrame * CFrame.new(0, self.Offset, 0)
-        
+    local targetChar = self.Target.Character
+    if not (char and targetChar) then return end
+
+    local root = char:FindFirstChild("HumanoidRootPart")
+    local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
+
+    if root and targetRoot then
+        root.CFrame = targetRoot.CFrame * CFrame.new(0,self.Offset,0)
+
         task.spawn(function()
             self.FixBtn.Text = "DONE!"
             task.wait(0.8)
@@ -18203,110 +18223,137 @@ end
 function Fly:Stop()
     self.Active = false
     self.Target = nil
-    
-    if self.NoclipConnection then 
-        self.NoclipConnection:Disconnect() 
+
+    if self.NoclipConnection then
+        self.NoclipConnection:Disconnect()
         self.NoclipConnection = nil
     end
-    
-    if self.BodyVel then self.BodyVel:Destroy() end
-    if self.BodyGyro then self.BodyGyro:Destroy() end
-    
+
+    if self.BodyVel then
+        self.BodyVel:Destroy()
+        self.BodyVel = nil
+    end
+
+    if self.BodyGyro then
+        self.BodyGyro:Destroy()
+        self.BodyGyro = nil
+    end
+
     self:ToggleVisuals(false)
-    
+
     local char = LocalPlayer.Character
-    if char then
-        local root = char:FindFirstChild("HumanoidRootPart")
-        local hum = char:FindFirstChild("Humanoid")
-        
-        if hum then 
-            hum.PlatformStand = false 
-            hum:ChangeState(Enum.HumanoidStateType.GettingUp)
-        end
-        
-        for _, p in pairs(char:GetDescendants()) do
-            if p:IsA("BasePart") then p.CanCollide = true end
+    if not char then return end
+
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.PlatformStand = false
+        hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+    end
+
+    for _,p in ipairs(self.CharacterParts) do
+        if p and p.Parent then
+            p.CanCollide = true
         end
     end
 end
 
 function Fly:Update()
-    if not self.Active or not self.BodyVel or not self.BodyGyro then return end
-    
+    if not (self.Active and self.BodyVel and self.BodyGyro) then return end
+
     local cf = Camera.CFrame
-    local dir = Vector3.new(0,0,0)
-    
-    local flatLook = (cf.LookVector * Vector3.new(1,0,1)).Unit
-    local flatRight = (cf.RightVector * Vector3.new(1,0,1)).Unit
-    
-    if self.Inputs.Fwd then dir = dir + flatLook end
-    if self.Inputs.Bwd then dir = dir - flatLook end
-    if self.Inputs.Left then dir = dir - flatRight end
-    if self.Inputs.Right then dir = dir + flatRight end
-    if self.Inputs.Up then dir = dir + Vector3.new(0,1,0) end
-    if self.Inputs.Down then dir = dir - Vector3.new(0,1,0) end
-    
+
+    local flatLook = Vector3.new(cf.LookVector.X,0,cf.LookVector.Z)
+    local flatRight = Vector3.new(cf.RightVector.X,0,cf.RightVector.Z)
+
+    if flatLook.Magnitude > 0 then
+        flatLook = flatLook.Unit
+    end
+
+    if flatRight.Magnitude > 0 then
+        flatRight = flatRight.Unit
+    end
+
+    local dir = Vector3.zero
+
+    if self.Inputs.Fwd then dir += flatLook end
+    if self.Inputs.Bwd then dir -= flatLook end
+    if self.Inputs.Left then dir -= flatRight end
+    if self.Inputs.Right then dir += flatRight end
+    if self.Inputs.Up then dir += Vector3.yAxis end
+    if self.Inputs.Down then dir -= Vector3.yAxis end
+
     if dir.Magnitude > 0 then
         dir = dir.Unit * self.Speed
     end
-    
-    self.Velocity = self.Velocity:Lerp(dir, self.Smoothness)
+
+    self.Velocity = self.Velocity:Lerp(dir,self.Smoothness)
     self.BodyVel.Velocity = self.Velocity
-    
-    local _, y, _ = cf:ToEulerAnglesYXZ()
-    self.BodyGyro.CFrame = CFrame.Angles(0, y, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+
+    local _,y,_ = cf:ToEulerAnglesYXZ()
+    self.BodyGyro.CFrame = CFrame.Angles(0,y,0) * CFrame.Angles(math.rad(-90),0,0)
 end
 
 function Fly:SetupKeyboardControls()
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed then return end
-        if not self.Active then return end
-        
-        if input.KeyCode == Enum.KeyCode.W then self.Inputs.Fwd = true
-        elseif input.KeyCode == Enum.KeyCode.S then self.Inputs.Bwd = true
-        elseif input.KeyCode == Enum.KeyCode.A then self.Inputs.Left = true
-        elseif input.KeyCode == Enum.KeyCode.D then self.Inputs.Right = true
-        elseif input.KeyCode == Enum.KeyCode.Space or input.KeyCode == Enum.KeyCode.E then self.Inputs.Up = true
-        elseif input.KeyCode == Enum.KeyCode.LeftControl or input.KeyCode == Enum.KeyCode.Q then self.Inputs.Down = true
+    UserInputService.InputBegan:Connect(function(input,gameProcessed)
+        if gameProcessed or not self.Active then return end
+
+        local k = input.KeyCode
+
+        if k == Enum.KeyCode.W then self.Inputs.Fwd = true
+        elseif k == Enum.KeyCode.S then self.Inputs.Bwd = true
+        elseif k == Enum.KeyCode.A then self.Inputs.Left = true
+        elseif k == Enum.KeyCode.D then self.Inputs.Right = true
+        elseif k == Enum.KeyCode.Space or k == Enum.KeyCode.E then self.Inputs.Up = true
+        elseif k == Enum.KeyCode.LeftControl or k == Enum.KeyCode.Q then self.Inputs.Down = true
         end
     end)
-    
-    UserInputService.InputEnded:Connect(function(input, gameProcessed)
-        if gameProcessed then return end
-        if not self.Active then return end
-        
-        if input.KeyCode == Enum.KeyCode.W then self.Inputs.Fwd = false
-        elseif input.KeyCode == Enum.KeyCode.S then self.Inputs.Bwd = false
-        elseif input.KeyCode == Enum.KeyCode.A then self.Inputs.Left = false
-        elseif input.KeyCode == Enum.KeyCode.D then self.Inputs.Right = false
-        elseif input.KeyCode == Enum.KeyCode.Space or input.KeyCode == Enum.KeyCode.E then self.Inputs.Up = false
-        elseif input.KeyCode == Enum.KeyCode.LeftControl or input.KeyCode == Enum.KeyCode.Q then self.Inputs.Down = false
+
+    UserInputService.InputEnded:Connect(function(input,gameProcessed)
+        if gameProcessed or not self.Active then return end
+
+        local k = input.KeyCode
+
+        if k == Enum.KeyCode.W then self.Inputs.Fwd = false
+        elseif k == Enum.KeyCode.S then self.Inputs.Bwd = false
+        elseif k == Enum.KeyCode.A then self.Inputs.Left = false
+        elseif k == Enum.KeyCode.D then self.Inputs.Right = false
+        elseif k == Enum.KeyCode.Space or k == Enum.KeyCode.E then self.Inputs.Up = false
+        elseif k == Enum.KeyCode.LeftControl or k == Enum.KeyCode.Q then self.Inputs.Down = false
         end
     end)
 end
 
 function Fly:Events()
-    RunService.RenderStepped:Connect(function() self:Update() end)
-    
+    RunService.RenderStepped:Connect(function()
+        self:Update()
+    end)
+
     local function Find(txt)
-        for _, p in pairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer and (string.sub(string.lower(p.Name), 1, #txt) == string.lower(txt) or string.sub(string.lower(p.DisplayName), 1, #txt) == string.lower(txt)) then
-                return p
+        txt = string.lower(txt)
+
+        for _,p in ipairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer then
+                local n = string.lower(p.Name)
+                local d = string.lower(p.DisplayName)
+
+                if string.sub(n,1,#txt) == txt or string.sub(d,1,#txt) == txt then
+                    return p
+                end
             end
         end
     end
-    
+
     self.MainBtn.MouseButton1Click:Connect(function()
         if self.Active then
             self:Stop()
             self.MainBtn.Text = "START"
-            self.MainBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            self.MainBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
         else
             local t = Find(self.Box.Text)
             if t then
                 self:Start(t)
                 self.MainBtn.Text = "STOP"
-                self.MainBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+                self.MainBtn.BackgroundColor3 = Color3.fromRGB(150,0,0)
             else
                 self.MainBtn.Text = "INVALID"
                 task.wait(0.5)
@@ -18314,127 +18361,133 @@ function Fly:Events()
             end
         end
     end)
-    
-    self.FixBtn.MouseButton1Click:Connect(function() self:Fix() end)
 
-    -- SPEED TEXTBOX LOGIC
-    self.SpeedBtn.FocusLost:Connect(function(enterPressed)
+    self.FixBtn.MouseButton1Click:Connect(function()
+        self:Fix()
+    end)
+
+    self.SpeedBtn.FocusLost:Connect(function()
         local val = tonumber(self.SpeedBtn.Text)
         if val then
             self.Speed = val
             self.SpeedBtn.Text = tostring(val)
         else
-            self.SpeedBtn.Text = tostring(self.Speed) -- Revert if not a number
+            self.SpeedBtn.Text = tostring(self.Speed)
         end
     end)
-    
+
     self.NoclipBtn.MouseButton1Click:Connect(function()
         self.NoclipEnabled = not self.NoclipEnabled
+
         if self.NoclipEnabled then
             self.NoclipBtn.Text = "NOCLIP: ON"
-            self.NoclipBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+            self.NoclipBtn.BackgroundColor3 = Color3.fromRGB(0,120,0)
         else
             self.NoclipBtn.Text = "NOCLIP: OFF"
-            self.NoclipBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+            self.NoclipBtn.BackgroundColor3 = Color3.fromRGB(80,0,0)
         end
+
         self:HandleNoclip()
     end)
-    
-    LocalPlayer.CharacterAdded:Connect(function() self:Stop() end)
+
+    LocalPlayer.CharacterAdded:Connect(function()
+        self:Stop()
+    end)
 end
 
 function Fly:CreateUI()
-    if LocalPlayer.PlayerGui:FindFirstChild("FlyInterface") then LocalPlayer.PlayerGui.FlyInterface:Destroy() end
-    
+    if LocalPlayer.PlayerGui:FindFirstChild("FlyInterface") then
+        LocalPlayer.PlayerGui.FlyInterface:Destroy()
+    end
+
     local Gui = Instance.new("ScreenGui")
     Gui.Name = "FlyInterface"
     Gui.ResetOnSpawn = false
     Gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-    
+
     local Main = Instance.new("Frame")
-    Main.Size = UDim2.new(0, 200, 0, 280)
-    Main.Position = UDim2.new(0.05, 0, 0.3, 0)
-    Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+    Main.Size = UDim2.new(0,200,0,280)
+    Main.Position = UDim2.new(0.05,0,0.3,0)
+    Main.BackgroundColor3 = Color3.fromRGB(10,10,10)
     Main.BorderSizePixel = 2
-    Main.BorderColor3 = Color3.fromRGB(60, 60, 60)
+    Main.BorderColor3 = Color3.fromRGB(60,60,60)
     Main.Active = true
     Main.Draggable = true
     Main.Parent = Gui
-    
+
     local Title = Instance.new("TextLabel")
     Title.Text = "PC FLY"
-    Title.Size = UDim2.new(1, 0, 0, 25)
-    Title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    Title.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Title.Size = UDim2.new(1,0,0,25)
+    Title.BackgroundColor3 = Color3.fromRGB(20,20,20)
+    Title.TextColor3 = Color3.fromRGB(200,200,200)
     Title.Font = Enum.Font.SourceSansBold
     Title.TextSize = 14
     Title.Parent = Main
-    
+
     self.Box = Instance.new("TextBox")
-    self.Box.Size = UDim2.new(0.9, 0, 0, 30)
-    self.Box.Position = UDim2.new(0.05, 0, 0.12, 0)
-    self.Box.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    self.Box.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.Box.Size = UDim2.new(0.9,0,0,30)
+    self.Box.Position = UDim2.new(0.05,0,0.12,0)
+    self.Box.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    self.Box.TextColor3 = Color3.fromRGB(255,255,255)
     self.Box.PlaceholderText = "Target Name"
     self.Box.Parent = Main
-    
+
     self.MainBtn = Instance.new("TextButton")
     self.MainBtn.Text = "START"
-    self.MainBtn.Size = UDim2.new(0.9, 0, 0, 35)
-    self.MainBtn.Position = UDim2.new(0.05, 0, 0.24, 0)
-    self.MainBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    self.MainBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.MainBtn.Size = UDim2.new(0.9,0,0,35)
+    self.MainBtn.Position = UDim2.new(0.05,0,0.24,0)
+    self.MainBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    self.MainBtn.TextColor3 = Color3.fromRGB(255,255,255)
     self.MainBtn.Font = Enum.Font.SourceSansBold
     self.MainBtn.TextSize = 18
     self.MainBtn.Parent = Main
-    
+
     self.FixBtn = Instance.new("TextButton")
     self.FixBtn.Text = "RECENTER"
-    self.FixBtn.Size = UDim2.new(0.9, 0, 0, 30)
-    self.FixBtn.Position = UDim2.new(0.05, 0, 0.38, 0)
-    self.FixBtn.BackgroundColor3 = Color3.fromRGB(180, 100, 0)
-    self.FixBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.FixBtn.Size = UDim2.new(0.9,0,0,30)
+    self.FixBtn.Position = UDim2.new(0.05,0,0.38,0)
+    self.FixBtn.BackgroundColor3 = Color3.fromRGB(180,100,0)
+    self.FixBtn.TextColor3 = Color3.fromRGB(255,255,255)
     self.FixBtn.Font = Enum.Font.SourceSansBold
     self.FixBtn.Parent = Main
-    
+
     self.NoclipBtn = Instance.new("TextButton")
     self.NoclipBtn.Text = "NOCLIP: OFF"
-    self.NoclipBtn.Size = UDim2.new(0.9, 0, 0, 30)
-    self.NoclipBtn.Position = UDim2.new(0.05, 0, 0.50, 0)
-    self.NoclipBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-    self.NoclipBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.NoclipBtn.Size = UDim2.new(0.9,0,0,30)
+    self.NoclipBtn.Position = UDim2.new(0.05,0,0.50,0)
+    self.NoclipBtn.BackgroundColor3 = Color3.fromRGB(80,0,0)
+    self.NoclipBtn.TextColor3 = Color3.fromRGB(255,255,255)
     self.NoclipBtn.Font = Enum.Font.SourceSansBold
     self.NoclipBtn.Parent = Main
-    
-    -- SPEED TEXTBOX (Updated from TextButton)
+
     self.SpeedBtn = Instance.new("TextBox")
     self.SpeedBtn.Text = "50"
     self.SpeedBtn.PlaceholderText = "Speed"
-    self.SpeedBtn.Size = UDim2.new(0.9, 0, 0, 25)
-    self.SpeedBtn.Position = UDim2.new(0.05, 0, 0.62, 0)
-    self.SpeedBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    self.SpeedBtn.TextColor3 = Color3.fromRGB(0, 255, 255)
+    self.SpeedBtn.Size = UDim2.new(0.9,0,0,25)
+    self.SpeedBtn.Position = UDim2.new(0.05,0,0.62,0)
+    self.SpeedBtn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    self.SpeedBtn.TextColor3 = Color3.fromRGB(0,255,255)
     self.SpeedBtn.Font = Enum.Font.SourceSansBold
     self.SpeedBtn.BorderSizePixel = 1
-    self.SpeedBtn.BorderColor3 = Color3.fromRGB(80, 80, 80)
+    self.SpeedBtn.BorderColor3 = Color3.fromRGB(80,80,80)
     self.SpeedBtn.Parent = Main
 
     local SpeedLabel = Instance.new("TextLabel")
     SpeedLabel.Text = "SPEED:"
-    SpeedLabel.Size = UDim2.new(0, 40, 0, 25)
-    SpeedLabel.Position = UDim2.new(-0.25, 0, 0, 0)
+    SpeedLabel.Size = UDim2.new(0,40,0,25)
+    SpeedLabel.Position = UDim2.new(-0.25,0,0,0)
     SpeedLabel.BackgroundTransparency = 1
-    SpeedLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+    SpeedLabel.TextColor3 = Color3.fromRGB(150,150,150)
     SpeedLabel.Font = Enum.Font.SourceSans
     SpeedLabel.TextSize = 10
     SpeedLabel.Parent = self.SpeedBtn
 
     local ControlsLabel = Instance.new("TextLabel")
     ControlsLabel.Text = "WASD + Space/Ctrl\nor E/Q to move"
-    ControlsLabel.Size = UDim2.new(0.9, 0, 0, 50)
-    ControlsLabel.Position = UDim2.new(0.05, 0, 0.75, 0)
+    ControlsLabel.Size = UDim2.new(0.9,0,0,50)
+    ControlsLabel.Position = UDim2.new(0.05,0,0.75,0)
     ControlsLabel.BackgroundTransparency = 1
-    ControlsLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+    ControlsLabel.TextColor3 = Color3.fromRGB(150,150,150)
     ControlsLabel.Font = Enum.Font.SourceSans
     ControlsLabel.TextSize = 12
     ControlsLabel.Parent = Main
