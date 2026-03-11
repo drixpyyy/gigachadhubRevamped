@@ -18045,6 +18045,19 @@ end)
    end,
 })
 
+local Toggle = Tab:CreateToggle({
+   Name = "noclip cam on shit injecutors",
+   CurrentValue = false,
+   Flag = "Toggle1",
+   Callback = function(Value)
+      if Value then
+         game.Players.LocalPlayer.DevCameraOcclusionMode = "Invisicam"
+      else
+         game.Players.LocalPlayer.DevCameraOcclusionMode = "Zoom"
+      end
+   end,
+})
+
 local Button = Tab:CreateButton({
    Name = "FE Fly others",
    Callback = function()
