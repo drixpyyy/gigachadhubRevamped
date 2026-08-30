@@ -1,44 +1,24 @@
---gigachad hub
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+--gigachad hub (Rayfield Gen2)
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/gen2'))() -- Rayfield Gen2
+
 local Window = Rayfield:CreateWindow({
    Name = "Gigachad Hub(Revamp)",
-   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "loaded",
-   LoadingSubtitle = "by Wesd",
-   ShowText = "Chad", -- for mobile users to unhide rayfield, change if you'd like
-   Theme = "AmberGlow", -- Check https://docs.sirius.menu/rayfield/configuration/themes
-
-   ToggleUIKeybind = "P", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
-
-   DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
-
-   ConfigurationSaving = {
-      Enabled = false,
-      FolderName = nil, -- Create a custom folder for your hub/game
-      FileName = "Big Hub"
-   },
-
-   Discord = {
-      Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
-      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
-      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
-   },
-
-   KeySystem = false, -- Set this to true to use our key system
-   KeySettings = {
-      Title = "Untitled",
-      Subtitle = "Key System",
-      Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
-      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
-      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
-      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
-   }
+   -- Gen2 has no loading screen; this shows under the title instead
+   Subtitle = "loaded — by Wesd",
+   ShowName = "Chad", -- label on the collapsed pill (mobile users tap this to unhide the UI)
+   Theme = "ember", -- Gen2 themes: "default", "cobalt", "ember", "amethyst", "frost", "rose"
+   -- note: config saving is off (same as before). To enable it later, add:
+   -- Configuration = { AutoSave = true, AutoLoad = true, FileName = "GigachadHub" },
 })
 
-local Tab = Window:CreateTab("Animations(FE)", 4483362458) -- Title, Image
-local Section = Tab:CreateSection("FE Animations")
+-- keep the old "P" keybind to show/hide the UI
+-- (Gen2 stores the toggle keybind in its built-in Rayfield Settings tab, default K)
+pcall(function()
+   Window.settings.toggleKeybind = Enum.KeyCode.P
+end)
+
+local Tab = Window:CreateTab({ Name = "Animations(FE)", Icon = 4483362458 })
+local Section = Tab:CreateSection({ Name = "FE Animations" })
 
 local Button = Tab:CreateButton({
    Name = "Animation hub(Has reanimations) ocfi",
@@ -1162,10 +1142,11 @@ RunService.Heartbeat:Connect(onHeartbeat)
    end,
 })
 
-local Paragraph = Tab:CreateParagraph({Title = "Changelogs", Content = "Tall Guy, Better Movement, More soon"})
+-- Gen2 has no Paragraph element; a section heading shows the changelog text
+local Paragraph = Tab:CreateSection({ Name = "Changelogs: Tall Guy, Better Movement, More soon" })
 
-local Tab = Window:CreateTab("Models", 4483362458) -- Title, Image
-local Section = Tab:CreateSection("Models to Load in your game")
+local Tab = Window:CreateTab({ Name = "Models", Icon = 4483362458 })
+local Section = Tab:CreateSection({ Name = "Models to Load in your game" })
 
 local Button = Tab:CreateButton({
    Name = "Teacher",
@@ -1411,8 +1392,8 @@ end)
    end,
 })
 
-local Tab = Window:CreateTab("Scripts", 4483362458) -- Title, Image
-local Section = Tab:CreateSection("Scripts")
+local Tab = Window:CreateTab({ Name = "Scripts", Icon = 4483362458 })
+local Section = Tab:CreateSection({ Name = "Scripts" })
 
 local Button = Tab:CreateButton({
    Name = "F3X",
@@ -20466,26 +20447,23 @@ end)
 local Button = Tab:CreateButton({
    Name = "Da Strike",
    Callback = function()
-   --// Dahood games
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-
+   --// Dahood games (reuses the Rayfield Gen2 library loaded at the top of this hub)
 local Window = Rayfield:CreateWindow({
     Name = "Dahood Games",
-    Icon = 0,
-    LoadingTitle = "Open source, Safe, Free, Undetected",
-    LoadingSubtitle = "by Wesd",
-    ShowText = "Capybara hub",
-    Theme = "Default",
-    ToggleUIKeybind = "K",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = nil,
-        FileName = "CapybaraHub_DahoodGames"
-    }
+    -- Gen2 has no loading screen; this shows under the title instead
+    Subtitle = "Open source, Safe, Free, Undetected — by Wesd",
+    ShowName = "Capybara hub",
+    Theme = "default",
+    -- toggle keybind defaults to K (same as before); change it in the window's Settings tab
+    Configuration = {
+        AutoSave = true,
+        AutoLoad = true,
+        FileName = "CapybaraHub_DahoodGames",
+    },
 })
 
-local Tab = Window:CreateTab("Main", 4483362458)
-local PriorityTab = Window:CreateTab("Target Priority", 4483362458)
+local Tab = Window:CreateTab({ Name = "Main", Icon = 4483362458 })
+local PriorityTab = Window:CreateTab({ Name = "Target Priority", Icon = 4483362458 })
 
 -- Silent Aim Settings
 local SilentAimEnabled = false
@@ -20714,18 +20692,19 @@ PriorityTab:CreateToggle({
 PriorityTab:CreateDropdown({
     Name = "Priority Mode",
     Options = {"Closest to Crosshair", "Lowest HP", "Highest HP"},
-    CurrentOption = {PriorityMode},
-    Callback = function(opt) PriorityMode = opt[1] end
+    Value = PriorityMode,
+    Callback = function(opt) PriorityMode = opt end -- Gen2 single-select passes the option string directly
 })
 
-PriorityTab:CreateLabel("Target Bind Key: T (toggle lock on current target)")
+-- Gen2 has no Label element; a section heading shows the info line
+PriorityTab:CreateSection({ Name = "Target Bind Key: T (toggle lock on current target)" })
 
 Tab:CreateButton({
     Name = "Unload Script",
     Callback = function()
         if currentHighlight then currentHighlight:Destroy() end
         fovCircle:Remove()
-        Rayfield:Destroy()
+        Window:Unload() -- Gen2: windows are destroyed with Unload() (Rayfield:Destroy() no longer exists)
         script:Destroy()
     end
 })
@@ -20959,8 +20938,8 @@ end)
    end,
 })
 
-local Tab = Window:CreateTab("Hubs", 4483362458) -- Title, Image
-local Section = Tab:CreateSection("Script Hubs")
+local Tab = Window:CreateTab({ Name = "Hubs", Icon = 4483362458 })
+local Section = Tab:CreateSection({ Name = "Script Hubs" })
 
 local Button = Tab:CreateButton({
    Name = "ESP",
@@ -22364,8 +22343,8 @@ return(function(B,e,o,n,a,C,l)local d=select;local o=table.insert;local S=unpack
    end,
 })
 
-local Tab = Window:CreateTab("Game Destroyers", 4483362458) -- Title, Image
-local Section = Tab:CreateSection("games with destroyers are here")
+local Tab = Window:CreateTab({ Name = "Game Destroyers", Icon = 4483362458 })
+local Section = Tab:CreateSection({ Name = "games with destroyers are here" })
 
 local Button = Tab:CreateButton({
    Name = "condo slapfighting .gg/condox(wesd)",
