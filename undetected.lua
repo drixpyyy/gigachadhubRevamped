@@ -52,6 +52,7 @@ local humanChillActive = false
 local baseSpeed        = 16
 local runSpeed         = 32
 local currentRunSpeed  = 16
+local animalRunWeight  = 0.5 -- blend weight of the layered Animal Run on top of the monster run (0 = off, 1 = full strength)
 local idleName         = "Idle"
 local chillName        = "Chill"
 
@@ -104,11 +105,11 @@ local animIds = {
 	IdleAlt2       = 90323564107529,
 	Walk           = 89226066017009,
 	Run            = 128364104022657,
+	AnimalRun      = 135323028794768, -- "Animal Run" (roblox.com/catalog/135323028794768) — layered on top of the tall monster run
 	Headless       = 76746775961797,
 	LookAround     = 79216795769647,
 	Chill          = 98248319097752,
 	ChillAlt1      = 114353590132838,
-	ChillAlt2      = 81694095869045,
 	ChillAlt3      = 102642633024928,
 	Transform      = 93875137466223,
 	TransformEnter = 106370760824973,
@@ -120,7 +121,7 @@ local animIds = {
 }
 
 local keys = {
-	Transform   = "f",
+	Transform   = "x",
 	Reset       = "r",
 	Headless    = "q",
 	LookAround  = "e",
@@ -131,8 +132,8 @@ local keys = {
 local function reroll()
 	local r = math.random(3)
 	idleName  = r == 1 and "Idle" or r == 2 and "IdleAlt1" or "IdleAlt2"
-	local c = math.random(4)
-	chillName = c == 1 and "Chill" or c == 2 and "ChillAlt1" or c == 3 and "ChillAlt2" or "ChillAlt3"
+	local c = math.random(3) -- ChillAlt2 removed (broken ID 81694095869045 failed to load and played nothing)
+	chillName = c == 1 and "Chill" or c == 2 and "ChillAlt1" or "ChillAlt3"
 end
 
 reroll()
@@ -170,11 +171,18 @@ local function loadAnims()
 			a.AnimationId = resolved
 			anims[name] = animator:LoadAnimation(a)
 			anims[name].Priority =
-				(name == "Walk" or name == "Run") and Enum.AnimationPriority.Movement
+				(name == "Walk" or name == "Run" or name == "AnimalRun") and Enum.AnimationPriority.Movement -- AnimalRun shares Movement priority so it BLENDS with the monster run instead of replacing it
 				or (name == "Transform" or name == "TransformEnter") and Enum.AnimationPriority.Action4
 				or (name == "HumanChill" or name == "NeckTurn" or name == "Shake") and Enum.AnimationPriority.Action2
 				or Enum.AnimationPriority.Action
 		end
+	end
+end
+
+-- stops the layered Animal Run track (fade in seconds)
+local function stopAnimalRun(fade)
+	if anims and anims.AnimalRun and anims.AnimalRun.IsPlaying then
+		anims.AnimalRun:Stop(fade or 0.35)
 	end
 end
 
@@ -352,12 +360,12 @@ local function makeRow(key, label, order, bucket)
 	return row
 end
 
-makeRow("F", "Transform",  2, humanRows)
+makeRow("X", "Transform",  2, humanRows)
 makeRow("V", "Neck Turn",  3, humanRows)
 makeRow("N", "Shake",      4, humanRows)
 makeRow("R", "Reset",      5, humanRows)
 
-makeRow("F", "De-transform",  2, monsterRows)
+makeRow("X", "De-transform",  2, monsterRows)
 makeRow("Q", "Headless",      3, monsterRows)
 makeRow("E", "Look Around",   4, monsterRows)
 makeRow("V", "Dance",         5, monsterRows)
@@ -508,6 +516,14 @@ local function initCharacter(char)
 				if anims.Run then
 					anims.Run:AdjustSpeed(math.clamp(currentRunSpeed / baseSpeed, 1, 2))
 				end
+				-- layered secondary run: Animal Run blended on top of the tall monster run
+				if anims.AnimalRun and animalRunWeight > 0 then
+					if not anims.AnimalRun.IsPlaying then
+						anims.AnimalRun.Looped = true
+						anims.AnimalRun:Play(0.45, animalRunWeight)
+					end
+					anims.AnimalRun:AdjustSpeed(math.clamp(currentRunSpeed / baseSpeed, 1, 2))
+				end
 			else
 				target = "Walk"
 				currentRunSpeed = currentRunSpeed + (baseSpeed - currentRunSpeed) * 0.08
@@ -515,6 +531,7 @@ local function initCharacter(char)
 				workspace.CurrentCamera.FieldOfView = workspace.CurrentCamera.FieldOfView
 					+ (70 - workspace.CurrentCamera.FieldOfView) * 0.08
 				if anims.Run and anims.Run.IsPlaying then anims.Run:Stop(0.35) end
+				stopAnimalRun(0.35)
 			end
 		else
 			humanoid.WalkSpeed = baseSpeed
@@ -526,6 +543,7 @@ local function initCharacter(char)
 		end
 
 		if currentActive ~= target then
+			if currentActive == "Run" then stopAnimalRun(0.4) end -- stop the layered Animal Run when leaving the run state
 			if currentActive and anims[currentActive] then anims[currentActive]:Stop(0.4) end
 			if anims[target] then
 				anims[target].Looped = true
@@ -549,6 +567,7 @@ local function initCharacter(char)
 		idleTimer = 0
 		humanoid.WalkSpeed = 0
 		if currentActive and anims[currentActive] then anims[currentActive]:Stop(0.25) end
+		stopAnimalRun(0.25)
 		anims[name].Looped = false
 		anims[name]:Play(0.25)
 		anims[name].Stopped:Wait()
@@ -601,6 +620,7 @@ local function initCharacter(char)
 			currentActive = nil
 		else
 			if currentActive and anims[currentActive] then anims[currentActive]:Stop(0.3) end
+			stopAnimalRun(0.3)
 
 			local t = anims.Transform
 			if t then
@@ -637,6 +657,7 @@ local function initCharacter(char)
 			isEmoting        = false
 			humanoid.WalkSpeed = baseSpeed
 			if currentActive and anims[currentActive] then anims[currentActive]:Stop(0.3) end
+			stopAnimalRun(0.3)
 			currentActive = nil
 			setMode(false)
 			disableDefaultAnims(false)
