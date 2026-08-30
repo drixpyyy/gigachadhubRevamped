@@ -1168,34 +1168,16 @@ local Tab = Window:CreateTab("Models", 4483362458) -- Title, Image
 local Section = Tab:CreateSection("Models to Load in your game")
 
 local Button = Tab:CreateButton({
+   Name = "Teacher",
+   Callback = function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/drixpyyy/gigachadhubRevamped/refs/heads/main/TeacherModel"))()
+		end,
+})
+
+local Button = Tab:CreateButton({
    Name = "Penis(Requires you to download files in the discord)",
    Callback = function()
    -- penis
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 local folderName = "meshes"
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
