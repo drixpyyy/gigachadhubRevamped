@@ -1,18 +1,15 @@
---gigachad hub (Rayfield Gen2)
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/gen2'))() -- Rayfield Gen2
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/gen2-preview'))()
 
 local Window = Rayfield:CreateWindow({
    Name = "Gigachad Hub(Revamp)",
-   -- Gen2 has no loading screen; this shows under the title instead
-   Subtitle = "loaded — by Wesd",
-   ShowName = "Chad", -- label on the collapsed pill (mobile users tap this to unhide the UI)
-   Theme = "ember", -- Gen2 themes: "default", "cobalt", "ember", "amethyst", "frost", "rose"
-   -- note: config saving is off (same as before). To enable it later, add:
-   -- Configuration = { AutoSave = true, AutoLoad = true, FileName = "GigachadHub" },
+
+   Subtitle = "Wesd",
+   ShowName = " ",
+   Theme = "ember",
+   SidebarLayout = true,
+
 })
 
--- keep the old "P" keybind to show/hide the UI
--- (Gen2 stores the toggle keybind in its built-in Rayfield Settings tab, default K)
 pcall(function()
    Window.settings.toggleKeybind = Enum.KeyCode.P
 end)
@@ -25,7 +22,6 @@ local Button = Tab:CreateButton({
    Callback = function()
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ocfi/aqua-hub-is-a-skid-lol/refs/heads/main/animatrix"))()
-
 
    end,
 })
@@ -52,7 +48,7 @@ local humanChillActive = false
 local baseSpeed        = 16
 local runSpeed         = 32
 local currentRunSpeed  = 16
-local animalRunWeight  = 0.5 -- blend weight of the layered Animal Run on top of the monster run (0 = off, 1 = full strength)
+local animalRunWeight  = 0.5
 local idleName         = "Idle"
 local chillName        = "Chill"
 
@@ -105,7 +101,7 @@ local animIds = {
 	IdleAlt2       = 90323564107529,
 	Walk           = 89226066017009,
 	Run            = 128364104022657,
-	AnimalRun      = 135323028794768, -- "Animal Run" (roblox.com/catalog/135323028794768) — layered on top of the tall monster run
+	AnimalRun      = 135323028794768,
 	Headless       = 76746775961797,
 	LookAround     = 79216795769647,
 	Chill          = 98248319097752,
@@ -132,7 +128,7 @@ local keys = {
 local function reroll()
 	local r = math.random(3)
 	idleName  = r == 1 and "Idle" or r == 2 and "IdleAlt1" or "IdleAlt2"
-	local c = math.random(3) -- ChillAlt2 removed (broken ID 81694095869045 failed to load and played nothing)
+	local c = math.random(3)
 	chillName = c == 1 and "Chill" or c == 2 and "ChillAlt1" or "ChillAlt3"
 end
 
@@ -171,7 +167,7 @@ local function loadAnims()
 			a.AnimationId = resolved
 			anims[name] = animator:LoadAnimation(a)
 			anims[name].Priority =
-				(name == "Walk" or name == "Run" or name == "AnimalRun") and Enum.AnimationPriority.Movement -- AnimalRun shares Movement priority so it BLENDS with the monster run instead of replacing it
+				(name == "Walk" or name == "Run" or name == "AnimalRun") and Enum.AnimationPriority.Movement
 				or (name == "Transform" or name == "TransformEnter") and Enum.AnimationPriority.Action4
 				or (name == "HumanChill" or name == "NeckTurn" or name == "Shake") and Enum.AnimationPriority.Action2
 				or Enum.AnimationPriority.Action
@@ -179,7 +175,6 @@ local function loadAnims()
 	end
 end
 
--- stops the layered Animal Run track (fade in seconds)
 local function stopAnimalRun(fade)
 	if anims and anims.AnimalRun and anims.AnimalRun.IsPlaying then
 		anims.AnimalRun:Stop(fade or 0.35)
@@ -238,8 +233,6 @@ do
 	l.Padding = UDim.new(0, 5)
 	l.SortOrder = Enum.SortOrder.LayoutOrder
 	l.Parent = panel
-
-
 
 end
 
@@ -516,7 +509,7 @@ local function initCharacter(char)
 				if anims.Run then
 					anims.Run:AdjustSpeed(math.clamp(currentRunSpeed / baseSpeed, 1, 2))
 				end
-				-- layered secondary run: Animal Run blended on top of the tall monster run
+
 				if anims.AnimalRun and animalRunWeight > 0 then
 					if not anims.AnimalRun.IsPlaying then
 						anims.AnimalRun.Looped = true
@@ -543,7 +536,7 @@ local function initCharacter(char)
 		end
 
 		if currentActive ~= target then
-			if currentActive == "Run" then stopAnimalRun(0.4) end -- stop the layered Animal Run when leaving the run state
+			if currentActive == "Run" then stopAnimalRun(0.4) end
 			if currentActive and anims[currentActive] then anims[currentActive]:Stop(0.4) end
 			if anims[target] then
 				anims[target].Looped = true
@@ -701,15 +694,14 @@ end)
 if player.Character then
 	initCharacter(player.Character)
 end
-			
+
    end,
 })
-
 
 local Button = Tab:CreateButton({
    Name = "Tall Guy(Wesd)",
    Callback = function()
-   -- tall guy screptttt
+
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -747,19 +739,19 @@ local function ensureAnimationId(id)
 end
 
 local animations = {
-    idle = 76622684003043,         
-    walk = 71303649590318,         
-    headless = 76746775961797,     
+    idle = 76622684003043,
+    walk = 71303649590318,
+    headless = 76746775961797,
     lookAround = 79216795769647,
     chilling = 98248319097752,
     transform = 93875137466223
 }
 
-local keybinds = { 
-    Headless = "q", 
+local keybinds = {
+    Headless = "q",
     LookAround = "e",
-    ReEnableDefault = "r", 
-    MonsterMode = "f" 
+    ReEnableDefault = "r",
+    MonsterMode = "f"
 }
 
 local tracks = {}
@@ -769,7 +761,7 @@ for name, id in pairs(animations) do
         local a = Instance.new("Animation")
         a.AnimationId = animId
         tracks[name] = animator:LoadAnimation(a)
-        
+
         if name == "idle" or name == "walk" then
             tracks[name].Priority = Enum.AnimationPriority.Movement
         elseif name == "transform" then
@@ -780,26 +772,26 @@ for name, id in pairs(animations) do
     end
 end
 
-local isMonster = false          
+local isMonster = false
 local isEmoting = false
 local currentActive = nil
 local idleTime = 0
 local defaultWalkSpeed = 16
 
 RunService.RenderStepped:Connect(function(dt)
-    if not isMonster or isEmoting then 
+    if not isMonster or isEmoting then
         idleTime = 0
         humanoid.WalkSpeed = defaultWalkSpeed
-        return 
+        return
     end
-    
+
     local speed = humanoid.MoveDirection.Magnitude
     local target = "idle"
     local isRunning = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift)
 
     if speed > 0.1 then
         target = "walk"
-        idleTime = 0 
+        idleTime = 0
     else
         idleTime = idleTime + dt
         if idleTime >= 5 then
@@ -835,16 +827,16 @@ local function playOneShot(name)
     if not tracks[name] or isEmoting or not isMonster then return end
     isEmoting = true
     idleTime = 0
-    
+
     if currentActive and tracks[currentActive] then tracks[currentActive]:Stop(0.2) end
-    
+
     local t = tracks[name]
-    t.Looped = false 
+    t.Looped = false
     t:Play(0.2)
     t.Stopped:Wait()
-    
+
     isEmoting = false
-    currentActive = nil 
+    currentActive = nil
 end
 
 UserInputService.InputBegan:Connect(function(input, gp)
@@ -855,20 +847,20 @@ UserInputService.InputBegan:Connect(function(input, gp)
         if not isMonster then
             isEmoting = true
             toggleDefaultAnimate(false)
-            
+
             local t = tracks["transform"]
             if t then
                 t.Looped = false
                 t:Play(0.2)
-                
+
                 local length = t.Length
                 if length == 0 then task.wait() length = t.Length end
-                
+
                 task.wait(length / 2)
-                
+
                 isMonster = true
                 isEmoting = false
-                
+
                 t:Stop(0.5)
             else
                 isMonster = true
@@ -878,27 +870,27 @@ UserInputService.InputBegan:Connect(function(input, gp)
         else
             isEmoting = true
             if currentActive and tracks[currentActive] then tracks[currentActive]:Stop(0.3) end
-            
+
             local t = tracks["transform"]
             if t then
                 t.Looped = false
                 t:Play(0.1)
-                
+
                 local length = t.Length
                 if length == 0 then task.wait() length = t.Length end
-                
+
                 t.TimePosition = length / 2
                 task.wait(length / 2)
-                
+
                 t:Stop(0.5)
             end
-            
+
             isMonster = false
             isEmoting = false
             currentActive = nil
             toggleDefaultAnimate(true)
         end
-        
+
     elseif k == keybinds.ReEnableDefault then
         isMonster = false
         idleTime = 0
@@ -908,7 +900,7 @@ UserInputService.InputBegan:Connect(function(input, gp)
 
     elseif k == keybinds.Headless and isMonster then
         playOneShot("headless")
-        
+
     elseif k == keybinds.LookAround and isMonster then
         playOneShot("lookAround")
     end
@@ -919,11 +911,6 @@ end)
 local Button = Tab:CreateButton({
    Name = "Better Movement(Gazer-Ha)",
    Callback = function()
-   --fe better movement finales cucked by gaze
---credir too (d.c.h.a.g.t.p) or (died.choked.and.glaze.the.pornstar)
---if you stole it akundisco will lick ur feet and sucks ur toes (i lied, he's not licking ur feet and sucks ur toes.)
-
---if you stole it i will bang you with big banhammer >;D
 
 RunService = game:GetService("RunService")
 UserInputService = game:GetService("UserInputService")
@@ -932,7 +919,7 @@ Coregui = game:GetService("CoreGui")
 Players = game:GetService("Players")
 Player = Players.LocalPlayer
 
-M = math --if youre_geeked then meth = true end --// (we need to cook)
+M = math
 CF = CFrame
 V3 = Vector3
 V2 = Vector2
@@ -959,10 +946,10 @@ hum = nil
 hrp = nil
 tiltAttachment = nil
 alignOrientation = nil
-animLoop = nil 
+animLoop = nil
 
 screenGui = Instance.new("ScreenGui")
-screenGui.Name = "RobloxGui" -- i saw someone did it dont blame me
+screenGui.Name = "RobloxGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = Coregui
 shiftLockButton = Instance.new("ImageButton")
@@ -976,7 +963,7 @@ shiftLockButton.Parent = screenGui
 
 function toggleShiftLock()
 isShiftlock = not isShiftlock
-shiftLockButton.ImageColor3 = isShiftlock and C3.fromRGB(0, 170, 255) or C3.fromRGB(255, 255, 255) 
+shiftLockButton.ImageColor3 = isShiftlock and C3.fromRGB(0, 170, 255) or C3.fromRGB(255, 255, 255)
 end
 
 shiftLockButton.MouseButton1Click:Connect(toggleShiftLock)
@@ -987,10 +974,10 @@ toggleShiftLock()
 end end)
 
 function lerpAngle(a, b, t)
-return a + M.atan2(M.sin(b - a), M.cos(b - a)) * t 
+return a + M.atan2(M.sin(b - a), M.cos(b - a)) * t
 end
 
-function setup(character) 
+function setup(character)
 char = character
 hum = char:WaitForChild("Humanoid")
 hum.WalkSpeed = 50
@@ -1004,7 +991,7 @@ hum.AutoRotate = false
 if tiltAttachment then tiltAttachment:Destroy() end
 if alignOrientation then alignOrientation:Destroy() end
 
-tiltAttachment = Instance.new("Attachment") --fe Bipassis new method 2016 no virus
+tiltAttachment = Instance.new("Attachment")
 tiltAttachment.Name = "TiltAttachment"
 tiltAttachment.Parent = hrp
 
@@ -1023,7 +1010,7 @@ if part == hrp then
 part.Massless = false
 else
 if not part.Anchored then part.Massless = true end end end end end)
---wake up its the first of the month
+
 hum:ChangeState(Enum.HumanoidStateType.GettingUp)
 end
 
@@ -1031,24 +1018,22 @@ function init(character)
 if animLoop then animLoop:Disconnect() end
 humLocal = character:WaitForChild("Humanoid")
 if humLocal.RigType == Enum.HumanoidRigType.R6 then
-task.spawn(function() 
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Gazer-Ha/NOT-MINE/refs/heads/main/R6%20animation%20custe"))() 
-    --credir to someone who made idk lol lemme see..
-    --oh, credit to a.i for script and roblox for making the animmim
-end) 
+task.spawn(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Gazer-Ha/NOT-MINE/refs/heads/main/R6%20animation%20custe"))()
+
+end)
 return end
 
---whole anim here
 walkTrack= load("83842218823011")
 runTrack = load("118320322718866")
 sideTrack = load("132218385473651")
 backTrack = load("16738337225")
 jumpTrack = load("127915306032185")
---ts idle
+
 t1 = load("138665010911335")
 t2 = load("140131631438778")
 t3 = load("82261197744576")
-canJump = true -- false if you fat a lot
+canJump = true
 
 animLoop = RunService.Heartbeat:Connect(function()
 humNow = character:FindFirstChild("Humanoid")
@@ -1057,7 +1042,7 @@ if not humNow or not hrpNow then return end
 moveDir = humNow.MoveDirection
 speed = V3.new(hrpNow.AssemblyLinearVelocity.X, 0, hrpNow.AssemblyLinearVelocity.Z).Magnitude
 state = humNow:GetState()
---ye
+
 if moveDir.Magnitude == 0 then
     if runTrack then runTrack:Stop(0.2) end
     if walkTrack then walkTrack:Stop(0.2) end
@@ -1082,7 +1067,7 @@ if state == Enum.HumanoidStateType.Landed then if jumpTrack then jumpTrack:Stop(
 if speed > 0.5 then
 if t1 then t1:Stop(0.1) end if t2 then t2:Stop(0.1) end if t3 then t3:AdjustWeight(0.05) end
 forwardDot = moveDir:Dot(hrpNow.CFrame.LookVector)
-rightDot = moveDir:Dot(hrpNow.CFrame.RightVector)        
+rightDot = moveDir:Dot(hrpNow.CFrame.RightVector)
 if M.abs(rightDot) > 0.6 then
 if sideTrack and not sideTrack.IsPlaying then sideTrack:Play(0.1) end
 if sideTrack then sideTrack:AdjustSpeed(1.5 * (speed/16) * (rightDot >= 0 and -1 or 1)) end
@@ -1102,9 +1087,9 @@ if runTrack then runTrack:Stop(0.1) end
 if walkTrack and not walkTrack.IsPlaying then walkTrack:Play(0.1) end
 if walkTrack then walkTrack:AdjustSpeed(1.8 * speed/15) end
 end end
-            
+
            else
-           
+
 if walkTrack then walkTrack:Stop(0.1) end if runTrack then runTrack:Stop(0.1) end
 if sideTrack then sideTrack:Stop(0.1) end if backTrack then backTrack:Stop(0.1) end
 if t1 and not t1.IsPlaying then t1:Play(0.1, 0.9, 1) end
@@ -1114,7 +1099,6 @@ end end) end
 
 rayParams = RaycastParams.new()
 rayParams.FilterType = Enum.RaycastFilterType.Exclude
---idiot was hir
 
  function onHeartbeat(dt)
 if not hrp or not hum or not alignOrientation or hum.Health <= 0 then return end
@@ -1163,7 +1147,6 @@ RunService.Heartbeat:Connect(onHeartbeat)
    end,
 })
 
--- Gen2 has no Paragraph element; a section heading shows the changelog text
 local Paragraph = Tab:CreateSection({ Name = "Changelogs: Tall Guy, Better Movement, More soon" })
 
 local Tab = Window:CreateTab({ Name = "Models", Icon = 4483362458 })
@@ -1179,7 +1162,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/drixpyyy/gigachadhubR
 local Button = Tab:CreateButton({
    Name = "Penis(Requires you to download files in the discord)",
    Callback = function()
-   -- penis
+
 local folderName = "meshes"
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
@@ -1197,16 +1180,13 @@ local Cock = Instance.new("Model")
 Cock.Name = "Cock"
 Cock.Parent = char
 
--- Base bone (anchored to body)
 local BaseBone = Instance.new("Bone")
 BaseBone.Name = "BaseBone"
 
--- Middle bone for physics
 local MidBone = Instance.new("Bone")
 MidBone.Name = "MidBone"
 MidBone.Position = Vector3.new(0, -0.4, 0)
 
--- Tip bone
 local TipBone = Instance.new("Bone")
 TipBone.Name = "TipBone"
 TipBone.Position = Vector3.new(0, -0.4, 0)
@@ -1221,12 +1201,10 @@ P_C.Massless = false
 P_C.CustomPhysicalProperties = PhysicalProperties.new(0.5, 0.3, 0.5, 1, 1)
 P_C.Parent = Cock
 
--- Setup bone hierarchy
 BaseBone.Parent = P_C
 MidBone.Parent = BaseBone
 TipBone.Parent = MidBone
 
--- Attachments for constraints
 local baseAttachment = Instance.new("Attachment")
 baseAttachment.Name = "BaseAttachment"
 baseAttachment.Position = Vector3.new(0, 0.26, 0)
@@ -1246,8 +1224,6 @@ local P_C_Mesh = Instance.new("SpecialMesh")
 P_C_Mesh.MeshId = getAsset("7093427066")
 P_C_Mesh.MeshType = Enum.MeshType.FileMesh
 P_C_Mesh.Parent = P_C
-
--- Bones will control the mesh deformation through constraints
 
 local X_B = Instance.new("Part")
 X_B.Name = "X_B"
@@ -1322,19 +1298,17 @@ Cum.Parent = T
 local root = char:FindFirstChild("LowerTorso") or char:FindFirstChild("Torso") or char.HumanoidRootPart
 local isR15 = char:FindFirstChild("LowerTorso") ~= nil
 
--- Different positioning for R6 vs R15
 local weldOffset, weldRotation
 if isR15 then
-    -- R15 positioning (adjust as needed)
+
     weldOffset = CFrame.new(0, -0.1, -0.8)
     weldRotation = CFrame.Angles(math.rad(20), math.rad(-90), math.rad(0))
 else
-    -- R6 positioning
+
     weldOffset = CFrame.new(0.02, -0.97, -0.91)
     weldRotation = CFrame.Angles(math.rad(3.43), math.rad(-90.86), math.rad(10.29))
 end
 
--- Weld base to body
 local BodyWeld = Instance.new("Weld")
 BodyWeld.Name = "BodyWeld"
 BodyWeld.Part0 = root
@@ -1342,15 +1316,14 @@ BodyWeld.Part1 = P_C
 BodyWeld.C0 = weldOffset * weldRotation
 BodyWeld.Parent = P_C
 
--- Physics constraints for wobble (more intense)
 local ballSocket = Instance.new("BallSocketConstraint")
 ballSocket.Name = "MidSocket"
 ballSocket.Attachment0 = baseAttachment
 ballSocket.Attachment1 = midAttachment
 ballSocket.LimitsEnabled = true
-ballSocket.UpperAngle = 45  -- Increased from 25
+ballSocket.UpperAngle = 45
 ballSocket.TwistLimitsEnabled = true
-ballSocket.TwistUpperAngle = 30  -- Increased from 15
+ballSocket.TwistUpperAngle = 30
 ballSocket.TwistLowerAngle = -30
 ballSocket.Parent = P_C
 
@@ -1359,8 +1332,8 @@ spring.Name = "MidSpring"
 spring.Attachment0 = baseAttachment
 spring.Attachment1 = midAttachment
 spring.FreeLength = 0.4
-spring.Stiffness = 150  -- Reduced from 300 for more wobble
-spring.Damping = 15  -- Reduced from 30 for longer wobble
+spring.Stiffness = 150
+spring.Damping = 15
 spring.Parent = P_C
 
 local tipSocket = Instance.new("BallSocketConstraint")
@@ -1368,9 +1341,9 @@ tipSocket.Name = "TipSocket"
 tipSocket.Attachment0 = midAttachment
 tipSocket.Attachment1 = tipAttachment
 tipSocket.LimitsEnabled = true
-tipSocket.UpperAngle = 35  -- Increased from 20
+tipSocket.UpperAngle = 35
 tipSocket.TwistLimitsEnabled = true
-tipSocket.TwistUpperAngle = 25  -- Increased from 10
+tipSocket.TwistUpperAngle = 25
 tipSocket.TwistLowerAngle = -25
 tipSocket.Parent = P_C
 
@@ -1379,19 +1352,17 @@ tipSpring.Name = "TipSpring"
 tipSpring.Attachment0 = midAttachment
 tipSpring.Attachment1 = tipAttachment
 tipSpring.FreeLength = 0.4
-tipSpring.Stiffness = 100  -- Reduced from 200 for more wobble
-tipSpring.Damping = 12  -- Reduced from 25 for longer wobble
+tipSpring.Stiffness = 100
+tipSpring.Damping = 12
 tipSpring.Parent = P_C
 
--- Simulate bone influence on mesh deformation
 local RunService = game:GetService("RunService")
 local originalCFrame = P_C.CFrame
 
 RunService.Heartbeat:Connect(function()
     local velocity = P_C.AssemblyLinearVelocity
     local speed = velocity.Magnitude
-    
-    -- Apply wobble based on movement
+
     if speed > 2 then
         local wobbleForce = speed * 0.5
         midAttachment.WorldPosition = midAttachment.WorldPosition + Vector3.new(
@@ -1425,7 +1396,6 @@ loadstring(game:GetObjects("rbxassetid://6695644299")[1].Source)()
    end,
 })
 
-
 local Button = Tab:CreateButton({
    Name = "Basic Adonis Bypass",
    Callback = function()
@@ -1442,17 +1412,17 @@ for i, v in getgc(true) do
     if typeof(v) == "table" then
         local DetectFunc = rawget(v, "Detected")
         local KillFunc = rawget(v, "Kill")
-    
+
         if typeof(DetectFunc) == "function" and not Detected then
             Detected = DetectFunc
-            
+
             local Old; Old = hookfunction(Detected, function(Action, Info, NoCrash)
                 if Action ~= "_" then
                     if DEBUG then
                         warn(`Adonis AntiCheat flagged\nMethod: {Action}\nInfo: {Info}`)
                     end
                 end
-                
+
                 return true
             end)
 
@@ -1482,28 +1452,18 @@ local Old; Old = hookfunction(getrenv().debug.info, newcclosure(function(...)
 
         return coroutine.yield(coroutine.running())
     end
-    
+
     return Old(...)
 end))
--- setthreadidentity(9)
+
 setthreadidentity(7)
 
    end,
 })
 
-
 local Button = Tab:CreateButton({
    Name = "Dex++",
    Callback = function()
-
---[[
-	Dex++
-	Version 2.2
-	
-	Developed by Chillz
-	
-	Dex++ is a revival of Moon's Dex, made to fulfill Moon's Dex prophecy.
-]]
 
 local selection
 local nodes = {}
@@ -1513,9 +1473,9 @@ local game = workspace.Parent
 
 cloneref = cloneref or function(ref)
 	if not getreg then return ref end
-	
+
 	local InstanceList
-	
+
 	local a = Instance.new("Part")
 	for _, c in pairs(getreg()) do
 		if type(c) == "table" and #c then
@@ -1546,13 +1506,10 @@ end
 
 local EmbeddedModules = {
 ["Console"] = function()
---[[
-	Console Module
-]]
--- Common Locals
-local Main,Lib,Apps,Settings -- Main Containers
-local Explorer, Properties, ScriptViewer, Notebook -- Major Apps
-local API,RMD,env,service,plr,create,createSimple -- Main Locals
+
+local Main,Lib,Apps,Settings
+local Explorer, Properties, ScriptViewer, Notebook
+local API,RMD,env,service,plr,create,createSimple
 
 local function initDeps(data)
 	Main = data.Main
@@ -1581,19 +1538,15 @@ local function main()
 
 	local window,ConsoleFrame
 
-	local OutputLimit = 500 -- Same as Roblox Console.
+	local OutputLimit = 500
 
-
-	-- Instances: 29 | Scripts: 1 | Modules: 1 | Tags: 0
 	local G2L = {};
 
-	-- StarterGui.ScreenGui
 	window = Lib.Window.new()
 	window:SetTitle("Console")
 	window:Resize(500,400)
 	Console.Window = window
 
-	-- StarterGui.ScreenGui.Console
 	ConsoleFrame = Instance.new("ImageButton", window.GuiElems.Content);
 	ConsoleFrame["BorderSizePixel"] = 0;
 	ConsoleFrame["AutoButtonColor"] = false;
@@ -1605,9 +1558,7 @@ local function main()
 	ConsoleFrame["Name"] = [[Console]];
 	ConsoleFrame["Position"] = UDim2.new(0,0,0,0);
 
-
-	-- StarterGui.ScreenGui.Console.CommandLine
-	G2L["3"] = Lib.Frame.new().Gui--Instance.new("Frame", ConsoleFrame);
+	G2L["3"] = Lib.Frame.new().Gui
 	G2L["3"].Parent = ConsoleFrame
 	G2L["3"]["BorderSizePixel"] = 0;
 	G2L["3"]["BackgroundColor3"] = Color3.fromRGB(37, 37, 37);
@@ -1618,14 +1569,10 @@ local function main()
 	G2L["3"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 	G2L["3"]["Name"] = [[CommandLine]];
 
-
-	-- StarterGui.ScreenGui.Console.CommandLine.UIStroke
 	G2L["4"] = Instance.new("UIStroke", G2L["3"]);
 	G2L["4"]["Transparency"] = 0.65;
 	G2L["4"]["Thickness"] = 1.25;
 
-
-	-- StarterGui.ScreenGui.Console.CommandLine.ScrollingFrame
 	G2L["5"] = Instance.new("ScrollingFrame", G2L["3"]);
 	G2L["5"]["Active"] = true;
 	G2L["5"]["ScrollingDirection"] = Enum.ScrollingDirection.X;
@@ -1643,7 +1590,6 @@ local function main()
 	G2L["5"]["ScrollBarThickness"] = 2;
 	G2L["5"]["BackgroundTransparency"] = 1;
 
-	-- StarterGui.ScreenGui.Console.CommandLine.ScrollingFrame.TextBox
 	G2L["6"] = Instance.new("TextBox", G2L["5"]);
 	G2L["6"]["CursorPosition"] = -1;
 	G2L["6"]["TextXAlignment"] = Enum.TextXAlignment.Left;
@@ -1661,13 +1607,9 @@ local function main()
 	G2L["6"]["Text"] = [[]];
 	G2L["6"]["BackgroundTransparency"] = 1;
 
-
-	-- StarterGui.ScreenGui.Console.CommandLine.ScrollingFrame.TextBox.UIPadding
 	G2L["7"] = Instance.new("UIPadding", G2L["6"]);
 	G2L["7"]["PaddingLeft"] = UDim.new(0, 7);
 
-
-	-- StarterGui.ScreenGui.Console.CommandLine.ScrollingFrame.Highlight
 	G2L["8"] = Instance.new("TextLabel", G2L["5"]);
 	G2L["8"]["Interactable"] = false;
 	G2L["8"]["ZIndex"] = 2;
@@ -1686,8 +1628,6 @@ local function main()
 	G2L["8"]["AutomaticSize"] = Enum.AutomaticSize.X;
 	G2L["8"]["Name"] = [[Highlight]];
 
-
-	-- StarterGui.ScreenGui.Console.CommandLine.ScrollingFrame.Highlight.UIPadding
 	G2L["9"] = Instance.new("UIPadding", G2L["8"]);
 	G2L["9"]["PaddingLeft"] = UDim.new(0, 7);
 
@@ -1708,7 +1648,6 @@ local function main()
 	scrollbar.Gui.Up.ZIndex = 3
 	scrollbar.Gui.Down.ZIndex = 3
 
-	-- StarterGui.ScreenGui.Console.Output
 	G2L["a"] = Instance.new("ScrollingFrame", ConsoleFrame);
 	G2L["a"]["Active"] = true;
 	G2L["a"]["BorderSizePixel"] = 0;
@@ -1736,36 +1675,25 @@ local function main()
 		end
 	end)
 
-	-- StarterGui.ScreenGui.Console.Output.UIListLayout
 	G2L["b"] = Instance.new("UIListLayout", G2L["a"]);
 	G2L["b"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
 
-
-	-- StarterGui.ScreenGui.Console.Output.UIStroke
 	G2L["c"] = Instance.new("UIStroke", G2L["a"]);
 	G2L["c"]["Transparency"] = 0.7;
 	G2L["c"]["Thickness"] = 1.25;
 	G2L["c"]["Color"] = Color3.fromRGB(12, 12, 12);
 
-
-	-- StarterGui.ScreenGui.Console.Output.OutputTextSize
 	G2L["d"] = Instance.new("NumberValue", G2L["a"]);
 	G2L["d"]["Name"] = [[OutputTextSize]];
 	G2L["d"]["Value"] = 15;
 
-
-	-- StarterGui.ScreenGui.Console.Output.OutputLimit
 	G2L["e"] = Instance.new("NumberValue", G2L["a"]);
 	G2L["e"]["Name"] = [[OutputLimit]];
 	G2L["e"]["Value"] = OutputLimit;
 
-
-	-- StarterGui.ScreenGui.Console.Output.UIPadding
 	G2L["f"] = Instance.new("UIPadding", G2L["a"]);
 	G2L["f"]["PaddingTop"] = UDim.new(0, 2);
 
-
-	-- StarterGui.ScreenGui.Console.TextSizeBox
 	G2L["10"] = Instance.new("Frame", ConsoleFrame);
 	G2L["10"]["BorderSizePixel"] = 0;
 	G2L["10"]["BackgroundColor3"] = Color3.fromRGB(37, 37, 37);
@@ -1775,8 +1703,6 @@ local function main()
 	G2L["10"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 	G2L["10"]["Name"] = [[TextSizeBox]];
 
-
-	-- StarterGui.ScreenGui.Console.TextSizeBox.TextBox
 	G2L["11"] = Instance.new("TextBox", G2L["10"]);
 	G2L["11"]["PlaceholderColor3"] = Color3.fromRGB(108, 108, 108);
 	G2L["11"]["BorderSizePixel"] = 0;
@@ -1792,22 +1718,16 @@ local function main()
 	G2L["11"]["Text"] = [[]];
 	G2L["11"]["BackgroundTransparency"] = 1;
 
-
-	-- StarterGui.ScreenGui.Console.TextSizeBox.TextBox.UIPadding
 	G2L["12"] = Instance.new("UIPadding", G2L["11"]);
 	G2L["12"]["PaddingTop"] = UDim.new(0, 2);
 	G2L["12"]["PaddingRight"] = UDim.new(0, 5);
 	G2L["12"]["PaddingLeft"] = UDim.new(0, 5);
 	G2L["12"]["PaddingBottom"] = UDim.new(0, 2);
 
-
-	-- StarterGui.ScreenGui.Console.TextSizeBox.UIStroke
 	G2L["13"] = Instance.new("UIStroke", G2L["10"]);
 	G2L["13"]["Transparency"] = 0.65;
 	G2L["13"]["Thickness"] = 1.25;
 
-
-	-- StarterGui.ScreenGui.Console.Clear
 	G2L["14"] = Instance.new("ImageButton", ConsoleFrame);
 	G2L["14"]["BorderSizePixel"] = 0;
 	G2L["14"]["BackgroundColor3"] = Color3.fromRGB(57, 57, 57);
@@ -1816,8 +1736,6 @@ local function main()
 	G2L["14"]["Name"] = [[Clear]];
 	G2L["14"]["Position"] = UDim2.new(1, -42, 0, 4);
 
-
-	-- StarterGui.ScreenGui.Console.Clear.TextLabel
 	G2L["15"] = Instance.new("TextLabel", G2L["14"]);
 	G2L["15"]["TextWrapped"] = true;
 	G2L["15"]["Interactable"] = false;
@@ -1832,14 +1750,10 @@ local function main()
 	G2L["15"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 	G2L["15"]["Text"] = [[Clear]];
 
-
-	-- StarterGui.ScreenGui.Console.Clear.UIPadding
 	G2L["16"] = Instance.new("UIPadding", G2L["14"]);
 	G2L["16"]["PaddingTop"] = UDim.new(0, 1);
 	G2L["16"]["PaddingBottom"] = UDim.new(0, 1);
 
-
-	-- StarterGui.ScreenGui.Console.OutputTemplate
 	G2L["17"] = Instance.new("TextBox", ConsoleFrame);
 	G2L["17"]["Visible"] = false;
 	G2L["17"]["Active"] = false;
@@ -1862,14 +1776,10 @@ local function main()
 	G2L["17"]["Text"] = [[(timestamp) <font color="rgb(255, 255, 255)">Output</font>]];
 	G2L["17"]["BackgroundTransparency"] = 1;
 
-
-	-- StarterGui.ScreenGui.Console.OutputTemplate.UIPadding
 	G2L["18"] = Instance.new("UIPadding", G2L["17"]);
 	G2L["18"]["PaddingRight"] = UDim.new(0, 6);
 	G2L["18"]["PaddingLeft"] = UDim.new(0, 6);
 
-
-	-- StarterGui.ScreenGui.Console.CtrlScroll
 	G2L["19"] = Instance.new("ImageButton", ConsoleFrame);
 	G2L["19"]["BorderSizePixel"] = 0;
 	G2L["19"]["BackgroundColor3"] = Color3.fromRGB(57, 57, 57);
@@ -1878,8 +1788,6 @@ local function main()
 	G2L["19"]["Name"] = [[CtrlScroll]];
 	G2L["19"]["Position"] = UDim2.new(0, 46, 0, 4);
 
-
-	-- StarterGui.ScreenGui.Console.CtrlScroll.TextLabel
 	G2L["1a"] = Instance.new("TextLabel", G2L["19"]);
 	G2L["1a"]["TextWrapped"] = true;
 	G2L["1a"]["Interactable"] = false;
@@ -1894,13 +1802,10 @@ local function main()
 	G2L["1a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 	G2L["1a"]["Text"] = [[Ctrl Scroll]];
 
-
-	-- StarterGui.ScreenGui.Console.CtrlScroll.UIPadding
 	G2L["1b"] = Instance.new("UIPadding", G2L["19"]);
 	G2L["1b"]["PaddingTop"] = UDim.new(0, 1);
 	G2L["1b"]["PaddingBottom"] = UDim.new(0, 1);
 
-	-- StarterGui.ScreenGui.Console.AutoScroll
 	G2L["20"] = Instance.new("ImageButton", ConsoleFrame);
 	G2L["20"]["BorderSizePixel"] = 0;
 	G2L["20"]["BackgroundColor3"] = Color3.fromRGB(57, 57, 57);
@@ -1909,8 +1814,6 @@ local function main()
 	G2L["20"]["Name"] = [[AutoScroll]];
 	G2L["20"]["Position"] = UDim2.new(0, 110, 0, 4);
 
-
-	-- StarterGui.ScreenGui.Console.AutoScroll.TextLabel
 	G2L["1e"] = Instance.new("TextLabel", G2L["20"]);
 	G2L["1e"]["TextWrapped"] = true;
 	G2L["1e"]["Interactable"] = false;
@@ -1925,24 +1828,16 @@ local function main()
 	G2L["1e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 	G2L["1e"]["Text"] = [[Auto Scroll]];
 
-
-	-- StarterGui.ScreenGui.Console.AutoScroll.UIPadding
 	G2L["1f"] = Instance.new("UIPadding", G2L["20"]);
 	G2L["1f"]["PaddingTop"] = UDim.new(0, 1);
 	G2L["1f"]["PaddingBottom"] = UDim.new(0, 1);
 
-
-	-- StarterGui.ScreenGui.ConsoleHandler
 	G2L["1c"] = Instance.new("LocalScript", G2L["1"]);
 	G2L["1c"]["Name"] = [[ConsoleHandler]];
 
-
-	-- StarterGui.ScreenGui.ConsoleHandler.SyntaxHighlighter
 	G2L["1d"] = Instance.new("ModuleScript", G2L["1c"]);
 	G2L["1d"]["Name"] = [[SyntaxHighlighter]];
 
-
-	-- Require G2L wrapper
 	local G2L_REQUIRE = require;
 	local G2L_MODULES = {};
 	local function require(Module)
@@ -2142,7 +2037,6 @@ local function main()
 	};
 
 	Console.Init = function()
-		-- StarterGui.ScreenGui.ConsoleHandler
 
 		local CtrlScroll = false
 		local AutoScroll = false
@@ -2163,10 +2057,6 @@ local function main()
 			tween:Play()
 			return tween
 		end
-
-
-
-		-- MOUSE STUFFS
 
 		if CtrlScroll == true then
 			Console.CtrlScroll.BackgroundColor3 = Color3.fromRGB(11, 90, 175)
@@ -2213,7 +2103,6 @@ local function main()
 			end
 		end)
 
-		-- Console part
 		local displayedOutput = {}
 		local OutputLimit = Console.Output.OutputLimit
 
@@ -2249,7 +2138,6 @@ local function main()
 				scrollConsoleInput = nil
 			end
 		end)
-
 
 		Console.Clear.MouseButton1Click:Connect(function()
 			for _, log in pairs(Console.Output:GetChildren()) do
@@ -2325,8 +2213,6 @@ local function main()
 			Console.CommandLine.ScrollingFrame.Highlight.Text = SyntaxHighlightingModule.run(Console.CommandLine.ScrollingFrame.TextBox.Text)
 		end)
 
-
-
 		Console.CommandLine.ScrollingFrame.TextBox.FocusLost:Connect(function(enterPressed)
 			if enterPressed and Console.CommandLine.ScrollingFrame.TextBox.Text ~= "" then
 				print("> "..Console.CommandLine.ScrollingFrame.TextBox.Text)
@@ -2341,16 +2227,10 @@ end
 return {InitDeps = initDeps, InitAfterMain = initAfterMain, Main = main}
 end,
 ["Explorer"] = function()
---[[
-	Explorer App Module
-	
-	The main explorer interface
-]]
 
--- Common Locals
-local Main,Lib,Apps,Settings -- Main Containers
-local Explorer, Properties, ScriptViewer, ModelViewer, Notebook -- Major Apps
-local API,RMD,env,service,plr,create,createSimple -- Main Locals
+local Main,Lib,Apps,Settings
+local Explorer, Properties, ScriptViewer, ModelViewer, Notebook
+local API,RMD,env,service,plr,create,createSimple
 
 local function initDeps(data)
 	Main = data.Main
@@ -2395,7 +2275,7 @@ local function main()
 	local addObject,removeObject,moveObject = nil,nil,nil
 
 	local iconData
-	local remote_blocklist = {} -- list of remotes beng blocked, k = the remote instance, v = their old function :3
+	local remote_blocklist = {}
 	nodes = nodes or {}
 
 	addObject = function(root)
@@ -2405,7 +2285,6 @@ local function main()
 		local rootParObj = ffa(root,"Instance")
 		local par = nodes[rootParObj]
 
-		-- Nil Handling
 		if not par then
 			if nilMap[root] then
 				nilCons[root] = nilCons[root] or {
@@ -2429,7 +2308,6 @@ local function main()
 		local newNode = {Obj = root, Parent = par}
 		nodes[root] = newNode
 
-		-- Automatic sorting if expanded
 		if sortingEnabled and expanded[par] and par.Sorted then
 			local left,right = 1,#par
 			local floor = math.floor
@@ -2465,7 +2343,7 @@ local function main()
 		local insts = getDescendants(root)
 		for i = 1,#insts do
 			local obj = insts[i]
-			if nodes[obj] then continue end -- Deferred
+			if nodes[obj] then continue end
 
 			local par = nodes[ffa(obj,"Instance")]
 			if not par then continue end
@@ -2473,7 +2351,6 @@ local function main()
 			nodes[obj] = newNode
 			par[#par+1] = newNode
 
-			-- Nil Handling
 			if isNil then
 				nilMap[obj] = true
 				nilCons[obj] = nilCons[obj] or {
@@ -2500,7 +2377,6 @@ local function main()
 		local node = nodes[root]
 		if not node then return end
 
-		-- Nil Handling
 		if nilMap[node.Obj] then
 			moveObject(node.Obj)
 			return
@@ -2541,7 +2417,6 @@ local function main()
 		local newPar = nodes[ffa(obj,"Instance")]
 		if oldPar == newPar then return end
 
-		-- Nil Handling
 		if not newPar then
 			if nilMap[obj] then
 				newPar = nilNode
@@ -2689,7 +2564,7 @@ local function main()
 	end
 
 	Explorer.NodeSorter = function(a,b)
-		if a.Del or b.Del then return false end -- Ghost node
+		if a.Del or b.Del then return false end
 
 		local aClass = a.Class
 		local bClass = b.Class
@@ -2767,7 +2642,6 @@ local function main()
 
 		recur(nodes[game],1)
 
-		-- Nil Instances
 		if env.getnilinstances then
 			if not (isSearching and not searchResults[nilNode]) then
 				tree[count] = nilNode
@@ -2999,7 +2873,7 @@ local function main()
 	end
 
 	Explorer.Refresh = function()
-		local maxNodes = math.max(math.ceil((treeFrame.AbsoluteSize.Y) / 20), 0)	
+		local maxNodes = math.max(math.ceil((treeFrame.AbsoluteSize.Y) / 20), 0)
 		local renameNodeVisible = false
 		local isa = game.IsA
 
@@ -3251,9 +3125,7 @@ local function main()
 		if env.setclipboard then context:AddRegistered("COPY_PATH") end
 		context:AddRegistered("INSERT_OBJECT")
 		context:AddRegistered("SAVE_INST")
-		-- context:AddRegistered("CALL_FUNCTION")
-		-- context:AddRegistered("VIEW_CONNECTIONS")
-		-- context:AddRegistered("GET_REFERENCES")
+
 		context:AddRegistered("COPY_API_PAGE")
 
 		context:QueueDivider()
@@ -3272,26 +3144,22 @@ local function main()
 		if presentClasses["TouchTransmitter"] then context:AddRegistered("FIRE_TOUCHTRANSMITTER", firetouchinterest == nil) end
 		if presentClasses["ClickDetector"] then context:AddRegistered("FIRE_CLICKDETECTOR", fireclickdetector == nil) end
 		if presentClasses["ProximityPrompt"] then context:AddRegistered("FIRE_PROXIMITYPROMPT", fireproximityprompt == nil) end
-		
-		
+
 		if presentClasses["RemoteEvent"] then context:AddRegistered("BLOCK_REMOTE", env.hookfunction == nil) end
 		if presentClasses["RemoteEvent"] then context:AddRegistered("UNBLOCK_REMOTE", env.hookfunction == nil) end
-		
+
 		if presentClasses["RemoteFunction"] then context:AddRegistered("BLOCK_REMOTE", env.hookfunction == nil) end
 		if presentClasses["RemoteFunction"] then context:AddRegistered("UNBLOCK_REMOTE", env.hookfunction == nil) end
 
 		if presentClasses["UnreliableRemoteEvent"] then context:AddRegistered("BLOCK_REMOTE", env.hookfunction == nil) end
 		if presentClasses["UnreliableRemoteEvent"] then context:AddRegistered("UNBLOCK_REMOTE", env.hookfunction == nil) end
-		
-		
+
 		if presentClasses["BindableEvent"] then context:AddRegistered("BLOCK_REMOTE", env.hookfunction == nil) end
 		if presentClasses["BindableEvent"] then context:AddRegistered("UNBLOCK_REMOTE", env.hookfunction == nil) end
-		
+
 		if presentClasses["BindableFunction"] then context:AddRegistered("BLOCK_REMOTE", env.hookfunction == nil) end
 		if presentClasses["BindableFunction"] then context:AddRegistered("UNBLOCK_REMOTE", env.hookfunction == nil) end
-		
-		
-		
+
 		if presentClasses["Player"] then context:AddRegistered("SELECT_CHARACTER")context:AddRegistered("VIEW_PLAYER") end
 		if presentClasses["Players"] then
 			context:AddRegistered("SELECT_LOCAL_PLAYER")
@@ -3406,7 +3274,7 @@ local function main()
 			end
 			selection:Clear()
 		end})
-		
+
 		context:Register("DELETE_CHILDREN",{Name = "Delete Children", IconMap = Explorer.MiscIcons, Icon = "Delete", DisabledIcon = "Delete_Disabled", Shortcut = "Shift+Del", OnClick = function()
 			local sList = selection.List
 			for i = 1,#sList do
@@ -3664,7 +3532,6 @@ local function main()
 			end
 		end})
 
-		-- this code is very bad but im lazy and it works so cope
 		local clth = function(str)
 			if str:sub(1, 28) == "game:GetService(\"Workspace\")" then str = str:gsub("game:GetService%(\"Workspace\"%)", "workspace", 1) end
 			if str:sub(1, 27 + #plr.Name) == "game:GetService(\"Players\")." .. plr.Name then str = str:gsub("game:GetService%(\"Players\"%)." .. plr.Name, "game:GetService(\"Players\").LocalPlayer", 1) end
@@ -3696,14 +3563,6 @@ local function main()
 			Explorer.InsertObjectContext:Show(x,y)
 		end})
 
-		--[[context:Register("CALL_FUNCTION",{Name = "Call Function", IconMap = Explorer.ClassIcons, Icon = 66, OnClick = function()
-
-		end})
-
-		context:Register("GET_REFERENCES",{Name = "Get Lua References", IconMap = Explorer.ClassIcons, Icon = 34, OnClick = function()
-
-		end})]]
-
 		context:Register("SAVE_INST",{Name = "Save to File", IconMap = Explorer.MiscIcons, Icon = "Save", OnClick = function()
 			local sList = selection.List
 			if #sList == 1 then
@@ -3715,23 +3574,19 @@ local function main()
 				end)
 			elseif #sList > 1 then
 				for i = 1,#sList do
-					-- sList[i].Obj.Name.." ("..sList[1].Obj.ClassName..")"
-					-- "Place_"..game.PlaceId.."_"..sList[1].Obj.ClassName.."_"..sList[i].Obj.Name.."_"..os.time()
+
 					Lib.SaveAsPrompt("Place_"..game.PlaceId.."_"..sList[i].Obj.ClassName.."_"..sList[i].Obj.Name.."_"..os.time(), function(filename)
 						env.saveinstance(sList[i].Obj, filename, {
 							Decompile = true,
 							RemovePlayerCharacters = false
 						})
 					end)
-					
+
 					task.wait(0.1)
 				end
 			end
 		end})
 
-        --[[context:Register("VIEW_CONNECTIONS",{Name = "View Connections", OnClick = function()
-            
-        end})]]
 		local ClassFire = {
 			RemoteEvent = "FireServer",
 			RemoteFunction = "InvokeServer",
@@ -3756,11 +3611,11 @@ local function main()
 					if Settings.RemoteBlockWriteAttribute then
 						obj:SetAttribute("IsBlocked", true)
 					end
-					--print("blocking ",functionToHook)
+
 				end
 			end
 		end})
-		
+
 		context:Register("UNBLOCK_REMOTE",{Name = "Unblock", IconMap = Explorer.MiscIcons, Icon = "Play", DisabledIcon = "Empty", OnClick = function()
 			local sList = selection.List
 			for i, list in sList do
@@ -3770,7 +3625,7 @@ local function main()
 					if Settings.RemoteBlockWriteAttribute then
 						list.Obj:SetAttribute("IsBlocked", false)
 					end
-					--print("unblocking ",functionToHook)
+
 				end
 			end
 		end})
@@ -3787,7 +3642,7 @@ local function main()
 		context:Register("3DVIEW_MODEL",{Name = "3D Preview Object", IconMap = Explorer.LegacyClassIcons, Icon = 54, OnClick = function()
 			local sList = selection.List
 			local isa = game.IsA
-			
+
 			if #sList == 1 then
 				if isa(sList[1].Obj,"BasePart") or isa(sList[1].Obj,"Model") then
 					ModelViewer.ViewModel(sList[1].Obj)
@@ -3795,7 +3650,7 @@ local function main()
 				end
 			end
 		end})
-		
+
 		context:Register("VIEW_OBJECT",{Name = "View Object (Right click to reset)", IconMap = Explorer.LegacyClassIcons, Icon = 5, OnClick = function()
 			local sList = selection.List
 			local isa = game.IsA
@@ -3850,9 +3705,9 @@ local function main()
 					local success, source = pcall(env.decompile, v.Obj)
 					if not success or not source then source = ("-- DEX - %s failed to decompile %s"):format(env.executor, v.Obj.ClassName) end
 					local fileName = ("%s_%s_%i_Source.txt"):format(env.parsefile(v.Obj.Name), v.Obj.ClassName, game.PlaceId)
-					--env.writefile(fileName, source)
+
 					Lib.SaveAsPrompt(fileName, source)
-					
+
 					task.wait(0.2)
 				end
 			end
@@ -3864,7 +3719,7 @@ local function main()
 					local success, bytecode = pcall(env.getscriptbytecode, v.Obj)
 					if success and type(bytecode) == "string" then
 						local fileName = ("%s_%s_%i_Bytecode.txt"):format(env.parsefile(v.Obj.Name), v.Obj.ClassName, game.PlaceId)
-						--env.writefile(fileName, bytecode)
+
 						Lib.SaveAsPrompt(fileName, bytecode)
 						task.wait(0.2)
 					end
@@ -3968,18 +3823,11 @@ local function main()
 		local nilInsts = env.getnilinstances()
 		local game = game
 		local getDescs = game.GetDescendants
-		--local newNilMap = {}
-		--local newNilRoots = {}
-		--local nilRoots = Explorer.NilRoots
-		--local connect = game.DescendantAdded.Connect
-		--local disconnect
-		--if not nilRoots then nilRoots = {} Explorer.NilRoots = nilRoots end
 
 		for i = 1,#nilInsts do
 			local obj = nilInsts[i]
 			if obj ~= game then
 				nilMap[obj] = true
-				--newNilRoots[obj] = true
 
 				local descs = getDescs(obj)
 				for j = 1,#descs do
@@ -3988,44 +3836,11 @@ local function main()
 			end
 		end
 
-		-- Remove unmapped nil nodes
-		--[[for i = 1,#nilNode do
-			local node = nilNode[i]
-			if not newNilMap[node.Obj] then
-				nilMap[node.Obj] = nil
-				coroutine.wrap(removeObject)(node)
-			end
-		end]]
-
-		--nilMap = newNilMap
-
 		for i = 1,#nilInsts do
 			local obj = nilInsts[i]
 			local node = nodes[obj]
 			if not node then coroutine.wrap(addObject)(obj) end
 		end
-
-		--[[
-		-- Remove old root connections
-		for obj in next,nilRoots do
-			if not newNilRoots[obj] then
-				if not disconnect then disconnect = obj[1].Disconnect end
-				disconnect(obj[1])
-				disconnect(obj[2])
-			end
-		end
-		
-		for obj in next,newNilRoots do
-			if not nilRoots[obj] then
-				nilRoots[obj] = {
-					connect(obj.DescendantAdded,addObject),
-					connect(obj.DescendantRemoving,removeObject)
-				}
-			end
-		end]]
-
-		--nilMap = newNilMap
-		--Explorer.NilRoots = newNilRoots
 
 		Explorer.Update()
 		Explorer.Refresh()
@@ -4160,7 +3975,7 @@ local function main()
 				context:AddDivider(category)
 				lastCategory = category
 			end
-			
+
 			local icon
 			if iconData then
 				icon = iconData.Icons[class.Name] or iconData.Icons.Placeholder
@@ -4172,11 +3987,8 @@ local function main()
 
 		Explorer.InsertObjectContext = context
 	end
-	
-	--[[
-		Headers, Setups, Predicate, ObjectDefs
-	]]
-	Explorer.SearchFilters = { -- TODO: Use data table (so we can disable some if funcs don't exist)
+
+	Explorer.SearchFilters = {
 		Comparison = {
 			["isa"] = function(argString)
 				local lower = string.lower
@@ -4349,7 +4161,7 @@ local function main()
 			local nextData = foundData[nextInd] or {1}
 			local op = ops[nextData[2]]
 			local term = sub(query,init,nextInd-1)
-			term = match(term,"^%s*(.-)%s*$") or "" -- Trim
+			term = match(term,"^%s*(.-)%s*$") or ""
 
 			if #term > 0 then
 				if sub(term,1,1) == "!" then
@@ -4392,12 +4204,12 @@ local function main()
 							processFilter(Explorer.SearchFilters.Default(term))
 						end
 					end
-				end				
+				end
 			end
 
 			if op then
 				finalPredicate = finalPredicate..op
-				if op == "(" and (#term > 0 or lastOp == ")") then -- Handle bracket glitch
+				if op == "(" and (#term > 0 or lastOp == ")") then
 					return
 				else
 					lastOp = op
@@ -4422,16 +4234,16 @@ local specResults = specResults
 local service = service
 
 %s
-local function search(root)	
+local function search(root)
 %s
-	
+
 	local expandedpar = false
 	for i = 1,#root do
 		local node = root[i]
 		local obj = node.Obj
-		
+
 %s
-		
+
 		if %s then
 			expandTable[node] = 0
 			searchResults[node] = true
@@ -4445,7 +4257,7 @@ local function search(root)
 				expandedpar = true
 			end
 		end
-		
+
 		if #node > 0 then search(node) end
 	end
 end
@@ -4468,7 +4280,7 @@ return search]==]
 		expanded = (#query == 0 and Explorer.Expanded or Explorer.SearchExpanded)
 		searchFunc = nil
 
-		if #query > 0 then	
+		if #query > 0 then
 			local expandTable = Explorer.SearchExpanded
 			local specFilters
 
@@ -4505,14 +4317,14 @@ return search]==]
 			if Main.Elevated then
 				local start = tick()
 				searchFunc,specFilters = Explorer.BuildSearchFunc(query)
-				--print("BUILD SEARCH",tick()-start)
+
 			else
 				searchFunc = defaultSearch
 			end
 
 			if specFilters then
 				table.clear(specResults)
-				for i = 1,#specFilters do -- Specific search filers that returns list of matches
+				for i = 1,#specFilters do
 					local resMap = {}
 					specResults[i] = resMap
 					local objs = specFilters[i]()
@@ -4529,7 +4341,7 @@ return search]==]
 				local start = tick()
 				searchFunc(nodes[game])
 				searchFunc(nilNode)
-				--warn(tick()-start)
+
 			end
 		end
 
@@ -4739,7 +4551,6 @@ return search]==]
 		end
 		holder:ClearAllChildren()
 
-		-- Updates theme
 		for i,v in pairs(Explorer.SelectionVisualGui:GetChildren()) do
 			v.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 		end
@@ -4785,23 +4596,23 @@ return search]==]
 
 	Explorer.Init = function()
 		Explorer.LegacyClassIcons = Lib.IconMap.newLinear("rbxasset://textures/ClassImages.PNG", 16,16)
-		
+
 		if Settings.ClassIcon ~= nil and Settings.ClassIcon ~= "Old" then
 			iconData = Lib.IconMap.getIconDataFromName(Settings.ClassIcon)
-			
+
 			Explorer.ClassIcons = Lib.IconMap.new("rbxassetid://"..tostring(iconData.MapId), iconData.IconSize * iconData.Witdh, iconData.IconSize * iconData.Height,iconData.IconSize,iconData.IconSize)
-			-- move every value dict 1 behind because SetDict starts at 0 not 1 lol
+
 			local fixed = {}
 			for i,v in pairs(iconData.Icons) do
 				fixed[i] = v - 1
 			end
-			
+
 			iconData.Icons = fixed
 			Explorer.ClassIcons:SetDict(fixed)
 		else
 			Explorer.ClassIcons = Lib.IconMap.newLinear("rbxasset://textures/ClassImages.PNG", 16,16)
 		end
-		
+
 		Explorer.MiscIcons = Main.MiscIcons
 
 		clipboard = {}
@@ -4842,7 +4653,7 @@ return search]==]
 		Explorer.GuiElems.ToolBar = toolBar
 		Explorer.GuiElems.TreeFrame = treeFrame
 
-		scrollV = Lib.ScrollBar.new()		
+		scrollV = Lib.ScrollBar.new()
 		scrollV.WheelIncrement = 3
 		scrollV.Gui.Position = UDim2.new(1,-16,0,23)
 		scrollV:SetScrollFrame(treeFrame)
@@ -4871,13 +4682,11 @@ return search]==]
 		scrollV.Gui.Parent = window.GuiElems.Content
 		scrollH.Gui.Parent = window.GuiElems.Content
 
-		-- Init stuff that requires the window
 		Explorer.InitRenameBox()
 		Explorer.InitSearch()
 		Explorer.InitDelCleaner()
 		selection.Changed:Connect(Explorer.UpdateSelectionVisuals)
 
-		-- Window events
 		window.GuiElems.Main:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
 			if Explorer.Active then
 				Explorer.UpdateView()
@@ -4899,14 +4708,11 @@ return search]==]
 		window.OnDeactivate:Connect(function() Explorer.Active = false end)
 		window.OnMinimize:Connect(function() Explorer.Active = false end)
 
-		-- Settings
 		autoUpdateSearch = Settings.Explorer.AutoUpdateSearch
 
-		-- Fill in nodes
 		nodes[game] = {Obj = game}
 		expanded[nodes[game]] = true
 
-		-- Nil Instances
 		if env.getnilinstances then
 			nodes[nilNode.Obj] = nilNode
 		end
@@ -4948,16 +4754,10 @@ end
 return {InitDeps = initDeps, InitAfterMain = initAfterMain, Main = main}
 end,
 ["Lib"] = function()
---[[
-	Lib Module
-	
-	Container for functions and classes
-]]
 
--- Common Locals
-local Main,Lib,Apps,Settings -- Main Containers
-local Explorer, Properties, ScriptViewer, Notebook -- Major Apps
-local API,RMD,env,service,plr,create,createSimple -- Main Locals
+local Main,Lib,Apps,Settings
+local Explorer, Properties, ScriptViewer, Notebook
+local API,RMD,env,service,plr,create,createSimple
 
 local function initDeps(data)
 	Main = data.Main
@@ -4986,10 +4786,9 @@ local function main()
 
 	local renderStepped = service.RunService.RenderStepped
 	local signalWait = renderStepped.wait
-	local PH = newproxy() -- Placeholder, must be replaced in constructor
+	local PH = newproxy()
 	local SIGNAL = newproxy()
 
-	-- Usually for classes that work with a Roblox Object
 	local function initObj(props,mt)
 		local type = type
 		local function copy(t)
@@ -5002,7 +4801,7 @@ local function main()
 				else
 					res[i] = v
 				end
-			end		
+			end
 			return res
 		end
 
@@ -5014,8 +4813,6 @@ local function main()
 		return {__index = function(self,ind) if not props[ind] then return funcs[ind] or self.Gui[ind] end end,
 		__newindex = function(self,ind,val) if not props[ind] then self.Gui[ind] = val else rawset(self,ind,val) end end}
 	end
-
-	-- Functions
 
 	Lib.FormatLuaString = (function()
 		local string = string
@@ -5039,7 +4836,7 @@ local function main()
 		if gui == nil then return false end
 		local mouse = Main.Mouse
 		local guiPosition = gui.AbsolutePosition
-		local guiSize = gui.AbsoluteSize	
+		local guiSize = gui.AbsoluteSize
 
 		return mouse.X >= guiPosition.X and mouse.X < guiPosition.X + guiSize.X and mouse.Y >= guiPosition.Y and mouse.Y < guiPosition.Y + guiSize.Y
 	end
@@ -5109,12 +4906,9 @@ local function main()
 
 	Lib.ParseXML = (function()
 		local func = function()
-			-- Only exists to parse RMD
-			-- from https://github.com/jonathanpoelen/xmlparser
 
 			local string, print, pairs = string, print, pairs
 
-			-- http://lua-users.org/wiki/StringTrim
 			local trim = function(s)
 				local from = s:match"^%s*()"
 				return from > #s and "" or s:match(".*%S", from)
@@ -5126,7 +4920,7 @@ local function main()
 			local E = string.byte('E', 1)
 
 			function parse(s, evalEntities)
-				-- remove comments
+
 				s = s:gsub('<!%-%-(.-)%-%->', '')
 
 				local entities, tentities = {}
@@ -5148,11 +4942,11 @@ local function main()
 					txt = txt:match'^%s*(.*%S)' or ''
 					if #txt ~= 0 then
 						t[#t+1] = {text=txt}
-					end		
+					end
 				end
 
 				s:gsub('<([?!/]?)([-:_%w]+)%s*(/?>?)([^<]*)', function(type, name, closed, txt)
-					-- open
+
 					if #type == 0 then
 						local a = {}
 						if #closed == 0 then
@@ -5175,25 +4969,20 @@ local function main()
 						end
 
 						addtext(txt)
-						-- close
+
 					elseif '/' == type then
 						t = l[#l]
 						l[#l] = nil
 
 						addtext(txt)
-						-- ENTITY
+
 					elseif '!' == type then
 						if E == name:byte(1) then
 							txt:gsub('([_%w]+)%s+(.)(.-)%2', function(name, q, entity)
 								entities[#entities+1] = {name=name, value=entity}
 							end, 1)
 						end
-						-- elseif '?' == type then
-						--	 print('?	' .. name .. ' // ' .. attrs .. '$$')
-						-- elseif '-' == type then
-						--	 print('comment	' .. name .. ' // ' .. attrs .. '$$')
-						-- else
-						--	 print('o	' .. #p .. ' // ' .. name .. ' // ' .. attrs .. '$$')
+
 					end
 				end)
 
@@ -5406,10 +5195,10 @@ local function main()
 		env.writefile(filepath,data)
 		return Lib.LoadCustomAsset(filepath)
 	end
-	
+
 	local currentfilename, currentextension, currentclickhandler
 	currentclickhandler = function() end
-	Lib.SaveAsPrompt = function(filename, codeToSave, ext)		
+	Lib.SaveAsPrompt = function(filename, codeToSave, ext)
 		local win = ScriptViewer.SaveAsWindow
 		if not win then
 			win = Lib.Window.new()
@@ -5429,8 +5218,6 @@ local function main()
 			nameBox.Position = UDim2.new(0,75,0,10)
 			nameBox.Size = UDim2.new(0,220,0,20)
 			win:Add(nameBox,"NameBox")
-
-			--nameBox.TextBox.Text = filename or ""
 
 			nameBox.TextBox:GetPropertyChangedSignal("Text"):Connect(function()
 				saveButton:SetDisabled(#nameBox:GetText() == 0)
@@ -5490,7 +5277,7 @@ local function main()
 				currentextension = ext or filename:match("%.([^%.]+)$") or "txt"
 				filename = filename:gsub("%.[^.]+$", "") .. "." .. currentextension
 
-				local s, msg = pcall(codeToSave,filename) -- callback
+				local s, msg = pcall(codeToSave,filename)
 				if not s then
 					win.Elements.Error.Text = "Error: " .. msg
 					task.spawn(error, msg)
@@ -5503,13 +5290,11 @@ local function main()
 		win:SetTitle("Save As")
 		win.Elements.Error.Text = ""
 		win.Elements.NameBox:SetText(filename or "")
-		
+
 		win.Elements.SaveButton:SetDisabled(win.Elements.NameBox:GetText() == 0)
-		
+
 		win:Show()
 	end
-
-	-- Classes
 
 	Lib.Signal = (function()
 		local funcs = {}
@@ -5520,7 +5305,7 @@ local function main()
 		end
 
 		funcs.Connect = function(self,func)
-			if type(func) ~= "function" then error("Attempt to connect a non-function") end		
+			if type(func) ~= "function" then error("Attempt to connect a non-function") end
 			local con = {
 				Signal = self,
 				Func = func,
@@ -5648,7 +5433,7 @@ local function main()
 
 		return {new = new}
 	end)()
-	
+
 	Lib.IconMap = (function()
 		local funcs = {}
 		local IconList = {
@@ -6793,7 +6578,7 @@ local function main()
 					WrapDeformer = 304,
 					WrapLayer = 305,
 					WrapTarget = 306,
-					
+
 					Color3Value = 284,
 					IntValue = 284,
 					NumberValue = 284,
@@ -6826,8 +6611,6 @@ local function main()
 		else
 			funcs.ExplorerIcons = { ["MapId"] = IconList.Old.MapId, ["Icons"] = IconList.Old.Icons, ["IconSize"] = IconList.Old.IconSize }
 		end
-		
-		
 
 		funcs.GetLabel = function(self)
 			local label = Instance.new("ImageLabel")
@@ -6865,7 +6648,7 @@ local function main()
 		funcs.IconDehash = function(self, _id)
 			return math.floor(_id / 14 % 14), math.floor(_id % 14)
 		end
-		
+
 		local ClassNameNoImage = {}
 		funcs.GetExplorerIcon = function(self, obj, index)
 			if Settings.ClassIcon == "Vanilla3" then
@@ -6884,7 +6667,7 @@ local function main()
 				obj.Size = UDim2.new(MapSize.X / funcs.ExplorerIcons.IconSize, 0, MapSize.Y / funcs.ExplorerIcons.IconSize, 0)
 			elseif Settings.ClassIcon == "NewLight" or Settings.ClassIcon == "NewDark" then
 				local isService = string.find(index, "Service") and game:GetService(index)
-				
+
 				obj.Size = UDim2.fromOffset(16, 16)
 				index = (self.ExplorerIcons.Icons[index] or (isService and self.ExplorerIcons.Icons.Service) or self.ExplorerIcons.Icons.Placeholder) - 1
 				obj.ImageRectOffset = Vector2.new(funcs.ExplorerIcons.IconSize * (index % funcs.ExplorerIcons.Height), funcs.ExplorerIcons.IconSize * math.floor(index / funcs.ExplorerIcons.Height))
@@ -6898,7 +6681,7 @@ local function main()
 				obj.Position = UDim2.new(-col - (pad * (col + 1) + border) / funcs.ExplorerIcons.IconSize, 0, -row - (pad * (row + 1) + border) / funcs.ExplorerIcons.IconSize, 0)
 				obj.Size = UDim2.new(MapSize.X / funcs.ExplorerIcons.IconSize, 0, MapSize.Y / funcs.ExplorerIcons.IconSize, 0)
 			end
-			
+
 		end
 
 		funcs.DisplayExplorerIcons = function(self, Frame, index)
@@ -6944,7 +6727,7 @@ local function main()
 			},mt)
 			return obj
 		end
-		
+
 		local function getIconDataFromName(name)
 			return IconList[name] or error("Name not found")
 		end
@@ -7391,15 +7174,13 @@ local function main()
 
 		local function resizeHook(self,resizer,dir)
 			local pressing = false
-			
+
 			local guiMain = self.GuiElems.Main
-			
+
 			resizer.MouseEnter:Connect(function() resizer.BackgroundTransparency = 0.5 end)
 			resizer.MouseButton1Down:Connect(function() pressing = true resizer.BackgroundTransparency = 0.5 end)
 			resizer.MouseButton1Up:Connect(function() pressing = false resizer.BackgroundTransparency = 1 end)
-			
-			
-			
+
 			resizer.InputBegan:Connect(function(input)
 				if not self.Dragging and not self.Resizing and self.Resizable and self.ResizableInternal and pressing then
 					local isH = dir:find("[WE]") and true
@@ -7408,16 +7189,16 @@ local function main()
 					local signY = dir:find("N",1,true) and -1 or 1
 
 					if self.Minimized and isV then return end
-					
+
 					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-						
+
 						local releaseEvent, mouseEvent
 
 						local offX = input.Position.X - resizer.AbsolutePosition.X
 						local offY = input.Position.Y - resizer.AbsolutePosition.Y
 
 						self.Resizing = resizer
-						
+
 						releaseEvent = service.UserInputService.InputEnded:Connect(function(input)
 							if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 								releaseEvent:Disconnect()
@@ -7448,7 +7229,7 @@ local function main()
 			end)
 
 			resizer.InputEnded:Connect(function(input)
-				--if input.UserInputType == Enum.UserInputType.Touch and Main.AllowDraggableOnMobile == false then return end
+
 				if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and self.Resizing ~= resizer then
 					resizer.BackgroundTransparency = 1
 				end
@@ -7511,14 +7292,14 @@ local function main()
 			local gui = create({
 				{1,"ScreenGui",{Name="Window",}},
 				{2,"Frame",{Active=true,BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,BorderSizePixel=0,Name="Main",Parent={1},Position=UDim2.new(0.40000000596046,0,0.40000000596046,0),Size=UDim2.new(0,300,0,300),}},
-				--[[background mod set to 0.05]]	{3,"Frame",{BackgroundColor3=Color3.new(0.17647059261799,0.17647059261799,0.17647059261799),BorderSizePixel=0,Name="Content",Parent={2},Position=UDim2.new(0,0,0,20),Size=UDim2.new(1,0,1,-20),ClipsDescendants=true}},
+	{3,"Frame",{BackgroundColor3=Color3.new(0.17647059261799,0.17647059261799,0.17647059261799),BorderSizePixel=0,Name="Content",Parent={2},Position=UDim2.new(0,0,0,20),Size=UDim2.new(1,0,1,-20),ClipsDescendants=true}},
 				{4,"Frame",{BackgroundColor3=Color3.fromRGB(33,33,33),BorderSizePixel=0,Name="Line",Parent={3},Size=UDim2.new(1,0,0,1),}},
 				{5,"TextButton",{AutoButtonColor=false,BackgroundColor3=Color3.new(0.20392157137394,0.20392157137394,0.20392157137394),BorderSizePixel=0,Name="TopBar",Parent={2},Size=UDim2.new(1,0,0,20),Text = ""}},
 				{6,"TextLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Font=3,Name="Title",Parent={5},Position=UDim2.new(0,5,0,0),Size=UDim2.new(1,-10,0,20),Text="Window",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=0}},
 				{7,"TextButton",{AutoButtonColor=false,BackgroundColor3=Color3.new(0.12549020349979,0.12549020349979,0.12549020349979),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="Close",Parent={5},Position=UDim2.new(1,-18,0,2),Size=UDim2.new(0,16,0,16),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,}},
 				{8,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Image="rbxassetid://5054663650",Parent={7},Position=UDim2.new(0,3,0,3),Size=UDim2.new(0,10,0,10),}},
 				{9,"UICorner",{CornerRadius=UDim.new(0,4),Parent={7},}},
-				--[[lol mod]]	{9,"UICorner",{CornerRadius=UDim.new(0,4),Parent={2},}},
+	{9,"UICorner",{CornerRadius=UDim.new(0,4),Parent={2},}},
 				{10,"TextButton",{AutoButtonColor=false,BackgroundColor3=Color3.new(0.12549020349979,0.12549020349979,0.12549020349979),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="Minimize",Parent={5},Position=UDim2.new(1,-36,0,2),Size=UDim2.new(0,16,0,16),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,}},
 				{11,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Image="rbxassetid://5034768003",Parent={10},Position=UDim2.new(0,3,0,3),Size=UDim2.new(0,10,0,10),}},
 				{12,"UICorner",{CornerRadius=UDim.new(0,4),Parent={10},}},
@@ -7548,12 +7329,7 @@ local function main()
 			self.GuiElems.Minimize = guiTopBar.Minimize
 			self.GuiElems.ResizeControls = guiResizeControls
 			self.ContentPane = guiMain.Content
-			
-			-- dont mind this, im testing what if the frame background is blurry 
-			--blur.new(guiMain.Content, "Rectangle")
 
-			--blur.updateAll()
-			
 			local ButtonDown = false
 			guiTopBar.MouseButton1Down:Connect(function() ButtonDown = true end)
 			guiTopBar.MouseButton1Up:Connect(function() ButtonDown = false end)
@@ -7565,9 +7341,8 @@ local function main()
 
 			if Settings.Window.Transparency then
 				self.GuiElems.Content.BackgroundTransparency = Settings.Window.Transparency
-				--self.GuiElems
-			end
 
+			end
 
 			guiTopBar.InputBegan:Connect(function(input)
 				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -7709,16 +7484,6 @@ local function main()
 			leftSide.Frame.Resizer.Position = UDim2.new(0,leftSide.Width,0,0)
 			rightSide.Frame.Resizer.Position = UDim2.new(0,-5,0,0)
 
-			--leftSide.Frame.Visible = (#leftSide.Windows > 0)
-			--rightSide.Frame.Visible = (#rightSide.Windows > 0)
-
-			--[[if #leftSide.Windows > 0 and leftSide.Frame.Position == UDim2.new(0,-leftSide.Width-5,0,0) then
-				leftSide.Frame:TweenPosition(UDim2.new(0,0,0,0),Enum.EasingDirection.Out,Enum.EasingStyle.Quad,0.3,true)
-			elseif #leftSide.Windows == 0 and leftSide.Frame.Position == UDim2.new(0,0,0,0) then
-				leftSide.Frame:TweenPosition(UDim2.new(0,-leftSide.Width-5,0,0),Enum.EasingDirection.Out,Enum.EasingStyle.Quad,0.3,true)
-			end
-			local rightTweenPos = (#rightSide.Windows == 0 and UDim2.new(1,5,0,0) or UDim2.new(1,-rightSide.Width,0,0))
-			rightSide.Frame:TweenPosition(rightTweenPos,Enum.EasingDirection.Out,Enum.EasingStyle.Quad,0.3,true)]]
 			local leftHidden = #leftSide.Windows == 0 or leftSide.Hidden
 			local rightHidden = #rightSide.Windows == 0 or rightSide.Hidden
 			local leftPos = (leftHidden and UDim2.new(0,-leftSide.Width-10,0,0) or UDim2.new(0,0,0,0))
@@ -7768,7 +7533,7 @@ local function main()
 
 		local function sideResizerHook(resizer,dir,side,pos)
 			local pressing = false
-			
+
 			local mouse = Main.Mouse
 			local windows = side.Windows
 
@@ -7776,12 +7541,11 @@ local function main()
 			resizer.MouseButton1Down:Connect(function() pressing = true resizer.BackgroundColor3 = theme.MainColor2 end)
 			resizer.MouseButton1Up:Connect(function() pressing = false resizer.BackgroundColor3 = theme.Button end)
 
-
 			resizer.InputBegan:Connect(function(input)
 				if not side.Resizing and pressing then
 					if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
 						resizer.BackgroundColor3 = theme.MainColor2
-					end 
+					end
 					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 						local releaseEvent,mouseEvent
 
@@ -7870,7 +7634,7 @@ local function main()
 			end)
 		end
 
-		local function renderSide(side,noTween) -- TODO: Use existing resizers
+		local function renderSide(side,noTween)
 			local currentPos = 0
 			local sideFramePos = getSideFramePos(side)
 			local template = side.WindowResizer:Clone()
@@ -7885,7 +7649,7 @@ local function main()
 				local size = UDim2.new(0,side.Width,0,v.SizeY)
 				local pos = UDim2.new(sideFramePos.X.Scale,sideFramePos.X.Offset,0,currentPos)
 				Lib.ShowGui(v.Gui)
-				--v.GuiElems.Main:TweenSizeAndPosition(size,pos,Enum.EasingDirection.Out,Enum.EasingStyle.Quad,0.3,true)
+
 				if noTween then
 					v.GuiElems.Main.Size = size
 					v.GuiElems.Main.Position = pos
@@ -7910,8 +7674,6 @@ local function main()
 				end
 			end
 
-			--side.Frame.Back.Position = UDim2.new(0,0,0,0)
-			--side.Frame.Back.Size = UDim2.new(0,side.Width,1,0)
 		end
 
 		local function updateSide(side,noTween)
@@ -7956,10 +7718,6 @@ local function main()
 				count = count + 1
 			end
 
-			--[[local leftTweenPos = (#leftSide.Windows == 0 and UDim2.new(0,-leftSide.Width-5,0,0) or UDim2.new(0,0,0,0))
-			leftSide.Frame:TweenPosition(leftTweenPos,Enum.EasingDirection.Out,Enum.EasingStyle.Quad,0.3,true)
-			local rightTweenPos = (#rightSide.Windows == 0 and UDim2.new(1,5,0,0) or UDim2.new(1,-rightSide.Width,0,0))
-			rightSide.Frame:TweenPosition(rightTweenPos,Enum.EasingDirection.Out,Enum.EasingStyle.Quad,0.3,true)]]
 		end
 
 		funcs.SetMinimized = function(self,set,mode)
@@ -8118,7 +7876,7 @@ local function main()
 			self.Gui.Parent = nil
 			updateWindows(true)
 		end
-		
+
 		funcs.Destroy = function(self)
 			self.Closed = true
 			self:SetResizableInternal(false)
@@ -8154,7 +7912,7 @@ local function main()
 			end
 
 			self.Aligned = false
-			--self.Gui.Parent = nil
+
 			updateWindows(true)
 			self.Gui:Destroy()
 		end
@@ -8238,13 +7996,12 @@ local function main()
 			if align then
 				window:AlignTo(targetSide,pos,size,data.Silent)
 			else
-				if align == nil and window.ClosedSide then -- Regular open
+				if align == nil and window.ClosedSide then
 					window:AlignTo(window.ClosedSide,window.SidePos,size,true)
 					static.SetSideVisible(window.ClosedSide,true)
 				else
 					if table.find(visibleWindows,window) then return end
 
-					-- TODO: make better
 					window.GuiElems.Main.Size = UDim2.new(0,window.SizeX,0,20)
 					local ti = TweenInfo.new(0.2,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
 					window:StopTweens()
@@ -8493,7 +8250,7 @@ local function main()
 				IconMap = item.IconMap,
 				OnRightClick = item.OnRightClick
 			}
-			
+
 			newItem.DisabledIcon = newItem.Icon
 
 			if self.QueuedDivider then
@@ -8595,15 +8352,14 @@ local function main()
 						newEntry.EntryName.Position = UDim2.new(0,2,0,0)
 						newEntry.EntryName.Size = UDim2.new(1,-4,0,20)
 						newEntry.Icon.Visible = false
-					else			
+					else
 						local iconIndex
 						if item.Disabled and item.DisabledIcon then
 							iconIndex = item.DisabledIcon
 						elseif item.Icon then
 							iconIndex =  item.Icon
 						end
-						
-						-- Explorer.MiscIcons:DisplayExplorerIcons(newEntry.Icon, iconIndex)
+
 						if item.IconMap then
 							if type(iconIndex) == "number" then
 								item.IconMap:Display(newEntry.Icon, iconIndex)
@@ -8667,12 +8423,10 @@ local function main()
 				self:Refresh()
 			end
 
-			-- Vars
 			local reverseY = false
 			local x,y = x or mouse.X, y or mouse.Y
 			local maxX,maxY = mouse.ViewSizeX,mouse.ViewSizeY
 
-			-- Position and show
 			if x + self.Width > maxX then
 				x = self.ReverseX and x - self.Width or maxX - self.Width
 			end
@@ -8681,8 +8435,7 @@ local function main()
 			self.Gui.DisplayOrder = Main.DisplayOrders.Menu
 			Lib.ShowGui(self.Gui)
 
-			-- Size adjustment
-			local toSize = elems.List.UIListLayout.AbsoluteContentSize.Y + 6 -- Padding
+			local toSize = elems.List.UIListLayout.AbsoluteContentSize.Y + 6
 			if self.MaxHeight and toSize > self.MaxHeight then
 				elems.List.CanvasSize = UDim2.new(0,0,0,toSize-6)
 				toSize = self.MaxHeight
@@ -8691,7 +8444,6 @@ local function main()
 			end
 			if y + toSize > maxY then reverseY = true end
 
-			-- Close event
 			local closable
 			if self.CloseEvent then self.CloseEvent:Disconnect() end
 			self.CloseEvent = service.UserInputService.InputBegan:Connect(function(input)
@@ -8705,7 +8457,6 @@ local function main()
 				end
 			end)
 
-			-- Resize
 			if reverseY then
 				elems.Main.Position = UDim2.new(0,x,0,y-(self.ReverseYOffset or 0))
 				local newY = y - toSize - (self.ReverseYOffset or 0)
@@ -8715,7 +8466,6 @@ local function main()
 				elems.Main:TweenSize(UDim2.new(0,self.Width,0,toSize),Enum.EasingDirection.Out,Enum.EasingStyle.Quart,0.2,true)
 			end
 
-			-- Close debounce
 			Lib.FastWait()
 			if self.SearchEnabled and self.FocusSearchOnShow then elems.SearchBar:CaptureFocus() end
 			closable = true
@@ -8798,7 +8548,7 @@ local function main()
 
 		local keywords = {
 			["and"] = true,
-			["break"] = true, 
+			["break"] = true,
 			["do"] = true,
 			["else"] = true,
 			["elseif"] = true,
@@ -9037,7 +8787,7 @@ local function main()
 
 						if sel2Y < selY or (sel2Y == selY and sel2X < selX) then
 							obj.SelectionRange = {{sel2X,sel2Y},{selX,selY}}
-						else						
+						else
 							obj.SelectionRange = {{selX,selY},{sel2X,sel2Y}}
 						end
 
@@ -9052,7 +8802,7 @@ local function main()
 							mouseEvent:Disconnect()
 							scrollEvent:Disconnect()
 							obj:SetCopyableSelection()
-							--updateSelection()
+
 						end
 					end)
 
@@ -9173,7 +8923,7 @@ local function main()
 			local leftSub = lines[selY+1]:sub(selX+1)
 			local rightSub = lines[sel2Y+1]:sub(1,sel2X)
 
-			local result = leftSub.."\n" 
+			local result = leftSub.."\n"
 			for i = selY+1,sel2Y-1 do
 				result = result..lines[i+1].."\n"
 			end
@@ -9381,7 +9131,7 @@ local function main()
 			local after = line:sub(cursorX+1)
 
 			text = text:gsub("\r\n","\n")
-			text = self:ConvertText(text,true) -- Tab Convert
+			text = self:ConvertText(text,true)
 
 			local textLines = text:split("\n")
 			local insert = table.insert
@@ -9410,7 +9160,6 @@ local function main()
 			self.ScrollH:ScrollTo(self.ScrollH.Index + x)
 		end
 
-		-- x and y starts at 0
 		funcs.TabAdjust = function(self,x,y)
 			local lines = self.Lines
 			local line = lines[y+1]
@@ -9431,7 +9180,7 @@ local function main()
 			return 0
 		end
 
-		funcs.SetEditing = function(self,on,input)			
+		funcs.SetEditing = function(self,on,input)
 			self:UpdateCursor(input)
 
 			if on then
@@ -9481,7 +9230,7 @@ local function main()
 
 		funcs.UpdateCursor = function(self,input)
 			local linesFrame = self.GuiElems.LinesFrame
-			local cursor = self.GuiElems.Cursor			
+			local cursor = self.GuiElems.Cursor
 			local hSize = math.max(0,linesFrame.AbsoluteSize.X)
 			local vSize = math.max(0,linesFrame.AbsoluteSize.Y)
 			local maxLines = math.ceil(vSize / self.FontSize)
@@ -9515,7 +9264,6 @@ local function main()
 
 			cursorX = cursorX + self:TabAdjust(cursorX,cursorY)
 
-			-- Update modified
 			self.CursorX = cursorX
 			self.CursorY = cursorY
 
@@ -9553,7 +9301,7 @@ local function main()
 		funcs.PreHighlight = function(self)
 			local start = tick()
 			local text = self.Text:gsub("\\\\","  ")
-			--print("BACKSLASH SUB",tick()-start)
+
 			local textLen = #text
 			local found = {}
 			local foundMap = {}
@@ -9627,14 +9375,13 @@ local function main()
 
 				while pos > lineEnd do
 					curLine = curLine + 1
-					--lineTableCount = 1
+
 					lineEnd = newLines[curLine] or textLen+1
 				end
 				while true do
 					local lineTable = foundHighlights[curLine]
 					if not lineTable then lineTable = {} foundHighlights[curLine] = lineTable end
 					lineTable[pos] = {typ,ending}
-					--lineTableCount = lineTableCount + 1
 
 					if ending > lineEnd then
 						curLine = curLine + 1
@@ -9645,11 +9392,10 @@ local function main()
 				end
 
 				lastEnding = ending
-				--if i < 200 then print(curLine) end
+
 			end
 			self.PreHighlights = foundHighlights
-			--print(tick()-start)
-			--print(#found,curLine)
+
 		end
 
 		funcs.HighlightLine = function(self,line)
@@ -9676,7 +9422,7 @@ local function main()
 				if relativePos < 1 then
 					currentType = data[1]
 					lastEnding = data[2] - lineStart
-					--warn(pos,data[2])
+
 				else
 					preHighlightMap[relativePos] = {data[1],data[2]-lineStart}
 				end
@@ -9842,7 +9588,6 @@ local function main()
 				local curType = highlights[colStart]
 				local curTemplate = richTemplates[typeMap[curType]] or textTemplate
 
-				-- Selection Highlight
 				local selectionRange = self.SelectionRange
 				local selPos1 = selectionRange[1]
 				local selPos2 = selectionRange[2]
@@ -9862,7 +9607,6 @@ local function main()
 					lineFrame.SelectionHighlight.Visible = false
 				end
 
-				-- Selection Text Color for first char
 				local inSelection = selRelaY >= selRow and selRelaY <= sel2Row and (selRelaY == selRow and viewX >= selColumn or selRelaY ~= selRow) and (selRelaY == sel2Row and viewX < sel2Column or selRelaY ~= sel2Row)
 				if inSelection then
 					curType = -999
@@ -9874,7 +9618,6 @@ local function main()
 					local selRelaX = relaX-1
 					local posType = highlights[relaX]
 
-					-- Selection Text Color
 					local inSelection = selRelaY >= selRow and selRelaY <= sel2Row and (selRelaY == selRow and selRelaX >= selColumn or selRelaY ~= selRow) and (selRelaY == sel2Row and selRelaX < sel2Column or selRelaY ~= sel2Row)
 					if inSelection then
 						posType = -999
@@ -9894,16 +9637,15 @@ local function main()
 				end
 
 				local lastText = gsub(sub(lineText,colStart,viewX+maxCols),"['\"<>&]",richReplace)
-				--warn("SUB",colStart,viewX+maxCols-1)
+
 				if #lastText > 0 then
 					resText = resText .. (curTemplate ~= textTemplate and (curTemplate .. lastText .. "</font>") or lastText)
 				end
 
 				if self.Lines[relaY] then
 
-					-- REMOVED LINE HIGHLIGHT DUE TO BUG OFFSET
 					lineNumberStr = lineNumberStr .. (relaY == self.CursorY and ("<b>"..relaY.."</b>\n") or relaY .. "\n")
-					--lineNumberStr = lineNumberStr .. (relaY == self.CursorY and (relaY.."\n") or relaY .. "\n")
+
 				end
 
 				lineFrame.Label.Text = resText
@@ -9917,7 +9659,6 @@ local function main()
 			self.Frame.LineNumbers.Text = lineNumberStr
 			self:UpdateCursor()
 
-			--print("REFRESH TIME",tick()-start)
 		end
 
 		funcs.UpdateView = function(self)
@@ -9981,30 +9722,30 @@ local function main()
 			end
 
 			self.MaxTextCols = maxCols
-			self:UpdateView()	
+			self:UpdateView()
 			self.Text = table.concat(self.Lines,"\n")
 			self:MapNewLines()
 			self:PreHighlight()
 			self:Refresh()
-			--self.TextChanged:Fire()
+
 		end
 
 		funcs.ConvertText = function(self,text,toEditor)
 			if toEditor then
-				--return text:gsub("\t",(" %s%s "):format(tabSub,tabSub))
-				return text:gsub("\t","    ") -- Fixed unknown unicode showing when pressing TAB
+
+				return text:gsub("\t","    ")
 			else
 				return text:gsub((" %s%s "):format(tabSub,tabSub),"\t")
 			end
 		end
 
-		funcs.GetText = function(self) -- TODO: better (use new tab format)
+		funcs.GetText = function(self)
 			local source = table.concat(self.Lines,"\n")
-			return self:ConvertText(source,false) -- Tab Convert
+			return self:ConvertText(source,false)
 		end
 
 		funcs.SetText = function(self,txt)
-			txt = self:ConvertText(txt,true) -- Tab Convert
+			txt = self:ConvertText(txt,true)
 			local lines = self.Lines
 			table.clear(lines)
 			local count = 1
@@ -10156,7 +9897,6 @@ local function main()
 			local checkmark = filler.checkmark
 			local ripples_container = checkbox.ripples
 
-			-- walls
 			local top, bottom, left, right = filler.top, filler.bottom, filler.left, filler.right
 
 			self.Gui = checkbox
@@ -10171,25 +9911,7 @@ local function main()
 				Checkmark2 = filler.checkmark2,
 				Middle = filler.middle
 			}
-	
-			-- New:
-			--[[checkbox.Activated:Connect(function()
-				if Lib.CheckMouseInGui(checkbox) then
-					if self.Style == 0 then
-						ripple(ripples_container, self.Disabled and self.Colors.Disabled or self.Colors.Primary)
-					end
 
-					if not self.Disabled then
-						self:SetState(not self.Toggled,true)
-					else
-						self:Paint()
-					end
-
-					self.OnInput:Fire()
-				end
-			end)]]
-			
-			-- Best input compatibility:
 			checkbox.MouseButton1Up:Connect(function()
 				if Lib.CheckMouseInGui(checkbox) then
 					if self.Style == 0 then
@@ -10205,32 +9927,6 @@ local function main()
 					self.OnInput:Fire()
 				end
 			end)
-
-			-- Old:
-			--[[checkbox.InputBegan:Connect(function(i)
-				if i.UserInputType == Enum.UserInputType.MouseButton1 then
-					local release
-					release = service.UserInputService.InputEnded:Connect(function(input)
-						if input.UserInputType == Enum.UserInputType.MouseButton1 then
-							release:Disconnect()
-
-							if Lib.CheckMouseInGui(checkbox) then
-								if self.Style == 0 then
-									ripple(ripples_container, self.Disabled and self.Colors.Disabled or self.Colors.Primary)
-								end
-
-								if not self.Disabled then
-									self:SetState(not self.Toggled,true)
-								else
-									self:Paint()
-								end
-								
-								self.OnInput:Fire()
-							end
-						end
-					end)
-				end
-			end)]]
 
 			self:Paint()
 		end
@@ -10507,7 +10203,6 @@ local function main()
 				end
 			end)
 
-
 			if reverseY then
 				local newY = y - sizeY - (self.ReverseYOffset or 0)
 				y = newY >= 0 and newY or 0
@@ -10541,7 +10236,7 @@ local function main()
 		return {new = new}
 	end)()
 
-	Lib.ColorPicker = (function() -- TODO: Convert to newer class model
+	Lib.ColorPicker = (function()
 		local funcs = {}
 
 		local function new()
@@ -10752,7 +10447,7 @@ local function main()
 			local function colorStripInput()
 				local relativeY = mouse.Y - colorStrip.AbsolutePosition.Y
 
-				if relativeY < 0 then relativeY = 0 elseif relativeY > 199 then relativeY = 199 end	
+				if relativeY < 0 then relativeY = 0 elseif relativeY > 199 then relativeY = 199 end
 
 				val = (199 - relativeY) / 199
 
@@ -10823,18 +10518,6 @@ local function main()
 					end
 				end)
 			end
-
-			--[[local function UpdateBox(TextBox, Value, IsHSV, ...)
-				local number = tonumber(TextBox.Text)
-				if number then
-					number = math.clamp(math.floor(number), 0, Value) / Value
-					local HSV = Color3.fromHSV(func(number))
-					red, green, blue = HSV.R, HSV.G, HSV.B
-					
-					TextBox.Text = tostring(number):sub(4)
-					updateColor(IsHSV)
-				end
-			end]]
 
 			local function updateHue(str)
 				local num = tonumber(str)
@@ -10964,7 +10647,6 @@ local function main()
 			okButton.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then okButton.BackgroundTransparency = 0.4 end end)
 			okButton.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then okButton.BackgroundTransparency = 0 end end)
 
-
 			cancelButton.MouseButton1Click:Connect(function() newMt.OnCancel:Fire() window:Close() end)
 			cancelButton.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then cancelButton.BackgroundTransparency = 0.4 end end)
 			cancelButton.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then cancelButton.BackgroundTransparency = 0 end end)
@@ -10988,7 +10670,7 @@ local function main()
 	end)()
 
 	Lib.NumberSequenceEditor = (function()
-		local function new() -- TODO: Convert to newer class model
+		local function new()
 			local newMt = setmetatable({},{})
 			newMt.OnSelect = Lib.Signal.new()
 			newMt.OnCancel = Lib.Signal.new()
@@ -11223,11 +10905,10 @@ local function main()
 
 				newPoint.Parent = numberLine
 
-
 				newSelect.InputBegan:Connect(function(input)
 					if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-						for i, v in pairs(points) do 
-							v[4].Select.BackgroundTransparency = 1 
+						for i, v in pairs(points) do
+							v[4].Select.BackgroundTransparency = 1
 						end
 
 						newSelect.BackgroundTransparency = 0
@@ -11273,8 +10954,8 @@ local function main()
 								newMt:Redraw()
 								updateInputs(point)
 
-								for i, v in pairs(points) do 
-									v[4].Select.BackgroundTransparency = 1 
+								for i, v in pairs(points) do
+									v[4].Select.BackgroundTransparency = 1
 								end
 
 								newSelect.BackgroundTransparency = 0
@@ -11332,7 +11013,7 @@ local function main()
 
 						local envPercent = (lineCount-fromPoint[4].Position.X.Offset)/(toPoint[4].Position.X.Offset-fromPoint[4].Position.X.Offset)
 						local envLerp = fromEnvelope+(nextEnvelope-fromEnvelope)*envPercent
-						local relativeSize = (envLerp/10)*numberLineSize.Y						
+						local relativeSize = (envLerp/10)*numberLineSize.Y
 
 						local line = eLines[lineCount + 3]
 						if line then
@@ -11343,8 +11024,6 @@ local function main()
 				end
 			end
 			newMt.Redraw = redraw
-
-
 
 			local function loadSequence(self,seq)
 				resetSequence = seq
@@ -11484,7 +11163,7 @@ local function main()
 		return {new = new}
 	end)()
 
-	Lib.ColorSequenceEditor = (function() -- TODO: Convert to newer class model
+	Lib.ColorSequenceEditor = (function()
 		local function new()
 			local newMt = setmetatable({},{})
 			newMt.OnSelect = Lib.Signal.new()
@@ -11631,8 +11310,6 @@ local function main()
 					end
 				end)
 
-
-
 				return newArrow
 			end
 
@@ -11649,7 +11326,7 @@ local function main()
 					local nextColor = colors[i]
 					local endPos = math.floor((colorLine.AbsoluteSize.X-1) * nextColor[2]) + 1
 					nextColor[3].Position = UDim2.new(0,endPos,0,0)
-				end		
+				end
 			end
 			newMt.Redraw = redraw
 
@@ -12181,7 +11858,7 @@ local function main()
 					if input.UserInputType == Enum.UserInputType["MouseButton" .. button] then
 						release:Disconnect()
 						if Lib.CheckMouseInGui(item) and self.LastButton == button and self.LastItem == item then
-							self.InputDown = false -- infinite yield dev forgot to do this, and ended up OnRelease fired twice ??
+							self.InputDown = false
 							self["OnRelease"]:Fire(item,self.Combo,button)
 						end
 					end
@@ -12230,16 +11907,10 @@ end
 return {InitDeps = initDeps, InitAfterMain = initAfterMain, Main = main}
 end,
 ["ModelViewer"] = function()
---[[
-	Model Viewer App Module
-	
-	A model viewer :3
-]]
 
--- Common Locals
-local Main,Lib,Apps,Settings -- Main Containers
-local Explorer, Properties, ScriptViewer, ModelViewer, Notebook -- Major Apps
-local API,RMD,env,service,plr,create,createSimple -- Main Locals
+local Main,Lib,Apps,Settings
+local Explorer, Properties, ScriptViewer, ModelViewer, Notebook
+local API,RMD,env,service,plr,create,createSimple
 
 local function initDeps(data)
 	Main = data.Main
@@ -12274,7 +11945,7 @@ end
 local function main()
 	local RunService = game:GetService("RunService")
 	local UserInputService = game:GetService("UserInputService")
-	
+
 	local ModelViewer = {
 		EnableInputCamera = true,
 		IsViewing = false,
@@ -12282,13 +11953,12 @@ local function main()
 		ZoomMultiplier = 2,
 		AutoRotate = true,
 		RotationSpeed = 0.01,
-		RefreshRate = 30 -- hertz
+		RefreshRate = 30
 	}
-	
+
 	local window, viewportFrame, pathLabel, settingsButton
 	local model, camera, originalModel
-	
-	
+
 	ModelViewer.StopViewModel = function(updating)
 		if updating then
 			viewportFrame:FindFirstChildOfClass("Model"):Destroy()
@@ -12296,7 +11966,7 @@ local function main()
 			if camera then camera = nil end
 			if model then model = nil end
 			viewportFrame:ClearAllChildren()
-			
+
 			ModelViewer.IsViewing = false
 			window:SetTitle("3D Preview")
 			pathLabel.Gui.Text = ""
@@ -12306,12 +11976,10 @@ local function main()
 	ModelViewer.ViewModel = function(item, updating)
 		if not item then return end
 		ModelViewer.StopViewModel(updating)
-		
+
 		if item ~= workspace and not item:IsA("Terrain") then
-			-- why Model == workspace
-			-- wtf?
-			
-			if item:IsA("BasePart") and not item:IsA("Model") then			
+
+			if item:IsA("BasePart") and not item:IsA("Model") then
 				model = Instance.new("Model")
 				model.Parent = viewportFrame
 
@@ -12322,16 +11990,11 @@ local function main()
 			elseif item:IsA("Model") then
 				item.Archivable = true
 
-			--[[if not item.PrimaryPart then
-				pathLabel.Gui.Text = "Failed to view model: No PrimaryPart is found."
-				return
-			end]]
 				if #item:GetChildren() == 0 then return end
-				
+
 				model = item:Clone()
 				model.Parent = viewportFrame
 
-				-- fallback
 				if not model.PrimaryPart then
 					local found = false
 					for _, child in model:GetDescendants() do
@@ -12352,26 +12015,26 @@ local function main()
 				return
 			end
 		end
-		
+
 		originalModel = item
-		
+
 		if ModelViewer.AutoRefresh and not updating then
 			task.spawn(function()
 				while model and ModelViewer.AutoRefresh do
-					
+
 					ModelViewer.ViewModel(originalModel, true)
 					task.wait(1 / ModelViewer.RefreshRate)
 				end
 			end)
 		end
-		
+
 		if not updating then
 			camera = Instance.new("Camera")
 			viewportFrame.CurrentCamera = camera
 
 			camera.Parent = viewportFrame
 			camera.FieldOfView = 60
-			
+
 			window:SetTitle(item.Name.." - 3D Preview")
 			pathLabel.Gui.Text = "path: " .. getPath(originalModel)
 			window:Show()
@@ -12384,12 +12047,12 @@ local function main()
 		window:SetTitle("3D Preview")
 		window:Resize(350,200)
 		ModelViewer.Window =  window
-		
+
 		viewportFrame = Instance.new("ViewportFrame")
 		viewportFrame.Parent = window.GuiElems.Content
 		viewportFrame.BackgroundTransparency = 1
 		viewportFrame.Size = UDim2.new(1,0,1,0)
-		
+
 		pathLabel = Lib.Label.new()
 		pathLabel.Gui.Parent = window.GuiElems.Content
 		pathLabel.Gui.AnchorPoint = Vector2.new(0,1)
@@ -12399,7 +12062,7 @@ local function main()
 		pathLabel.Gui.Position = UDim2.new(0,1,1,0)
 		pathLabel.Gui.Size = UDim2.new(1,-1,0,15)
 		pathLabel.Gui.BackgroundTransparency = 1
-		
+
 		settingsButton = Instance.new("ImageButton",window.GuiElems.Content)
 		settingsButton.AnchorPoint = Vector2.new(1,0)
 		settingsButton.BackgroundTransparency = 1
@@ -12407,7 +12070,7 @@ local function main()
 		settingsButton.Position = UDim2.new(1,-3,0,3)
 		settingsButton.Image = "rbxassetid://6578871732"
 		settingsButton.ImageTransparency = 0.5
-		-- mobile input check
+
 		if UserInputService:GetLastInputType() == Enum.UserInputType.Touch then
 			settingsButton.Visible = true
 		else
@@ -12429,7 +12092,6 @@ local function main()
 				ModelViewer.ZoomMultiplier = 10
 			end
 		end)
-		
 
 		viewportFrame.MouseEnter:Connect(function()
 			hovering = true
@@ -12468,7 +12130,7 @@ local function main()
 				if not dragging and ModelViewer.AutoRotate then
 					rotationY += ModelViewer.RotationSpeed
 				end
-				
+
 				local center = model.PrimaryPart.Position
 				local offset = CFrame.new(0, 0, distance)
 				local rotation = CFrame.Angles(0, rotationY, 0) * CFrame.Angles(rotationX, 0, 0)
@@ -12476,17 +12138,15 @@ local function main()
 				local camCF = CFrame.new(center) * rotation * offset
 
 				camera.CFrame = CFrame.lookAt(camCF.Position, center)
-				
+
 			end
 		end)
-		
-		-- context stuffs
+
 		local context = Lib.ContextMenu.new()
-		
+
 		local absoluteSize = context.Gui.AbsoluteSize
 		context.MaxHeight = (absoluteSize.Y <= 600 and (absoluteSize.Y - 40)) or nil
 
-		-- Registers
 		context:Register("STOP",{Name = "Stop Viewing", OnClick = function()
 			ModelViewer.StopViewModel()
 		end})
@@ -12520,8 +12180,8 @@ local function main()
 		context:Register("SAVE_INST",{Name = "Save to File", OnClick = function()
 			if model then
 				Lib.SaveAsPrompt("Place_"..game.PlaceId.."_"..originalModel.Name.."_"..os.time(), function(filename)
-					window:SetTitle(originalModel.Name.." - Model Viewer - Saving")	
-					
+					window:SetTitle(originalModel.Name.." - Model Viewer - Saving")
+
 					local success, result = pcall(env.saveinstance,
 					originalModel, filename,
 						{
@@ -12529,7 +12189,7 @@ local function main()
 							RemovePlayerCharacters = false
 						}
 					)
-					
+
 					if success then
 						window:SetTitle(originalModel.Name.." - Model Viewer - Saved")
 						context:Hide()
@@ -12549,10 +12209,10 @@ local function main()
 				end)
 			end
 		end})
-		
+
 		context:Register("ENABLE_AUTO_ROTATE",{Name = "Enable Auto Rotate", OnClick = function()
 			ModelViewer.AutoRotate = true
-			
+
 		end})
 		context:Register("DISABLE_AUTO_ROTATE",{Name = "Disable Auto Rotate", OnClick = function()
 			ModelViewer.AutoRotate = false
@@ -12563,24 +12223,24 @@ local function main()
 		context:Register("UNLOCK_CAM",{Name = "Unlock Camera", OnClick = function()
 			ModelViewer.EnableInputCamera = true
 		end})
-		
+
 		context:Register("ZOOM_IN",{Name = "Zoom In", OnClick = function()
 			distance = math.clamp(distance - (ModelViewer.ZoomMultiplier * 2), 2, math.huge)
 		end})
-		
+
 		context:Register("ZOOM_OUT",{Name = "Zoom Out", OnClick = function()
 			distance = math.clamp(distance + (ModelViewer.ZoomMultiplier * 2), 2, math.huge)
 		end})
-		
+
 		local function ShowContext()
 			context:Clear()
 
-			context:AddRegistered("STOP", not ModelViewer.IsViewing)	
+			context:AddRegistered("STOP", not ModelViewer.IsViewing)
 			context:AddRegistered("REFRESH", not ModelViewer.IsViewing)
 			context:AddRegistered("COPY_PATH", not ModelViewer.IsViewing)
 			context:AddRegistered("SAVE_INST", not ModelViewer.IsViewing)
 			context:AddDivider()
-			
+
 			if env.isonmobile then
 				context:AddRegistered("ZOOM_IN")
 				context:AddRegistered("ZOOM_OUT")
@@ -12609,11 +12269,11 @@ local function main()
 
 			context:Show()
 		end
-		
+
 		local function HideContext()
 			context:Hide()
 		end
-		
+
 		viewportFrame.InputBegan:Connect(function(input)
 			if input.UserInputType == Enum.UserInputType.MouseButton2 then
 				ShowContext()
@@ -12629,7 +12289,6 @@ local function main()
 	return ModelViewer
 end
 
--- TODO: Remove when open source
 if gethsfuncs then
 	_G.moduleData = {InitDeps = initDeps, InitAfterMain = initAfterMain, Main = main}
 else
@@ -12637,16 +12296,10 @@ else
 end
 end,
 ["Properties"] = function()
---[[
-	Properties App Module
-	
-	The main properties interface
-]]
 
--- Common Locals
-local Main,Lib,Apps,Settings -- Main Containers
-local Explorer, Properties, ScriptViewer, Notebook -- Major Apps
-local API,RMD,env,service,plr,create,createSimple -- Main Locals
+local Main,Lib,Apps,Settings
+local Explorer, Properties, ScriptViewer, Notebook
+local API,RMD,env,service,plr,create,createSimple
 
 local function initDeps(data)
 	Main = data.Main
@@ -12989,7 +12642,7 @@ local function main()
 										local propValSub = propVal
 
 										for j = 1,#indexes do
-											if not firstValSub or not propValSub then break end -- PhysicalProperties
+											if not firstValSub or not propValSub then break end
 											local indexName = indexes[j]
 											firstValSub = firstValSub[indexName]
 											propValSub = propValSub[indexName]
@@ -13026,7 +12679,6 @@ local function main()
 		end
 	end
 
-	-- Fetches the properties to be displayed based on the explorer selection
 	Properties.ShowExplorerProps = function()
 		local maxConflictCheck = Settings.Properties.MaxConflictCheck
 		local sList = Explorer.Selection.List
@@ -13115,10 +12767,9 @@ local function main()
 			end
 		end)
 
-		-- Find conflicts and get auto-update instances
 		Properties.ClassLists = classLists
 		Properties.ComputeConflicts()
-		--warn("CONFLICT",tick()-start)
+
 		if #props > 0 then
 			props[#props+1] = Properties.AddAttributeProp
 		end
@@ -13175,7 +12826,7 @@ local function main()
 		return subProp
 	end
 
-	Properties.GetExpandedProps = function(prop) -- TODO: Optimize using table
+	Properties.GetExpandedProps = function(prop)
 		local result = {}
 		local typeData = prop.ValueType
 		local typeName = typeData.Name
@@ -13372,13 +13023,13 @@ local function main()
 			local prop = viewList[index + Properties.Index]
 			if not prop then return end
 			if input.UserInputType == Enum.UserInputType.MouseMovement and not nameFrame.PropName.TextFits then
-				local fullNameFrame = Properties.FullNameFrame	
+				local fullNameFrame = Properties.FullNameFrame
 				local nameArr = string.split(prop.Class.."."..prop.Name..(prop.SubName or ""),".")
 				local dispName = prop.DisplayName or nameArr[#nameArr]
 				local sizeX = service.TextService:GetTextSize(dispName,14,Enum.Font.SourceSans,Vector2.new(math.huge,20)).X
 
 				fullNameFrame.TextLabel.Text = dispName
-				--fullNameFrame.Position = UDim2.new(0,Properties.EntryIndent*(prop.Depth or 1) + Properties.EntryOffset,0,23*(index-1))
+
 				fullNameFrame.Size = UDim2.new(0,sizeX + 4,0,22)
 				fullNameFrame.Visible = true
 				Properties.FullNameFrameIndex = index
@@ -13741,7 +13392,7 @@ local function main()
 				Properties.SetProp(editor.CurrentProp,BrickColor.new(col))
 			end)
 
-			editor.OnMoreColors:Connect(function() -- TODO: Special Case BasePart.BrickColor to BasePart.Color
+			editor.OnMoreColors:Connect(function()
 				editor:Close()
 				local colProp
 				for i,v in pairs(API.Classes.BasePart.Properties) do
@@ -13933,7 +13584,6 @@ local function main()
 		local offset = 4
 		local endOffset = 6
 
-		-- Offsetting the ValueBox for ValueType specific buttons
 		if (typeName == "Color3" or typeName == "BrickColor" or typeName == "ColorSequence") then
 			colorButton.Visible = true
 			enumArrow.Visible = false
@@ -13961,7 +13611,6 @@ local function main()
 		valueBox.Position = UDim2.new(0,offset,0,0)
 		valueBox.Size = UDim2.new(1,-endOffset,1,0)
 
-		-- Right button
 		if inputFullName == gName and typeData.Category == "Class" then
 			Main.MiscIcons:DisplayByKey(guiElems.RightButtonIcon, "Delete")
 			guiElems.RightButtonIcon.Visible = true
@@ -13975,7 +13624,6 @@ local function main()
 			rightButton.Visible = false
 		end
 
-		-- Displays the correct ValueBox for the ValueType, and sets it to the prop value
 		if typeName == "bool" or typeName == "PhysicalProperties" then
 			valueBox.Visible = false
 			checkbox.Visible = true
@@ -14019,7 +13667,7 @@ local function main()
 	end
 
 	Properties.Refresh = function()
-		local maxEntries = math.max(math.ceil((propsFrame.AbsoluteSize.Y) / 23),0)	
+		local maxEntries = math.max(math.ceil((propsFrame.AbsoluteSize.Y) / 23),0)
 		local maxX = propsFrame.AbsoluteSize.X
 		local valueWidth = math.max(Properties.MinInputWidth,maxX-Properties.ViewWidth)
 		local inputPropVisible = false
@@ -14028,13 +13676,11 @@ local function main()
 		local stringSplit = string.split
 		local scaleType = Settings.Properties.ScaleType
 
-		-- Clear connections
 		for i = 1,#propCons do
 			propCons[i]:Disconnect()
 		end
 		table.clear(propCons)
 
-		-- Hide full name viewer
 		Properties.FullNameFrame.Visible = false
 		Properties.FullNameFrameAttach.Disable()
 
@@ -14068,7 +13714,7 @@ local function main()
 						guiElems.RowButton.Visible = true
 					end
 				else
-					-- Revert special row stuff
+
 					nameFrame.Visible = true
 					guiElems.RowButton.Visible = false
 
@@ -14107,7 +13753,6 @@ local function main()
 						editAttributeButton.Visible = (prop.IsAttribute and not prop.RootType)
 						toggleAttributes.Visible = false
 
-						-- Moving around the frames
 						if scaleType == 0 then
 							nameFrame.Size = UDim2.new(0,Properties.ViewWidth - leftOffset - 1,1,0)
 							valueFrame.Position = UDim2.new(0,Properties.ViewWidth,0,0)
@@ -14127,7 +13772,6 @@ local function main()
 						expand.Visible = typeData.Category == "DataType" and Properties.ExpandableTypes[typeName] or Properties.ExpandableProps[gName]
 						propNameBox.TextColor3 = tags.ReadOnly and Settings.Theme.PlaceholderText or Settings.Theme.Text
 
-						-- Display property value
 						Properties.DisplayProp(prop,i)
 						if propObj then
 							if prop.IsAttribute then
@@ -14141,7 +13785,6 @@ local function main()
 							end
 						end
 
-						-- Position and resize Input Box
 						local beforeVisible = valueBox.Visible
 						local inputFullName = inputProp and (inputProp.Class.."."..inputProp.Name..(inputProp.SubName or ""))
 						if gName == inputFullName then
@@ -14179,7 +13822,6 @@ local function main()
 						end
 					end
 
-					-- Expand
 					if prop.CategoryName or Properties.ExpandableTypes[prop.ValueType and prop.ValueType.Name] or Properties.ExpandableProps[gName] then
 						if Lib.CheckMouseInGui(expand) then
 							Main.MiscIcons:DisplayByKey(expand.Icon, expanded[gName] and "Collapse_Over" or "Expand_Over")
@@ -14437,7 +14079,7 @@ local function main()
 			{24,"TextButton",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="EditAttributeButton",Parent={1},Position=UDim2.new(1,-20,0,0),Size=UDim2.new(0,20,0,22),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,}},
 			{25,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Image="rbxassetid://5034718180",ImageTransparency=0.20000000298023,Name="Icon",Parent={24},Position=UDim2.new(0,2,0,3),Size=UDim2.new(0,16,0,16),}},
 			{26,"TextButton",{AutoButtonColor=false,BackgroundColor3=Color3.new(0.2352941185236,0.2352941185236,0.2352941185236),BorderSizePixel=0,Font=3,Name="RowButton",Parent={1},Size=UDim2.new(1,0,1,0),Text="Add Attribute",TextColor3=Color3.new(1,1,1),TextSize=14,TextTransparency=0.10000000149012,Visible=false,}},
-			--{27,"UIStroke",{ApplyStrokeMode=Enum.ApplyStrokeMode.Border,Color=Color3.fromRGB(33,33,33),Thickness=1,Parent={1}}}
+
 		})
 
 		local fullNameFrame = Lib.Frame.new()
@@ -14447,17 +14089,16 @@ local function main()
 		label.Size = UDim2.new(1,-4,1,0)
 		fullNameFrame.Visible = false
 		fullNameFrame.Parent = window.Gui
-		
+
 		if Settings.Window.Transparency and Settings.Window.Transparency > 0 then
 			Properties.EntryTemplate.BackgroundTransparency = 0.75
 		end
-
 
 		Properties.FullNameFrame = fullNameFrame
 		Properties.FullNameFrameAttach = Lib.AttachTo(fullNameFrame)
 	end
 
-	Properties.Init = function() -- TODO: MAKE BETTER
+	Properties.Init = function()
 		local guiItems = create({
 			{1,"Folder",{Name="Items",}},
 			{2,"Frame",{BackgroundColor3=Color3.new(0.20392157137394,0.20392157137394,0.20392157137394),BorderSizePixel=0,Name="ToolBar",Parent={1},Size=UDim2.new(1,0,0,22),}},
@@ -14472,7 +14113,6 @@ local function main()
 			{11,"Frame",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,ClipsDescendants=true,Name="List",Parent={1},Position=UDim2.new(0,0,0,23),Size=UDim2.new(1,0,1,-23),}},
 		})
 
-		-- Vars
 		categoryOrder =  API.CategoryOrder
 		for category,_ in next,categoryOrder do
 			if not Properties.CollapsedCategories[category] then
@@ -14481,7 +14121,6 @@ local function main()
 		end
 		expanded["Sound.SoundId"] = true
 
-		-- Init window
 		window = Lib.Window.new()
 		Properties.Window = window
 		window:SetTitle("Properties")
@@ -14494,7 +14133,6 @@ local function main()
 
 		Properties.InitEntryStuff()
 
-		-- Window events
 		window.GuiElems.Main:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
 			if Properties.Window:IsContentVisible() then
 				Properties.UpdateView()
@@ -14512,8 +14150,7 @@ local function main()
 			Properties.Refresh()
 		end)
 
-		-- Init scrollbars
-		scrollV = Lib.ScrollBar.new()		
+		scrollV = Lib.ScrollBar.new()
 		scrollV.WheelIncrement = 3
 		scrollV.Gui.Position = UDim2.new(1,-16,0,23)
 		scrollV:SetScrollFrame(propsFrame)
@@ -14530,7 +14167,6 @@ local function main()
 			Properties.Refresh()
 		end)
 
-		-- Setup Gui
 		window.GuiElems.Line.Position = UDim2.new(0,0,0,22)
 		toolBar.Parent = window.GuiElems.Content
 		propsFrame.Parent = window.GuiElems.Content
@@ -14544,7 +14180,6 @@ local function main()
 	return Properties
 end
 
--- TODO: Remove when open source
 if gethsfuncs then
 	_G.moduleData = {InitDeps = initDeps, InitAfterMain = initAfterMain, Main = main}
 else
@@ -14552,16 +14187,10 @@ else
 end
 end,
 ["SaveInstance"] = function()
---[[
-	Save Instance App Module
-	
-	Revival of the old dex's Save Instance
-]] 
 
--- Common Locals
-local Main,Lib,Apps,Settings -- Main Containers
-local Explorer, Properties, ScriptViewer, SaveInstance, Notebook -- Major Apps
-local API,RMD,env,service,plr,create,createSimple -- Main Locals
+local Main,Lib,Apps,Settings
+local Explorer, Properties, ScriptViewer, SaveInstance, Notebook
+local API,RMD,env,service,plr,create,createSimple
 
 local function initDeps(data)
 	Main = data.Main
@@ -14591,7 +14220,7 @@ local function main()
 	local window, ListFrame
 	local fileName = "Place_"..game.PlaceId.."_"..game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name.."_{TIMESTAMP}"
 	local Saving = false
-	
+
 	local SaveInstanceArgs = {
 		Decompile = true,
 		DecompileTimeout = 10,
@@ -14604,39 +14233,37 @@ local function main()
 		IgnoreDefaultProps = true,
 		IsolateStarterPlayer = true
 	}
-	
+
 	local function AddCheckbox(title, default)
 		local frame = Lib.Frame.new()
 		frame.Gui.Parent = ListFrame
 		frame.Gui.Transparency = 1
 		frame.Gui.Size = UDim2.new(1,0,0,20)
-		
+
 		local listlayout = Instance.new("UIListLayout")
 		listlayout.Parent = frame.Gui
 		listlayout.FillDirection = Enum.FillDirection.Horizontal
 		listlayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 		listlayout.VerticalAlignment = Enum.VerticalAlignment.Center
 		listlayout.Padding = UDim.new(0, 10)
-		
-		-- Checkbox
+
 		local checkbox = Lib.Checkbox.new()
-		
+
 		checkbox.Gui.Parent = frame.Gui
 		checkbox.Gui.Size = UDim2.new(0,15,0,15)
-		
-		-- Label
+
 		local label = Lib.Label.new()
-		
+
 		label.Gui.Parent = frame.Gui
 		label.Gui.Size = UDim2.new(1, 0,1, -15)
 		label.Gui.Text = title
 		label.TextTruncate = Enum.TextTruncate.AtEnd
-		
+
 		checkbox:SetState(default)
-		
+
 		return checkbox
 	end
-	
+
 	local function AddTextbox(title, default, sizeX)
 		default = tostring(default)
 		local frame = Lib.Frame.new()
@@ -14651,8 +14278,7 @@ local function main()
 		listlayout.VerticalAlignment = Enum.VerticalAlignment.Center
 		listlayout.Padding = UDim.new(0, 10)
 
-		-- Textbox
-		local textbox = Instance.new("TextBox") -- replaced cuz why Moon make every inputs only work on mouse/pc users >:( 
+		local textbox = Instance.new("TextBox")
 		textbox.BackgroundColor3 = Settings.Theme.TextBox
 		textbox.BorderColor3 = Settings.Theme.Outline3
 		textbox.ClearTextOnFocus = false
@@ -14667,11 +14293,10 @@ local function main()
 		else
 			textbox.Size = UDim2.new(0,45,0,15)
 		end
-		
+
 		frame.Gui.AutomaticSize = Enum.AutomaticSize.X
 		textbox.AutomaticSize = Enum.AutomaticSize.X
 
-		-- Label
 		local label = Lib.Label.new()
 
 		label.Parent = frame.Gui
@@ -14683,16 +14308,13 @@ local function main()
 
 		return {TextBox = textbox}
 	end
-	
+
 	SaveInstance.Init = function()
 		window = Lib.Window.new()
 		window:SetTitle("Save Instance")
 		window:Resize(350,350)
 		SaveInstance.Window = window
-		
-		-- ListFrame
-		
-		-- Fake ScrollBar dex, because its too advanced
+
 		ListFrame = Instance.new("ScrollingFrame")
 		ListFrame.Parent = window.GuiElems.Content
 		ListFrame.Size = UDim2.new(1, 0,1, -40)
@@ -14707,13 +14329,13 @@ local function main()
 		ListFrame.ScrollBarImageTransparency = 0
 		ListFrame.ZIndex = 2
 		ListFrame.BorderSizePixel = 0
-		
+
 		local scrollbar = Lib.ScrollBar.new()
 		scrollbar.Gui.Parent = window.GuiElems.Content
 		scrollbar.Gui.Size = UDim2.new(1, 0,1, -40)
 		scrollbar.Gui.Up.ZIndex = 3
 		scrollbar.Gui.Down.ZIndex = 3
-		
+
 		ListFrame:GetPropertyChangedSignal("AbsoluteWindowSize"):Connect(function()
 			if ListFrame.AbsoluteCanvasSize ~= ListFrame.AbsoluteWindowSize then
 				scrollbar.Gui.Visible = true
@@ -14721,35 +14343,33 @@ local function main()
 				scrollbar.Gui.Visible = false
 			end
 		end)
-		
+
 		local ListLayout = Instance.new("UIListLayout")
 		ListLayout.Parent = ListFrame
 		ListLayout.Padding = UDim.new(0, 5)
-		
+
 		local Padding = Instance.new("UIPadding")
 		Padding.Parent = ListFrame
 		Padding.PaddingBottom = UDim.new(0, 5)
 		Padding.PaddingLeft = UDim.new(0, 10)
 		Padding.PaddingRight = UDim.new(0, 10)
 		Padding.PaddingTop = UDim.new(0, 5)
-		
-		-- Options
-		
+
 		local Decompile = AddCheckbox("Decompile Scripts (LocalScript and ModuleScript)", SaveInstanceArgs.Decompile)
 		Decompile.OnInput:Connect(function()
 			SaveInstanceArgs.Decompile = Decompile.Toggled
 		end)
-		
+
 		local decompileTimeout = AddTextbox("Decompile Timeout (s)", SaveInstanceArgs.DecompileTimeout, 15)
 		decompileTimeout.TextBox.FocusLost:Connect(function()
 			SaveInstanceArgs.DecompileTimeout = tonumber(decompileTimeout.TextBox.Text)
 		end)
-		
+
 		local decompileThread = AddTextbox("Decompiler Max Threads", "3", 15)
 		decompileThread.TextBox.FocusLost:Connect(function()
 			SaveInstanceArgs.MaxThreads = tonumber(decompileThread.TextBox.Text)
 		end)
-		
+
 		local decompileIgnore = AddTextbox("Decompile Ignore", table.concat(SaveInstanceArgs.DecompileIgnore, ","), 50)
 		decompileIgnore.TextBox.FocusLost:Connect(function()
 			local inputText = decompileIgnore.TextBox.Text
@@ -14765,7 +14385,6 @@ local function main()
 			SaveInstanceArgs.DecompileIgnore = finalList
 		end)
 
-		
 		local NilObj = AddCheckbox("Save Nil Instances", SaveInstanceArgs.NilInstances)
 		NilObj.OnInput:Connect(function()
 			SaveInstanceArgs.NilInstances = NilObj.Toggled
@@ -14775,57 +14394,55 @@ local function main()
 		RemovePlayerChar.OnInput:Connect(function()
 			SaveInstanceArgs.RemovePlayerCharacters = RemovePlayerChar.Toggled
 		end)
-		
+
 		local SavePlayerObj = AddCheckbox("Save Player Instance", SaveInstanceArgs.SavePlayers)
 		SavePlayerObj.OnInput:Connect(function()
 			SaveInstanceArgs.SavePlayers = SavePlayerObj.Toggled
 		end)
-		
+
 		local IsolateStarterPlr = AddCheckbox("Isolate StarterPlayer", SaveInstanceArgs.IsolateStarterPlayer)
 		IsolateStarterPlr.OnInput:Connect(function()
 			SaveInstanceArgs.IsolateStarterPlayer = IsolateStarterPlr.Toggled
 		end)
-		
+
 		local IgnoreDefaultProps = AddCheckbox("Ignore Default Properties", SaveInstanceArgs.IgnoreDefaultProps)
 		IgnoreDefaultProps.OnInput:Connect(function()
 			SaveInstanceArgs.IgnoreDefaultProps = IgnoreDefaultProps.Toggled
 		end)
-		
+
 		local ShowStat = AddCheckbox("Show Status", SaveInstanceArgs.ShowStatus)
 		ShowStat.OnInput:Connect(function()
 			SaveInstanceArgs.ShowStatus = ShowStat.Toggled
 		end)
-		
-		
-		-- Decompile buttons below
+
 		local FilenameTextBox = Lib.ViewportTextBox.new()
 		FilenameTextBox.Gui.Parent = window.GuiElems.Content
 		FilenameTextBox.Size = UDim2.new(1,0, 0,20)
 		FilenameTextBox.Position = UDim2.new(0,0, 1,-40)
-		
+
 		local textpadding = Instance.new("UIPadding")
 		textpadding.Parent = FilenameTextBox.Gui
 		textpadding.PaddingLeft = UDim.new(0, 5)
 		textpadding.PaddingRight = UDim.new(0, 5)
-		
+
 		local BackgroundButton = Lib.Frame.new()
 		BackgroundButton.Gui.Parent = window.GuiElems.Content
 		BackgroundButton.Size = UDim2.new(1,0, 0,20)
 		BackgroundButton.Position = UDim2.new(0,0, 1,-20)
-		
+
 		local LabelButton = Lib.Label.new()
 		LabelButton.Gui.Parent = window.GuiElems.Content
 		LabelButton.Size = UDim2.new(1,0, 0,20)
 		LabelButton.Position = UDim2.new(0,0, 1,-20)
 		LabelButton.Gui.Text = "Save"
 		LabelButton.Gui.TextXAlignment = Enum.TextXAlignment.Center
-		
+
 		local Button = Instance.new("TextButton")
 		Button.Parent = BackgroundButton.Gui
 		Button.Size = UDim2.new(1,0, 1,0)
 		Button.Position = UDim2.new(0,0, 0,0)
 		Button.Transparency = 1
-		
+
 		FilenameTextBox.TextBox.Text = fileName
 		Button.MouseButton1Click:Connect(function()
 			local fileName = FilenameTextBox.TextBox.Text:gsub("{TIMESTAMP}", os.date("%d-%m-%Y_%H-%M-%S"))
@@ -14839,14 +14456,13 @@ local function main()
 			end
 			task.wait(5)
 			window:SetTitle("Save Instance")
-			---env.saveinstance(game, fileName, SaveInstanceArgs)
+
 		end)
 	end
 
 	return SaveInstance
 end
 
--- TODO: Remove when open source
 if gethsfuncs then
 	_G.moduleData = {InitDeps = initDeps, InitAfterMain = initAfterMain, Main = main}
 else
@@ -14854,15 +14470,10 @@ else
 end
 end,
 ["ScriptViewer"] = function()
---[[
-	Script Viewer App Module
-	
-	A script viewer that is basically a notepad
-]]
--- Common Locals
-local Main,Lib,Apps,Settings -- Main Containers
-local Explorer, Properties, ScriptViewer, Notebook -- Major Apps
-local API,RMD,env,service,plr,create,createSimple -- Main Locals
+
+local Main,Lib,Apps,Settings
+local Explorer, Properties, ScriptViewer, Notebook
+local API,RMD,env,service,plr,create,createSimple
 
 local function initDeps(data)
 	Main = data.Main
@@ -14908,13 +14519,13 @@ end
 local function main()
 	local ScriptViewer = {}
 	local window, codeFrame
-	
+
 	local execute, clear, dumpbtn
-	
+
 	local PreviousScr = nil
-	
+
 	ScriptViewer.DumpFunctions = function(scr)
-		-- thanks King.Kevin#6025 you'll obviously be credited (no discord tag since that can easily be impersonated)
+
 		local getgc = getgc or get_gc_objects
 		local getupvalues = (debug and debug.getupvalues) or getupvalues or getupvals
 		local getconstants = (debug and debug.getconstants) or getconstants or getconsts
@@ -14996,7 +14607,7 @@ local function main()
 
 		if dump ~= original then source = source .. dump .. "]]" end
 		codeFrame:SetText(source)
-		
+
 		window:Show()
 	end
 
@@ -15010,13 +14621,13 @@ local function main()
 		codeFrame.Frame.Position = UDim2.new(0,0,0,20)
 		codeFrame.Frame.Size = UDim2.new(1,0,1,-40)
 		codeFrame.Frame.Parent = window.GuiElems.Content
-		
+
 		local copy = Instance.new("TextButton",window.GuiElems.Content)
 		copy.BackgroundTransparency = 1
 		copy.Size = UDim2.new(0.33,0,0,20)
 		copy.Position = UDim2.new(0,0,0,0)
 		copy.Text = "Copy to Clipboard"
-		
+
 		if env.setclipboard then
 			copy.TextColor3 = Color3.new(1,1,1)
 			copy.Interactable = true
@@ -15036,13 +14647,13 @@ local function main()
 		save.Position = UDim2.new(0.33,0,0,0)
 		save.Text = "Save to File"
 		save.TextColor3 = Color3.new(1,1,1)
-		
+
 		if env.writefile then
 			save.TextColor3 = Color3.new(1,1,1)
 			save.Interactable = true
 		else
 			save.TextColor3 = Color3.new(0.5,0.5,0.5)
-			--save.Interactable = false
+
 		end
 
 		save.MouseButton1Click:Connect(function()
@@ -15050,16 +14661,16 @@ local function main()
 			local filename = "Place_"..game.PlaceId.."_Script_"..os.time()..".txt"
 
 			Lib.SaveAsPrompt(filename,source)
-			--env.writefile(filename,source)
+
 		end)
-		
+
 		dumpbtn = Instance.new("TextButton",window.GuiElems.Content)
 		dumpbtn.BackgroundTransparency = 1
 		dumpbtn.Position = UDim2.new(0.7,0,0,0)
 		dumpbtn.Size = UDim2.new(0.3,0,0,20)
 		dumpbtn.Text = "Dump Functions"
 		dumpbtn.TextColor3 = Color3.new(0.5,0.5,0.5)
-		
+
 		if env.getgc then
 			dumpbtn.TextColor3 = Color3.new(1,1,1)
 			dumpbtn.Interactable = true
@@ -15073,17 +14684,14 @@ local function main()
 				pcall(ScriptViewer.DumpFunctions, PreviousScr)
 			end
 		end)
-		
-		-- Buttons below the editor
-		
-		
+
 		execute = Instance.new("TextButton",window.GuiElems.Content)
 		execute.BackgroundTransparency = 1
 		execute.Size = UDim2.new(0.5,0,0,20)
 		execute.Position = UDim2.new(0,0,1,-20)
 		execute.Text = "Execute"
 		execute.TextColor3 = Color3.new(1,1,1)
-		
+
 		if env.loadstring then
 			execute.TextColor3 = Color3.new(1,1,1)
 			execute.Interactable = true
@@ -15108,7 +14716,7 @@ local function main()
 			codeFrame:SetText("")
 		end)
 	end
-	
+
 	ScriptViewer.ViewScript = function(scr)
 		local oldtick = tick()
 		local s,source = pcall(env.decompile or function() end,scr)
@@ -15149,7 +14757,6 @@ local function main()
 	return ScriptViewer
 end
 
--- TODO: Remove when open source
 if gethsfuncs then
 	_G.moduleData = {InitDeps = initDeps, InitAfterMain = initAfterMain, Main = main}
 else
@@ -15157,12 +14764,12 @@ else
 end
 end,
 }
--- inject virutal env cuz why not
+
 if game:GetService("RunService"):IsStudio() then
 	if script:FindFirstChild("Modules"):FindFirstChild("VirtualFS") then
 		for namefunc, func in require(script.Modules.VirtualFS) do
 			getfenv()[namefunc] = func
-			--print("Inserting "..namefunc)
+
 		end
 	end
 end
@@ -15171,9 +14778,9 @@ local oldgame = oldgame or game
 
 cloneref = cloneref or function(ref)
 	if not getreg then return ref end
-	
+
 	local InstanceList
-	
+
 	local a = Instance.new("Part")
 	for _, c in pairs(getreg()) do
 		if type(c) == "table" and #c then
@@ -15204,14 +14811,12 @@ end
 
 local isFsSupported = readfile and writefile and isfile and isfolder and listfiles and delfile and delfolder
 
--- Main vars
-local Main, Explorer, Properties, ScriptViewer, Console, SaveInstance, ModelViewer--[[, SecretServicePanel]], DefaultSettings, Notebook, Serializer, Lib local ggv = getgenv or nil
+local Main, Explorer, Properties, ScriptViewer, Console, SaveInstance, ModelViewer, DefaultSettings, Notebook, Serializer, Lib local ggv = getgenv or nil
 local API, RMD
 
--- Default Settings
 DefaultSettings = (function()
-	local rgb = Color3.fromRGB	
-	
+	local rgb = Color3.fromRGB
+
 	return {
 		Explorer = {
 			_Recurse = true,
@@ -15219,7 +14824,7 @@ DefaultSettings = (function()
 			TeleportToOffset = Vector3.new(0,0,0),
 			ClickToRename = true,
 			AutoUpdateSearch = true,
-			AutoUpdateMode = 0, -- 0 Default, 1 no tree update, 2 no descendant events, 3 frozen
+			AutoUpdateMode = 0,
 			PartSelectionBox = true,
 			GuiSelectionBox = true,
 			CopyPathUseGetChildren = true
@@ -15234,15 +14839,15 @@ DefaultSettings = (function()
 			NumberRounding = 3,
 			ShowAttributes = true,
 			MaxAttributes = 50,
-			ScaleType = 0 -- 0 Full Name Shown, 1 Equal Halves
+			ScaleType = 0
 		},
 		Theme = {
 			_Recurse = true,
 			Main1 = rgb(52,52,52),
 			Main2 = rgb(45,45,45),
-			Outline1 = rgb(33,33,33), -- Mainly frames
-			Outline2 = rgb(55,55,55), -- Mainly button
-			Outline3 = rgb(30,30,30), -- Mainly textbox
+			Outline1 = rgb(33,33,33),
+			Outline2 = rgb(55,55,55),
+			Outline3 = rgb(30,30,30),
 			TextBox = rgb(38,38,38),
 			Menu = rgb(32,32,32),
 			ListSelection = rgb(11,90,175),
@@ -15285,16 +14890,12 @@ DefaultSettings = (function()
 			TitleOnMiddle = false,
 			Transparency = .2
 		},
-		RemoteBlockWriteAttribute = false, -- writes attribute to remote instance if remote is blocked/unblocked
+		RemoteBlockWriteAttribute = false,
 		ClassIcon = "NewDark",
-		-- What available icons:
-		-- > Vanilla3
-		-- > Old
-		-- > NewDark
+
 	}
 end)()
 
--- Vars
 local Settings = DefaultSettings or {}
 local Apps = {}
 local env = {}
@@ -15351,85 +14952,20 @@ Main = (function()
 		Menu = 100000,
 		Core = 101000
 	}
-	
-	--[[Main.LoadAdonisBypass = function()
-		-- skidded off reddit :pensive:
-		local getinfo = getinfo or debug.getinfo
-		local DEBUG = false
-		local Hooked = {}
 
-		local Detected, Kill
-
-		setthreadidentity(2)
-
-		for i, v in getgc(true) do
-			if typeof(v) == "table" then
-				local DetectFunc = rawget(v, "Detected")
-				local KillFunc = rawget(v, "Kill")
-
-				if typeof(DetectFunc) == "function" and not Detected then
-					Detected = DetectFunc
-
-					local Old; Old = hookfunction(Detected, function(Action, Info, NoCrash)
-						if Action ~= "_" then
-							if DEBUG then
-								warn(`Adonis AntiCheat flagged\nMethod: {Action}\nInfo: {Info}`)
-							end
-						end
-
-						return true
-					end)
-
-					table.insert(Hooked, Detected)
-				end
-
-				if rawget(v, "Variables") and rawget(v, "Process") and typeof(KillFunc) == "function" and not Kill then
-					Kill = KillFunc
-					local Old; Old = hookfunction(Kill, function(Info)
-						if DEBUG then
-							warn(`Adonis AntiCheat tried to kill (fallback): {Info}`)
-						end
-					end)
-
-					table.insert(Hooked, Kill)
-				end
-			end
-		end
-
-		local Old; Old = hookfunction(getrenv().debug.info, newcclosure(function(...)
-			local LevelOrFunc, Info = ...
-
-			if Detected and LevelOrFunc == Detected then
-				if DEBUG then
-					warn(`Adonis AntiCheat sanity check detected and broken`)
-				end
-
-				return coroutine.yield(coroutine.running())
-			end
-
-			return Old(...)
-		end))
-		-- setthreadidentity(9)
-		setthreadidentity(7)
-	end
-	
-	Main.LoadGCBypass = function()
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/secretisadev/Babyhamsta_Backup/refs/heads/main/Universal/Bypasses.lua", true))()
-	end]]
-	
 	Main.GetRandomString = function()
 		local output = ""
 		for i = 2, 25 do
 			output = output .. string.char(math.random(1,250))
 		end
-		
+
 		return output
 	end
-	
+
 	Main.SecureGui = function(gui)
-		--warn("Secured: "..gui.Name)
+
 		gui.Name = Main.GetRandomString()
-		-- service already using cloneref
+
 		if gethui then
 			gui.Parent = gethui()
 		elseif syn and syn.protect_gui then
@@ -15477,26 +15013,25 @@ Main = (function()
 	end
 
 	Main.LoadModule = function(name)
-		if Main.Elevated then -- If you don't have filesystem api then ur outta luck tbh
+		if Main.Elevated then
 			local control
 
-			if EmbeddedModules then -- Offline Modules
+			if EmbeddedModules then
 				control = EmbeddedModules[name]()
 
-				-- TODO: Remove when open source
 				if gethsfuncs then
 					control = _G.moduleData
 				end
 
 				if not control then Main.Error("Missing Embedded Module: "..name) end
-			elseif _G.DebugLoadModel then -- Load Debug Model File
+			elseif _G.DebugLoadModel then
 				local model = Main.DebugModel
 				if not model then model = oldgame:GetObjects(getsynasset("AfterModules.rbxm"))[1] end
 
 				control = loadstring(model.Modules[name].Source)()
 				print("Locally Loaded Module",name,control)
 			else
-				-- Get hash data
+
 				local hashs = Main.ModuleHashData
 				if not hashs then
 					local s,hashDataStr = pcall(oldgame.HttpGet, game, "https://api.github.com/repos/"..Main.GitRepoName.."/ModuleHashs.dat")
@@ -15509,7 +15044,6 @@ Main = (function()
 					Main.ModuleHashData = hashs
 				end
 
-				-- Check if local copy exists with matching hashs
 				local hashfunc = (syn and syn.crypt.hash) or function() return "" end
 				local filePath = "dex/ModuleCache/"..name..".lua"
 				local s,moduleStr = pcall(env.readfile,filePath)
@@ -15517,7 +15051,7 @@ Main = (function()
 				if s and hashfunc(moduleStr) == hashs[name] then
 					control = loadstring(moduleStr)()
 				else
-					-- Download and cache
+
 					local s,moduleStr = pcall(oldgame.HttpGet, game, "https://api.github.com/repos/"..Main.GitRepoName.."/Modules/"..name..".lua")
 					if not s then Main.Error("Failed to get external module data of "..name) end
 
@@ -15554,7 +15088,6 @@ Main = (function()
 			end
 		end
 
-		-- Init Major Apps and define them in modules
 		Explorer = Apps.Explorer
 		Properties = Apps.Properties
 		ScriptViewer = Apps.ScriptViewer
@@ -15562,8 +15095,7 @@ Main = (function()
 		SaveInstance = Apps.SaveInstance
 		ModelViewer = Apps.ModelViewer
 		Notebook = Apps.Notebook
-		
-		--SecretServicePanel = Apps.SecretServicePanel
+
 		local appTable = {
 			Explorer = Explorer,
 			Properties = Properties,
@@ -15572,8 +15104,7 @@ Main = (function()
 			SaveInstance = SaveInstance,
 			ModelViewer = ModelViewer,
 			Notebook = Notebook,
-			
-			--SecretServicePanel = SecretServicePanel,
+
 		}
 
 		Main.AppControls.Lib.InitAfterMain(appTable)
@@ -15592,10 +15123,9 @@ Main = (function()
 		end})
 
 		env.isonmobile = game:GetService("UserInputService").TouchEnabled
-		
+
 		env.loadstring = (pcall(loadstring,"local a = 1") and loadstring) or (game:GetService("RunService"):IsStudio() and script.Modules:FindFirstChild("Loadstring") and require(script.Modules:FindFirstChild("Loadstring")))
 
-		-- file
 		env.isfile = isfile
 		env.isfolder = isfolder
 		env.readfile = readfile
@@ -15605,42 +15135,39 @@ Main = (function()
 		env.listfiles = listfiles
 		env.loadfile = loadfile
 		env.saveinstance = saveinstance or (function()
-			--warn("No built-in saveinstance exists, using SynSaveInstance and wrapper...")
+
 			if game:GetService("RunService"):IsStudio() then return function() error("Cannot run in Roblox Studio!") end end
 			local Params = {
 				RepoURL = "https://raw.githubusercontent.com/luau/SynSaveInstance/main/",
 				SSI = "saveinstance",
 			}
 			local synsaveinstance = loadstring(oldgame:HttpGet(Params.RepoURL .. Params.SSI .. ".luau", true), Params.SSI)()
-		
+
 			local function wrappedsaveinstance(obj, filepath, options)
 				options["FilePath"] = filepath
-				--options["ReadMe"] = false
+
 				options["Object"] = obj
 				return synsaveinstance(options)
 			end
-			
+
 			getgenv().saveinstance = wrappedsaveinstance
 			return wrappedsaveinstance
 		end)()
-		
+
 		env.parsefile = function(name)
 			return tostring(name):gsub("[*\\?:<>|]+", ""):sub(1, 175)
 		end
 
-		-- debug
 		env.getupvalues = debug.getupvalues or getupvalues or getupvals
 		env.getconstants = debug.getconstants or getconstants or getconsts
 		env.islclosure = islclosure or is_l_closure
 		env.checkcaller = checkcaller
 		env.getreg = getreg
 		env.getgc = getgc
-		
-		-- hooks
+
 		env.hookfunction = hookfunction
 		env.hookmetamethod = hookmetamethod
 
-		-- other
 		env.getscriptbytecode = getscriptbytecode
 		env.setfflag = setfflag
 		env.protectgui = protect_gui or (syn and syn.protect_gui)
@@ -15648,7 +15175,7 @@ Main = (function()
 		env.setclipboard = setclipboard
 		env.getnilinstances = getnilinstances or get_nil_instances
 		env.getloadedmodules = getloadedmodules
-		
+
 		env.isViableDecompileScript = function(obj)
 			if obj:IsA("ModuleScript") then
 				return true
@@ -15660,13 +15187,10 @@ Main = (function()
 			return false
 		end
 		env.request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
-		
+
 		env.decompile = decompile or (function()
-			-- by lovrewe
-			--warn("No built-in decompiler exists, using Konstant decompiler...")
-			--assert(getscriptbytecode, "Exploit not supported.")
-			
-			if not env.getscriptbytecode then --[[warn('Konstant decompiler is not supported. "getscriptbytecode" is missing.')]] return end
+
+			if not env.getscriptbytecode then return end
 
 			local API = "http://api.plusgiant5.com"
 
@@ -15709,7 +15233,7 @@ Main = (function()
 			end
 
 			getgenv().decompile = decompile
-			
+
 			env.decompile = decompile
 			return decompile
 		end)()
@@ -15724,66 +15248,9 @@ Main = (function()
 	end
 
 	Main.IncompatibleTest = function()
-		--[[local function incompatibleMessage(reason, tolerated)
-			local msg = Instance.new("ScreenGui")
-			msg.IgnoreGuiInset = true
-			local t = Instance.new("TextLabel",msg)
-			t.BackgroundColor3 = Color3.fromRGB(50,50,50)
-			t.Position = UDim2.new(0,0,0,0)
-			t.Size = UDim2.new(1,0,1,0)
-			t.TextColor3 = Color3.new(1,1,1)
-			t.TextWrapped = true
-			t.TextScaled = true
-			t.Text = "\n\n\n\n\n\n\n\nHello Skidsploit user,\nZinnia, Chillz and the Secret Service does not approve of Dex being used on your skidsploit.\nPlease consider getting something better.\n\nIncompatible Reason: "..reason.."\n\n\n\n\n\n\n\n"
-			
-			-- This sound wont work!!!
-			local sound = Instance.new("Sound",msg)
-			sound.SoundId = "rbxassetid://175964948"
-			sound.Volume = 1
-			sound.Looped = true
-			sound.Playing = true
-			
-			if not tolerated then
-				Lib.ShowGui(msg)
-				
-				if os and os.execute then pcall(os.execute,'explorer "https://weao.xyz"') end
-				if pcall(game.GetService, game,"MessageBusService") and game:GetService("MessageBusService").Publish then pcall(game:GetService("MessageBusService").Publish, game:GetService("MessageBusService"), game:GetService("MessageBusService"):GetMessageId("Linking", "openURLRequest"), {url = 'explorer "https://weao.xyz"'}) end
-			else
-				warn(msg)
-			end			
-		end
-		
-																																													local yummy, evilList = "\105\100\101\110\116\105\102\121\101\120\101\99\117\116\111\114", { "\120\101\110\111", "\115\111\108\97\114\97", "\119\97\118\101" }
-																																													if ggv and ggv()[yummy] then local wow = ggv()[yummy] if table.find(evilList, string.lower(wow)) then incompatibleMessage("\83\72\73\84\84\89\32\69\88\69\67\85\84\79\82") end end
-																																													
-		local t = {}
-		t[1] = t
-		local x = unpack(t) or incompatibleMessage("WRAPPER FAILED TO CYCLIC #1")
-		if x[1] ~= t then incompatibleMessage("WRAPPER FAILED TO CYCLIC #2") end
-		
-		if game ~= workspace.Parent then
-			incompatibleMessage("WRAPPER NO CACHE (game ≠ workspace.Parent)", true)
-			game = workspace.Parent
-		end
-		
-		if Main.Elevated and not loadstring("for i = 1,1 do continue end") then incompatibleMessage("CAN'T CONTINUE OR NO LOADSTRING")end
-		
-		local obj = newproxy(true)
-		local mt = getmetatable(obj)
-		mt.__index = function() incompatibleMessage("CAN'T NAMECALL (__index triggered instead of __namecall)") end
-		mt.__namecall = function() end
-		obj:No()
-		
-		local fEnv = setmetatable({zin = 5},{__index = getfenv()})
-		local caller = function(f) f() end
-		setfenv(caller,fEnv)
-		caller(function() if not getfenv(2).zin then incompatibleMessage("RERU WILL BE FILING A LAWSUIT AGAINST YOU SOON") end end)
-		
-		local second = false
-		coroutine.wrap(function() local start = tick() wait(5) if tick() - start < 0.1 or not second then incompatibleMessage("SKIDDED YIELDING") end end)()
-		second = true]]
+
 	end
-	
+
 	local function serialize(val)
 		if typeof(val) == "Color3" then
 			local serializedColor = {}
@@ -15795,7 +15262,7 @@ Main = (function()
 			return val
 		end
 	end
-	
+
 	local function deserialize(val)
 		if typeof(val) == "table" then
 			if val.R and val.G and val.B then
@@ -15807,7 +15274,7 @@ Main = (function()
 			return val
 		end
 	end
-	
+
 	Main.ExportSettings = function()
 		local rawData = Settings or DefaultSettings
 
@@ -15823,7 +15290,6 @@ Main = (function()
 			return newTbl
 		end
 
-		-- serialize color3 sebelum encode
 		local serializedData = recur(rawData)
 
 		local s, json = pcall(service.HttpService.JSONEncode, service.HttpService, serializedData)
@@ -15831,9 +15297,6 @@ Main = (function()
 			return json
 		end
 	end
-
-
-	--warn(Main.ExportSettings())
 
 	Main.LoadSettings = function()
 		local s, data = pcall(env.readfile or error, "DexPlusPlusSettings.json")
@@ -15866,9 +15329,6 @@ Main = (function()
 		end
 	end
 
-	
-	
-
 	Main.ResetSettings = function()
 		local function recur(t,res)
 			for set,val in pairs(t) do
@@ -15892,7 +15352,7 @@ Main = (function()
 		if Main.Elevated then
 			if Main.LocalDepsUpToDate() then
 				local localAPI = Lib.ReadFile("dex/rbx_api.dat")
-				if localAPI then 
+				if localAPI then
 					rawAPI = localAPI
 				else
 					Main.DepsVersionData[1] = ""
@@ -15902,13 +15362,13 @@ Main = (function()
 				task.wait(10)
 				if not downloaded and callbackiflong then callbackiflong() end
 
-				task.wait(20) -- 30
+				task.wait(20)
 				if not downloaded and callbackiftoolong then callbackiftoolong() end
 
-				task.wait(30) -- 60
+				task.wait(30)
 				if not downloaded and XD then XD() end
 			end)
-			-- lmfao async makes it work to load big file
+
 			rawAPI = rawAPI or game:HttpGet("http://setup.roblox.com/"..Main.RobloxVersion.."-API-Dump.json")
 		else
 			if script:FindFirstChild("API") then
@@ -15918,7 +15378,7 @@ Main = (function()
 			end
 		end
 		downloaded = true
-		
+
 		Main.RawAPI = rawAPI
 		api = service.HttpService:JSONDecode(rawAPI)
 
@@ -16053,7 +15513,7 @@ Main = (function()
 		if Main.Elevated then
 			if Main.LocalDepsUpToDate() then
 				local localRMD = Lib.ReadFile("dex/rbx_rmd.dat")
-				if localRMD then 
+				if localRMD then
 					rawXML = localRMD
 				else
 					Main.DepsVersionData[1] = ""
@@ -16165,7 +15625,7 @@ Main = (function()
 
 	Main.ShowGui = Main.SecureGui
 
-	Main.CreateIntro = function(initStatus) -- TODO: Must theme and show errors
+	Main.CreateIntro = function(initStatus)
 		local gui = create({
 			{1,"ScreenGui",{Name="Intro",}},
 			{2,"Frame",{Active=true,BackgroundColor3=Color3.new(0.20392157137394,0.20392157137394,0.20392157137394),BorderSizePixel=0,Name="Main",Parent={1},Position=UDim2.new(0.5,-175,0.5,-100),Size=UDim2.new(0,350,0,200),}},
@@ -16321,7 +15781,7 @@ Main = (function()
 	end
 
 	Main.CreateApp = function(data)
-		if Main.MenuApps[data.Name] then return end -- TODO: Handle conflict
+		if Main.MenuApps[data.Name] then return end
 		local control = {}
 
 		local app = Main.AppTemplate:Clone()
@@ -16376,7 +15836,6 @@ Main = (function()
 				app.Main.BackgroundColor3 = Settings.Theme.ButtonHover
 			end
 		end)
-		
 
 		app.Main.InputEnded:Connect(function(input)
 			if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
@@ -16411,7 +15870,7 @@ Main = (function()
 		Main.MainGui.OpenButton.Text = val and "Close" or "Dex++"
 		if val then Main.MainGui.OpenButton.MainFrame.Visible = true end
 		Main.MainGui.OpenButton.MainFrame:TweenSize(val and UDim2.new(0,224,0,200) or UDim2.new(0,0,0,0),Enum.EasingDirection.Out,Enum.EasingStyle.Quad,0.2,true)
-		--Main.MainGui.OpenButton.BackgroundTransparency = val and 0 or (Lib.CheckMouseInGui(Main.MainGui.OpenButton) and 0 or 0.2)
+
 		service.TweenService:Create(Main.MainGui.OpenButton,TweenInfo.new(0.2,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{BackgroundTransparency = val and 0 or (Lib.CheckMouseInGui(Main.MainGui.OpenButton) and 0 or 0.2)}):Play()
 
 		if Main.MainGuiMouseEvent then Main.MainGuiMouseEvent:Disconnect() end
@@ -16483,11 +15942,11 @@ Main = (function()
 				service.TweenService:Create(Main.MainGui.OpenButton,TweenInfo.new(0,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{BackgroundTransparency = Main.MainGuiOpen and 0 or 0.2}):Play()
 			end
 		end)
-		
+
 		local infoDexIntro, isInfoCD
-		
-		openButton.MainFrame.BottomFrame.Settings.Visible = false -- hide it for now
-		
+
+		openButton.MainFrame.BottomFrame.Settings.Visible = false
+
 		openButton.MainFrame.BottomFrame.Information.MouseButton1Click:Connect(function()
 			local duration = 1
 			local Infos = {
@@ -16496,12 +15955,12 @@ Main = (function()
 				"Moon (Dex)",
 				"Cazan (3D Preview)",
 			}
-			
+
 			if isInfoCD then return end
 			isInfoCD = true
 			if not infoDexIntro then
 				infoDexIntro = Main.CreateIntro("Running")
-				
+
 				coroutine.wrap(function()
 					while infoDexIntro do
 						for i,text in Infos do
@@ -16511,21 +15970,20 @@ Main = (function()
 						end
 					end
 				end)()
-				
+
 				Lib.FastWait(1.5)
 				isInfoCD = false
 			else
 				coroutine.wrap(function()
 					infoDexIntro.Close()
 					infoDexIntro = nil
-					
+
 					Lib.FastWait(1.5)
 					isInfoCD = false
 				end)()
 			end
 		end)
 
-		-- Create Main Apps
 		Main.CreateApp({Name = "Explorer", IconMap = Main.LargeIcons, Icon = "Explorer", Open = true, Window = Explorer.Window})
 
 		Main.CreateApp({Name = "Properties", IconMap = Main.LargeIcons, Icon = "Properties", Open = true, Window = Properties.Window})
@@ -16547,15 +16005,12 @@ Main = (function()
 		end})
 
 		Main.CreateApp({Name = "Notepad", IconMap = Main.LargeIcons, Icon = "Script_Viewer", Window = ScriptViewer.Window})
-		
+
 		Main.CreateApp({Name = "Console", IconMap = Main.LargeIcons, Icon = "Output", Window = Console.Window})
-		
+
 		Main.CreateApp({Name = "Save Instance", IconMap = Main.LargeIcons, Icon = "Watcher", Window = SaveInstance.Window})
-		
+
 		Main.CreateApp({Name = "3D Viewer", IconMap = Explorer.LegacyClassIcons, Icon = 54, Window = ModelViewer.Window})
-
-		--Main.CreateApp({Name = "Secret Service Panel", IconMap = Main.LargeIcons, Icon = "Output", Window = SecretServicePanel.Window})
-
 
 		Lib.ShowGui(gui)
 	end
@@ -16578,25 +16033,22 @@ Main = (function()
 
 	Main.Init = function()
 		Main.Elevated = pcall(function() local a = game:GetService("CoreGui"):GetFullName() end)
-		
+
 		if writefile and isfile and not isfile("DexPlusPlusSettings.json") then
 			writefile("DexPlusPlusSettings.json", Main.ExportSettings())
 		end
-		
+
 		Main.InitEnv()
 		Main.LoadSettings()
-		
+
 		Main.SetupFilesystem()
 
-		-- Load Lib
 		local intro = Main.CreateIntro("Initializing Library")
 		Lib = Main.LoadModule("Lib")
 		Lib.FastWait()
 
-		-- Init other stuff
 		Main.IncompatibleTest()
 
-		-- Init icons
 		Main.MiscIcons = Lib.IconMap.new("rbxassetid://6511490623",256,256,16,16)
 		Main.MiscIcons:SetDict({
 			Reference = 0,             Cut = 1,                         Cut_Disabled = 2,      Copy = 3,               Copy_Disabled = 4,    Paste = 5,                Paste_Disabled = 6,
@@ -16610,15 +16062,7 @@ Main = (function()
 		Main.LargeIcons:SetDict({
 			Explorer = 0, Properties = 1, Script_Viewer = 2, Watcher = 3, Output = 4
 		})
-		
-		--[[ Loading bypasses
-		intro.SetProgress("Loading Adonis Bypass",0.1)
-		pcall(Main.LoadAdonisBypass)
-		
-		intro.SetProgress("Loading GC Bypass",0.2)
-		pcall(Main.LoadGCBypass)]]
 
-		-- Fetch version if needed
 		intro.SetProgress("Fetching Roblox Version",0.3)
 		if Main.Elevated then
 			local fileVer = Lib.ReadFile("dex/deps_version.dat")
@@ -16629,11 +16073,10 @@ Main = (function()
 					Main.RobloxVersion = Main.DepsVersionData[2]
 				end
 			end
-			
+
 			Main.RobloxVersion = Main.RobloxVersion or oldgame:HttpGet("https://clientsettings.roblox.com/v2/client-version/WindowsStudio64/channel/LIVE"):match("(version%-[%w]+)")
 		end
 
-		-- Fetch external deps
 		intro.SetProgress("Fetching API",0.35)
 		API = Main.FetchAPI(
 			function()
@@ -16651,20 +16094,17 @@ Main = (function()
 		RMD = Main.FetchRMD()
 		Lib.FastWait()
 
-		-- Save external deps locally if needed
 		if Main.Elevated and env.writefile and not Main.LocalDepsUpToDate() then
 			env.writefile("dex/deps_version.dat",Main.ClientVersion.."\n"..Main.RobloxVersion)
 			env.writefile("dex/rbx_api.dat",Main.RawAPI)
 			env.writefile("dex/rbx_rmd.dat",Main.RawRMD)
 		end
 
-		-- Load other modules
 		intro.SetProgress("Loading Modules",0.75)
-		Main.AppControls.Lib.InitDeps(Main.GetInitDeps()) -- Missing deps now available
+		Main.AppControls.Lib.InitDeps(Main.GetInitDeps())
 		Main.LoadModules()
 		Lib.FastWait()
 
-		-- Init other modules
 		intro.SetProgress("Initializing Modules",0.9)
 		Explorer.Init()
 		Properties.Init()
@@ -16672,58 +16112,39 @@ Main = (function()
 		Console.Init()
 		SaveInstance.Init()
 		ModelViewer.Init()
-		
-		--SecretServicePanel.Init()
-		
+
 		Lib.FastWait()
 
-		-- Done
 		intro.SetProgress("Complete",1)
 		coroutine.wrap(function()
 			Lib.FastWait(1.25)
 			intro.Close()
 		end)()
 
-		-- Init window system, create main menu, show explorer and properties
 		Lib.Window.Init()
 		Main.CreateMainGui()
 		Explorer.Window:Show({Align = "right", Pos = 1, Size = 0.5, Silent = true})
 		Properties.Window:Show({Align = "right", Pos = 2, Size = 0.5, Silent = true})
-		
+
 		Lib.DeferFunc(function() Lib.Window.ToggleSide("right") end)
 	end
 
 	return Main
 end)()
 
--- Start
 Main.Init()
-
---for i,v in pairs(Main.MissingEnv) do print(i,v) end
 
    end,
 })
-
-
 
 local Button = Tab:CreateButton({
    Name = "Game Dumper",
    Callback = function()
 
--- ============================================
--- COMPREHENSIVE ROBLOX GAME DUMPER + EXECUTOR ANALYZER
--- WITH GUI CONFIGURATION + CRASH-RESISTANT PROGRESSIVE DUMPING
--- ============================================
-
--- CONFIG
 local file_name = "GameDump_FULL_Decompiled.txt"
 local player_name = "USER"
 local MAX_DEPTH = 50
 local DUMP_PROTECTED = true
-
--- ============================================
--- GUI CONFIGURATION
--- ============================================
 
 local config = {
     use_detailed_properties = false,
@@ -16733,10 +16154,9 @@ local config = {
     dump_nil_instances = true,
     decompile_scripts = true,
     performance_mode = "normal",
-    fps_threshold = 30,  -- Wait for FPS to recover above this
+    fps_threshold = 30,
 }
 
--- Performance mode presets
 local performance_presets = {
     fast = {
         delay_per_object = 0,
@@ -16773,7 +16193,7 @@ local function create_config_gui()
     ScreenGui.Name = "GameDumperConfig"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    
+
     if gethui then
         ScreenGui.Parent = gethui()
     elseif syn and syn.protect_gui then
@@ -16782,8 +16202,7 @@ local function create_config_gui()
     else
         ScreenGui.Parent = game:GetService("CoreGui")
     end
-    
-    -- Main Frame
+
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenGui
@@ -16794,8 +16213,7 @@ local function create_config_gui()
     MainFrame.Size = UDim2.new(0, 400, 0, 500)
     MainFrame.Active = true
     MainFrame.Draggable = true
-    
-    -- Title
+
     local Title = Instance.new("TextLabel")
     Title.Name = "Title"
     Title.Parent = MainFrame
@@ -16806,8 +16224,7 @@ local function create_config_gui()
     Title.Text = "Game Dumper Configuration"
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextSize = 16
-    
-    -- Scroll Frame for options
+
     local ScrollFrame = Instance.new("ScrollingFrame")
     ScrollFrame.Name = "ScrollFrame"
     ScrollFrame.Parent = MainFrame
@@ -16818,12 +16235,12 @@ local function create_config_gui()
     ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
     ScrollFrame.ScrollBarThickness = 6
     ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(60, 60, 60)
-    
+
     local UIListLayout = Instance.new("UIListLayout")
     UIListLayout.Parent = ScrollFrame
     UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     UIListLayout.Padding = UDim.new(0, 8)
-    
+
     local function create_option(name, description, config_key, warning)
         local OptionFrame = Instance.new("Frame")
         OptionFrame.Name = name
@@ -16831,7 +16248,7 @@ local function create_config_gui()
         OptionFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
         OptionFrame.BorderSizePixel = 0
         OptionFrame.Size = UDim2.new(1, -10, 0, warning and 80 or 60)
-        
+
         local Checkbox = Instance.new("TextButton")
         Checkbox.Name = "Checkbox"
         Checkbox.Parent = OptionFrame
@@ -16844,7 +16261,7 @@ local function create_config_gui()
         Checkbox.Text = config[config_key] and "✓" or ""
         Checkbox.TextColor3 = Color3.fromRGB(0, 255, 0)
         Checkbox.TextSize = 16
-        
+
         local OptionLabel = Instance.new("TextLabel")
         OptionLabel.Name = "OptionLabel"
         OptionLabel.Parent = OptionFrame
@@ -16856,7 +16273,7 @@ local function create_config_gui()
         OptionLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
         OptionLabel.TextSize = 14
         OptionLabel.TextXAlignment = Enum.TextXAlignment.Left
-        
+
         local DescLabel = Instance.new("TextLabel")
         DescLabel.Name = "DescLabel"
         DescLabel.Parent = OptionFrame
@@ -16870,7 +16287,7 @@ local function create_config_gui()
         DescLabel.TextXAlignment = Enum.TextXAlignment.Left
         DescLabel.TextYAlignment = Enum.TextYAlignment.Top
         DescLabel.TextWrapped = true
-        
+
         if warning then
             local WarningLabel = Instance.new("TextLabel")
             WarningLabel.Name = "WarningLabel"
@@ -16884,15 +16301,15 @@ local function create_config_gui()
             WarningLabel.TextSize = 10
             WarningLabel.TextXAlignment = Enum.TextXAlignment.Left
         end
-        
+
         Checkbox.MouseButton1Click:Connect(function()
             config[config_key] = not config[config_key]
             Checkbox.Text = config[config_key] and "✓" or ""
         end)
-        
+
         return OptionFrame
     end
-    
+
     local function create_performance_selector()
         local OptionFrame = Instance.new("Frame")
         OptionFrame.Name = "PerformanceMode"
@@ -16900,7 +16317,7 @@ local function create_config_gui()
         OptionFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
         OptionFrame.BorderSizePixel = 0
         OptionFrame.Size = UDim2.new(1, -10, 0, 100)
-        
+
         local OptionLabel = Instance.new("TextLabel")
         OptionLabel.Name = "OptionLabel"
         OptionLabel.Parent = OptionFrame
@@ -16912,7 +16329,7 @@ local function create_config_gui()
         OptionLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
         OptionLabel.TextSize = 14
         OptionLabel.TextXAlignment = Enum.TextXAlignment.Left
-        
+
         local DescLabel = Instance.new("TextLabel")
         DescLabel.Name = "DescLabel"
         DescLabel.Parent = OptionFrame
@@ -16926,7 +16343,7 @@ local function create_config_gui()
         DescLabel.TextXAlignment = Enum.TextXAlignment.Left
         DescLabel.TextYAlignment = Enum.TextYAlignment.Top
         DescLabel.TextWrapped = true
-        
+
         local modes = {"fast", "normal", "safe", "ultra_safe"}
         local mode_labels = {
             fast = "⚡ Fast",
@@ -16934,14 +16351,14 @@ local function create_config_gui()
             safe = "🛡️ Safe",
             ultra_safe = "🐌 Ultra Safe"
         }
-        
+
         local button_colors = {
             fast = Color3.fromRGB(255, 100, 100),
             normal = Color3.fromRGB(100, 170, 255),
             safe = Color3.fromRGB(100, 200, 100),
             ultra_safe = Color3.fromRGB(150, 100, 200)
         }
-        
+
         for i, mode in ipairs(modes) do
             local ModeButton = Instance.new("TextButton")
             ModeButton.Name = mode
@@ -16956,10 +16373,10 @@ local function create_config_gui()
             ModeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
             ModeButton.TextSize = 10
             ModeButton.TextWrapped = true
-            
+
             ModeButton.MouseButton1Click:Connect(function()
                 config.performance_mode = mode
-                
+
                 for _, btn in ipairs(OptionFrame:GetChildren()) do
                     if btn:IsA("TextButton") and btn.Name ~= "Checkbox" then
                         local btn_mode = btn.Name
@@ -16972,54 +16389,54 @@ local function create_config_gui()
                 end
             end)
         end
-        
+
         return OptionFrame
     end
-    
+
     create_performance_selector()
-    
+
     create_option(
         "Detailed Properties (BGetPT)",
         "Use BGetPT to extract ALL properties (1000+ per object). May result in massive file sizes.",
         "use_detailed_properties",
         "WARNING: Can create 100MB+ files and may crash AI token limits!"
     )
-    
+
     create_option(
         "Dump Scripts",
         "Extract and decompile all LocalScripts, ModuleScripts, and Scripts.",
         "dump_scripts"
     )
-    
+
     create_option(
         "Dump Hierarchy",
         "Dump the complete game hierarchy with all objects.",
         "dump_hierarchy"
     )
-    
+
     create_option(
         "Analyze Executor",
         "Test and report UNC function compatibility.",
         "analyze_executor"
     )
-    
+
     create_option(
         "Dump Nil Instances",
         "Include nil instances in the dump.",
         "dump_nil_instances"
     )
-    
+
     create_option(
         "Decompile Scripts",
         "Attempt to decompile protected scripts (requires decompile function).",
         "decompile_scripts"
     )
-    
+
     UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
     end)
     ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
-    
+
     local StartButton = Instance.new("TextButton")
     StartButton.Name = "StartButton"
     StartButton.Parent = MainFrame
@@ -17031,7 +16448,7 @@ local function create_config_gui()
     StartButton.Text = "START DUMP"
     StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     StartButton.TextSize = 16
-    
+
     local CancelButton = Instance.new("TextButton")
     CancelButton.Name = "CancelButton"
     CancelButton.Parent = MainFrame
@@ -17043,32 +16460,28 @@ local function create_config_gui()
     CancelButton.Text = "CANCEL"
     CancelButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     CancelButton.TextSize = 16
-    
+
     local waiting = true
     local start_dump = false
-    
+
     StartButton.MouseButton1Click:Connect(function()
         start_dump = true
         waiting = false
     end)
-    
+
     CancelButton.MouseButton1Click:Connect(function()
         start_dump = false
         waiting = false
     end)
-    
+
     while waiting do
         task.wait()
     end
-    
+
     ScreenGui:Destroy()
-    
+
     return start_dump
 end
-
--- ============================================
--- PROGRESS GUI WITH FPS MONITOR
--- ============================================
 
 local ProgressGui = nil
 local ProgressLabel = nil
@@ -17082,26 +16495,26 @@ local total_objects_estimate = 0
 local function get_fps()
     local RunService = game:GetService("RunService")
     local fps = 0
-    
+
     if RunService:IsRunning() then
         fps = math.floor(1 / RunService.RenderStepped:Wait())
     end
-    
+
     return fps
 end
 
 local function wait_for_fps_recovery(threshold, perf_settings)
     if not perf_settings.fps_check then return end
-    
+
     local current_fps = get_fps()
     local wait_count = 0
-    local max_wait = 100  -- Maximum 10 seconds wait
-    
+    local max_wait = 100
+
     while current_fps < threshold and wait_count < max_wait do
         task.wait(0.1)
         current_fps = get_fps()
         wait_count = wait_count + 1
-        
+
         if FPSLabel then
             FPSLabel.Text = string.format("FPS: %d (Waiting for %d+)", current_fps, threshold)
             FPSLabel.TextColor3 = current_fps < threshold and Color3.fromRGB(255, 100, 100) or Color3.fromRGB(100, 255, 100)
@@ -17114,7 +16527,7 @@ local function create_progress_gui()
     ProgressGui.Name = "DumperProgress"
     ProgressGui.ResetOnSpawn = false
     ProgressGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    
+
     if gethui then
         ProgressGui.Parent = gethui()
     elseif syn and syn.protect_gui then
@@ -17123,7 +16536,7 @@ local function create_progress_gui()
     else
         ProgressGui.Parent = game:GetService("CoreGui")
     end
-    
+
     local Frame = Instance.new("Frame")
     Frame.Parent = ProgressGui
     Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -17131,7 +16544,7 @@ local function create_progress_gui()
     Frame.BorderSizePixel = 2
     Frame.Position = UDim2.new(0.5, -200, 0.5, -80)
     Frame.Size = UDim2.new(0, 400, 0, 160)
-    
+
     local Title = Instance.new("TextLabel")
     Title.Parent = Frame
     Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -17141,7 +16554,7 @@ local function create_progress_gui()
     Title.Text = "Dumping Game..."
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextSize = 14
-    
+
     ProgressLabel = Instance.new("TextLabel")
     ProgressLabel.Parent = Frame
     ProgressLabel.BackgroundTransparency = 1
@@ -17152,7 +16565,7 @@ local function create_progress_gui()
     ProgressLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
     ProgressLabel.TextSize = 12
     ProgressLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
+
     local BarBackground = Instance.new("Frame")
     BarBackground.Parent = Frame
     BarBackground.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
@@ -17161,13 +16574,13 @@ local function create_progress_gui()
     BarBackground.Position = UDim2.new(0, 10, 0, 60)
     BarBackground.Size = UDim2.new(1, -20, 0, 20)
     BarBackground.ClipsDescendants = true
-    
+
     ProgressBar = Instance.new("Frame")
     ProgressBar.Parent = BarBackground
     ProgressBar.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
     ProgressBar.BorderSizePixel = 0
     ProgressBar.Size = UDim2.new(0, 0, 1, 0)
-    
+
     StatusLabel = Instance.new("TextLabel")
     StatusLabel.Parent = Frame
     StatusLabel.BackgroundTransparency = 1
@@ -17178,7 +16591,7 @@ local function create_progress_gui()
     StatusLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
     StatusLabel.TextSize = 11
     StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
+
     FPSLabel = Instance.new("TextLabel")
     FPSLabel.Parent = Frame
     FPSLabel.BackgroundTransparency = 1
@@ -17189,7 +16602,7 @@ local function create_progress_gui()
     FPSLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
     FPSLabel.TextSize = 11
     FPSLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
+
     TimeLabel = Instance.new("TextLabel")
     TimeLabel.Parent = Frame
     TimeLabel.BackgroundTransparency = 1
@@ -17200,10 +16613,9 @@ local function create_progress_gui()
     TimeLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
     TimeLabel.TextSize = 10
     TimeLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
+
     start_time = tick()
-    
-    -- FPS updater
+
     task.spawn(function()
         while ProgressGui do
             if FPSLabel then
@@ -17218,31 +16630,31 @@ end
 
 local function update_progress(status, objects_done, scripts_done, service_current, service_total)
     if not ProgressGui then return end
-    
+
     if objects_done > total_objects_estimate then
         total_objects_estimate = objects_done + 1000
     end
-    
+
     local service_progress = 0
     if service_total > 0 then
         service_progress = (service_current / service_total) * 70
     end
-    
+
     local base_progress = 20 + service_progress
     local display_progress = math.min(base_progress, 95)
-    
+
     ProgressLabel.Text = string.format("%s", status)
     ProgressBar.Size = UDim2.new(display_progress / 100, 0, 1, 0)
     StatusLabel.Text = string.format("Objects: %d | Scripts: %d", objects_done or 0, scripts_done or 0)
-    
+
     local elapsed = tick() - start_time
     local eta = "Calculating..."
-    
+
     if service_current > 0 and service_current < service_total then
         local time_per_service = elapsed / service_current
         local remaining = service_total - service_current
         local eta_seconds = math.floor(time_per_service * remaining)
-        
+
         if eta_seconds < 60 then
             eta = string.format("%ds", eta_seconds)
         elseif eta_seconds < 3600 then
@@ -17251,17 +16663,17 @@ local function update_progress(status, objects_done, scripts_done, service_curre
             eta = string.format("%dh %dm", math.floor(eta_seconds / 3600), math.floor((eta_seconds % 3600) / 60))
         end
     end
-    
+
     TimeLabel.Text = string.format("Elapsed: %ds | ETA: %s", math.floor(elapsed), eta)
 end
 
 local function set_progress_complete()
     if not ProgressGui then return end
-    
+
     ProgressLabel.Text = "Complete!"
     ProgressBar.Size = UDim2.new(1, 0, 1, 0)
     ProgressBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    
+
     local elapsed = tick() - start_time
     TimeLabel.Text = string.format("Completed in: %ds", math.floor(elapsed))
 end
@@ -17273,15 +16685,11 @@ local function destroy_progress_gui()
     end
 end
 
--- ============================================
--- IMPROVED EXECUTOR ANALYSIS
--- ============================================
-
 local function analyze_executor()
     print("\n" .. string.rep("=", 50))
     print("EXECUTOR ANALYSIS")
     print(string.rep("=", 50))
-    
+
     local executor_info = {
         Name = "Unknown",
         Version = "Unknown",
@@ -17291,8 +16699,7 @@ local function analyze_executor()
         Functions = {},
         Categories = {}
     }
-    
-    -- Enhanced executor identification
+
     if identifyexecutor then
         local success, name, version = pcall(identifyexecutor)
         if success then
@@ -17300,8 +16707,7 @@ local function analyze_executor()
             executor_info.Version = tostring(version or "N/A")
         end
     end
-    
-    -- Fallback detection with more executors
+
     if executor_info.Name == "Unknown" then
         if KRNL_LOADED then
             executor_info.Name = "KRNL"
@@ -17322,10 +16728,10 @@ local function analyze_executor()
             if s and n then executor_info.Name = n end
         end
     end
-    
+
     print(string.format("\n[*] Executor: %s", executor_info.Name))
     print(string.format("[*] Version: %s", executor_info.Version))
-    
+
     local unc_functions = {
         {category = "Cache", functions = {"cloneref", "compareinstances", "invalidate_cache", "cache.invalidate", "cache.iscached", "cache.replace"}},
         {category = "Closures", functions = {"checkcaller", "clonefunction", "getcallingscript", "getscriptclosure", "hookfunction", "iscclosure", "islclosure", "isexecutorclosure", "loadstring", "newcclosure", "replaceclosure"}},
@@ -17343,34 +16749,32 @@ local function analyze_executor()
         {category = "Decompiler", functions = {"decompile", "disassemble"}},
         {category = "Hooking", functions = {"hookfunction", "hookmetamethod", "replaceclosure"}}
     }
-    
+
     print("\n[*] Testing UNC functions...\n")
-    
+
     local total_functions = 0
     local supported_functions = 0
-    
+
     for _, category_data in ipairs(unc_functions) do
         local category_name = category_data.category
         local category_supported = 0
         local category_total = 0
         local category_functions = {}
-        
+
         print(string.format("--- %s ---", category_name))
-        
+
         for _, func_name in ipairs(category_data.functions) do
             category_total = category_total + 1
             total_functions = total_functions + 1
-            
-            -- Try multiple ways to check function existence
+
             local func = _G
             local found = false
-            
-            -- Method 1: Navigate nested tables
+
             local parts = {}
             for part in func_name:gmatch("[^.]+") do
                 table.insert(parts, part)
             end
-            
+
             for _, part in ipairs(parts) do
                 if type(func) == "table" and func[part] then
                     func = func[part]
@@ -17379,17 +16783,15 @@ local function analyze_executor()
                     break
                 end
             end
-            
+
             if func and (type(func) == "function" or type(func) == "table") then
                 found = true
             end
-            
-            -- Method 2: Direct global check
+
             if not found and _G[func_name] then
                 found = true
             end
-            
-            -- Method 3: Try calling it in pcall
+
             if not found then
                 local success = pcall(function()
                     local test = loadstring("return " .. func_name)
@@ -17401,7 +16803,7 @@ local function analyze_executor()
                     end
                 end)
             end
-            
+
             if found then
                 category_supported = category_supported + 1
                 supported_functions = supported_functions + 1
@@ -17412,11 +16814,11 @@ local function analyze_executor()
                 table.insert(category_functions, {name = func_name, supported = false})
             end
         end
-        
+
         local category_percent = math.floor((category_supported / category_total) * 100)
-        print(string.format("  Category Score: %d/%d (%.1f%%)\n", 
+        print(string.format("  Category Score: %d/%d (%.1f%%)\n",
             category_supported, category_total, category_percent))
-        
+
         table.insert(executor_info.Categories, {
             name = category_name,
             supported = category_supported,
@@ -17425,23 +16827,19 @@ local function analyze_executor()
             functions = category_functions
         })
     end
-    
+
     executor_info.UNCScore = supported_functions
     executor_info.UNCTotal = total_functions
     executor_info.UNCPercentage = math.floor((supported_functions / total_functions) * 100)
-    
+
     print(string.rep("=", 50))
-    print(string.format("FINAL UNC SCORE: %d/%d (%.1f%%)", 
+    print(string.format("FINAL UNC SCORE: %d/%d (%.1f%%)",
         supported_functions, total_functions, executor_info.UNCPercentage))
     print("[!] NOTE: Score may show 0%% if executor uses non-standard function naming")
     print(string.rep("=", 50))
-    
+
     return executor_info
 end
-
--- ============================================
--- HELPER FUNCTIONS
--- ============================================
 
 local function safe_get_service(service_name)
     local success, result = pcall(function()
@@ -17459,18 +16857,18 @@ end
 
 local function get_path(obj)
     if not obj then return "nil" end
-    
+
     local path = {}
     local current = obj
     local depth = 0
-    
+
     while current and current ~= game and depth < MAX_DEPTH do
         local name = safe_get_property(current, "Name") or "Unknown"
         table.insert(path, 1, name)
         current = safe_get_property(current, "Parent")
         depth = depth + 1
     end
-    
+
     if #path > 0 then
         return "game." .. table.concat(path, ".")
     else
@@ -17482,25 +16880,24 @@ local function get_source(script, perf_settings)
     if not config.decompile_scripts then
         return "--[[ Script decompilation disabled in config ]]--"
     end
-    
-    -- Wait for FPS recovery before heavy decompilation
+
     wait_for_fps_recovery(config.fps_threshold, perf_settings)
-    
+
     local source = safe_get_property(script, "Source")
     if source and #source > 0 then
         return source
     end
-    
+
     if decompile then
         local success, result = pcall(function()
             return decompile(script)
         end)
-        
+
         if success and result then
             return result
         end
     end
-    
+
     return "--[[ PROTECTED/EMPTY SCRIPT ]]--"
 end
 
@@ -17508,7 +16905,7 @@ local function get_nil_instances()
     if not config.dump_nil_instances then
         return {}
     end
-    
+
     if getnilinstances then
         local success, result = pcall(getnilinstances)
         if success then return result end
@@ -17520,12 +16917,12 @@ local function dump_properties(obj)
     if config.use_detailed_properties and BGetPT then
         local props = BGetPT(obj)
         local prop_strings = {}
-        
+
         local count = 0
         for _ in pairs(props) do count = count + 1 end
-        
+
         table.insert(prop_strings, string.format("  [BGetPT: %d properties]", count))
-        
+
         for prop_name, value in pairs(props) do
             local val_str = tostring(value)
             if #val_str > 100 then
@@ -17533,15 +16930,15 @@ local function dump_properties(obj)
             end
             table.insert(prop_strings, string.format("  %s = %s", prop_name, val_str))
         end
-        
+
         return table.concat(prop_strings, "\n")
     else
         local props = {}
         local common_props = {
-            "ClassName", "Name", "Parent", "Archivable", 
+            "ClassName", "Name", "Parent", "Archivable",
             "Value", "Text", "Enabled", "Visible"
         }
-        
+
         for _, prop_name in ipairs(common_props) do
             local val = safe_get_property(obj, prop_name)
             if val ~= nil then
@@ -17552,18 +16949,14 @@ local function dump_properties(obj)
                 table.insert(props, string.format("  %s = %s", prop_name, val_str))
             end
         end
-        
+
         return table.concat(props, "\n")
     end
 end
 
--- ============================================
--- SERVICE COLLECTION
--- ============================================
-
 local function collect_all_services()
     local services = {}
-    
+
     local service_list = {
         "Workspace", "Players", "Lighting", "ReplicatedStorage", "ReplicatedFirst",
         "StarterGui", "StarterPack", "StarterPlayer", "Teams", "SoundService",
@@ -17573,9 +16966,9 @@ local function collect_all_services()
         "CollectionService", "HttpService", "MarketplaceService", "TeleportService",
         "BadgeService", "GamePassService", "GroupService", "PhysicsService"
     }
-    
+
     print("\n[*] Collecting services...")
-    
+
     for _, service_name in ipairs(service_list) do
         local service = safe_get_service(service_name)
         if service then
@@ -17583,7 +16976,7 @@ local function collect_all_services()
             print(string.format("[+] Found: %s", service_name))
         end
     end
-    
+
     print("[*] Searching nil instances...")
     for _, obj in ipairs(get_nil_instances()) do
         local name = safe_get_property(obj, "Name") or "UnknownNil"
@@ -17592,13 +16985,9 @@ local function collect_all_services()
         services[key] = obj
         print(string.format("[+] Found nil instance: %s (%s)", name, class))
     end
-    
+
     return services
 end
-
--- ============================================
--- CRASH-RESISTANT DUMPING LOGIC
--- ============================================
 
 local object_counter = 0
 local script_counter = 0
@@ -17607,64 +16996,58 @@ local function dump_descendants(obj, prefix, hierarchy_dump, scripts_dump, visit
     if depth > MAX_DEPTH then return end
     if not obj then return end
     if visited[obj] then return end
-    
+
     visited[obj] = true
-    
+
     local success, descendants = pcall(function()
         return obj:GetDescendants()
     end)
-    
+
     if not success then
         if config.dump_hierarchy then
             table.insert(hierarchy_dump, string.format("%s[PROTECTED - Cannot access descendants]", prefix))
         end
         return
     end
-    
+
     for i, descendant in ipairs(descendants) do
         if visited[descendant] then continue end
         visited[descendant] = true
-        
+
         object_counter = object_counter + 1
-        
+
         if object_counter % perf_settings.update_interval == 0 then
             task.wait(perf_settings.delay_per_object)
             update_progress("Processing objects...", object_counter, script_counter, service_current, service_total)
         end
-        
+
         local path = get_path(descendant)
         local class = safe_get_property(descendant, "ClassName") or "Unknown"
-        
+
         if config.dump_hierarchy then
             table.insert(hierarchy_dump, string.format("%s | %s", path, class))
         end
-        
+
         if config.dump_scripts and (descendant:IsA("LocalScript") or descendant:IsA("ModuleScript") or descendant:IsA("Script")) then
             script_counter = script_counter + 1
-            
+
             update_progress(string.format("Decompiling script %d...", script_counter), object_counter, script_counter, service_current, service_total)
-            
-            -- Individual script delay with FPS check
+
             task.wait(perf_settings.delay_per_script)
-            
+
             local source = get_source(descendant, perf_settings)
-            
+
             table.insert(scripts_dump, {
                 Path = path,
                 Class = class,
                 Source = source,
                 Properties = dump_properties(descendant)
             })
-            
-            -- Extra wait after decompilation
+
             wait_for_fps_recovery(config.fps_threshold, perf_settings)
         end
     end
 end
-
--- ============================================
--- FORMAT EXECUTOR REPORT
--- ============================================
 
 local function format_executor_report(executor_info)
     local report = {
@@ -17673,30 +17056,26 @@ local function format_executor_report(executor_info)
         "-- ============================================\n",
         string.format("Executor Name: %s", executor_info.Name),
         string.format("Executor Version: %s", executor_info.Version),
-        string.format("\nUNC COMPATIBILITY SCORE: %d/%d (%.1f%%)", 
+        string.format("\nUNC COMPATIBILITY SCORE: %d/%d (%.1f%%)",
             executor_info.UNCScore, executor_info.UNCTotal, executor_info.UNCPercentage),
         "NOTE: Score may show 0% if executor uses non-standard function naming",
         "\n-- Function Categories --\n"
     }
-    
+
     for _, category in ipairs(executor_info.Categories) do
-        table.insert(report, string.format("\n%s: %d/%d (%.1f%%)", 
+        table.insert(report, string.format("\n%s: %d/%d (%.1f%%)",
             category.name, category.supported, category.total, category.percentage))
-        
+
         for _, func in ipairs(category.functions) do
             local status = func.supported and "[✓]" or "[✗]"
             table.insert(report, string.format("  %s %s", status, func.name))
         end
     end
-    
+
     table.insert(report, "\n-- ============================================\n")
-    
+
     return table.concat(report, "\n")
 end
-
--- ============================================
--- MAIN EXECUTION
--- ============================================
 
 print(string.rep("=", 50))
 print("COMPREHENSIVE ROBLOX GAME DUMPER")
@@ -17768,22 +17147,22 @@ total_objects_estimate = 10000
 local service_index = 0
 for service_name, service in pairs(all_services) do
     service_index = service_index + 1
-    
+
     update_progress(string.format("Dumping: %s", service_name), object_counter, script_counter, service_index, service_count)
-    
+
     print(string.format("[*] Dumping: %s (%d/%d)", service_name, service_index, service_count))
-    
+
     local path = get_path(service)
     local class = safe_get_property(service, "ClassName") or "Unknown"
-    
+
     if config.dump_hierarchy then
         table.insert(hierarchy_dump, string.format("\n--- %s ---", service_name))
         table.insert(hierarchy_dump, string.format("%s | %s", path, class))
         table.insert(hierarchy_dump, dump_properties(service))
     end
-    
+
     dump_descendants(service, path, hierarchy_dump, scripts_dump, visited, 0, perf_settings, service_index, service_count)
-    
+
     task.wait(perf_settings.delay_per_service)
     wait_for_fps_recovery(config.fps_threshold, perf_settings)
 end
@@ -17791,10 +17170,6 @@ end
 update_progress("Building output file...", object_counter, script_counter, service_count, service_count)
 
 print("\n[*] Scan complete. Building output file...")
-
--- ============================================
--- BUILD OUTPUT
--- ============================================
 
 local final_dump = {
     "-- ============================================",
@@ -17804,7 +17179,7 @@ local final_dump = {
     string.format("-- User: %s (Original: %s)", player_name, old_name),
     string.format("-- Timestamp: %s UTC", os.date("!%Y-%m-%d %H:%M:%S")),
     string.format("-- Executor: %s v%s", executor_info.Name, executor_info.Version),
-    string.format("-- UNC Score: %d/%d (%.1f%%) - NOTE: May show 0%% if non-standard naming", 
+    string.format("-- UNC Score: %d/%d (%.1f%%) - NOTE: May show 0%% if non-standard naming",
         executor_info.UNCScore, executor_info.UNCTotal, executor_info.UNCPercentage),
     string.format("-- Services Dumped: %d", service_count),
     string.format("-- Total Objects: %d", object_counter),
@@ -17828,7 +17203,7 @@ if config.dump_scripts then
     table.insert(final_dump, "\n\n-- ============================================")
     table.insert(final_dump, "-- SCRIPTS (All Types)")
     table.insert(final_dump, "-- ============================================\n")
-    
+
     for _, data in ipairs(scripts_dump) do
         table.insert(final_dump, string.format(
             "-- ============================================\n" ..
@@ -17849,17 +17224,13 @@ local full_output = table.concat(final_dump, "\n")
 
 update_progress("Saving file...", object_counter, script_counter, service_count, service_count)
 
--- ============================================
--- SAVE OUTPUT
--- ============================================
-
 local success = false
 
 if writefile then
     local write_success, err = pcall(function()
         writefile(file_name, full_output)
     end)
-    
+
     if write_success then
         print(string.format("\n[✓] SUCCESS! Saved to '%s'", file_name))
         print(string.format("[✓] File size: ~%d KB", #full_output / 1024))
@@ -17900,15 +17271,14 @@ print(string.rep("=", 50))
 local Button = Tab:CreateButton({
    Name = "Ketamine(InfernusScripts)",
    Callback = function()
--- Hope you will enjoy using it ;)
+
 loadstring(game:HttpGet("https://raw.githubusercontent.com/InfernusScripts/Ketamine/refs/heads/main/Ketamine.lua"))()   end,
 })
-		
+
 local Button = Tab:CreateButton({
    Name = "BGetPT(Better getproperties) (wesd)",
    Callback = function()
 
--- better getproperties
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 
@@ -17924,7 +17294,7 @@ local PropertyDatabase = {}
 
 for line in rawList:gmatch("[^\r\n]+") do
     local className, propName = line:match("^([^%.]+)%.(.+)$")
-    
+
     if className and propName then
         if not PropertyDatabase[className] then
             PropertyDatabase[className] = {}
@@ -17946,11 +17316,11 @@ getgenv().BGetPT = function(instance)
             for _, propName in ipairs(properties) do
                 if not seenProperties[propName] then
                     seenProperties[propName] = true
-                    
+
                     local isSuccess, value = pcall(function()
                         return instance[propName]
                     end)
-                    
+
                     if isSuccess then
                         results[propName] = value
                     end
@@ -17990,15 +17360,15 @@ local toggled, loopConnection = false
 
 toggleButton.MouseButton1Click:Connect(function()
     toggled = not toggled
-    
+
     if toggled then
         track:Play()
         track.TimePosition = track.Length * 0.40
         task.wait((track.Length * 0.50 - track.Length * 0.40) / track.Speed)
-        
+
         track.TimePosition = track.Length * 0.50
         local forward = true
-        
+
         loopConnection = RunService.RenderStepped:Connect(function(dt)
             if not toggled then return end
             if forward then
@@ -18497,7 +17867,6 @@ local Controller = Fly.new()
    end,
 })
 
-
 local Button = Tab:CreateButton({
    Name = "Telekenisis",
    Callback = function()
@@ -18515,7 +17884,7 @@ Tool0=_Ins("Tool")
 Part1=_Ins("Part")
 local selectionbox=Instance.new("SelectionBox", LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait())
 selectionbox.LineThickness=0.03
-selectionbox.Color3=Color3.fromRGB(255, 255, 255)	
+selectionbox.Color3=Color3.fromRGB(255, 255, 255)
 
 re=game:GetService("RunService")
 Tool0.Name=_Name
@@ -18550,12 +17919,12 @@ Sound.Volume = 0.3
 Sound:Play()
 
 pcall(function()
-    cam:Connect(function() 
-        if con then 
-            pcall(function() 
-                con(LocalPlayer, changed, speed) 
-            end) 
-        end 
+    cam:Connect(function()
+        if con then
+            pcall(function()
+                con(LocalPlayer, changed, speed)
+            end)
+        end
     end)
 end)
 
@@ -18620,7 +17989,7 @@ local function createControlLabel(keyText, actionText, descText, layoutOrder)
     ControlFrame.BorderSizePixel = 1
     ControlFrame.Size = UDim2.new(1, -10, 0, 40)
     ControlFrame.LayoutOrder = layoutOrder
-    
+
     local KeyLabel = _Ins("TextLabel")
     KeyLabel.Name = "Key"
     KeyLabel.Parent = ControlFrame
@@ -18632,7 +18001,7 @@ local function createControlLabel(keyText, actionText, descText, layoutOrder)
     KeyLabel.TextColor3 = Color3.fromRGB(120, 180, 255)
     KeyLabel.TextSize = 13
     KeyLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
+
     local ActionLabel = _Ins("TextLabel")
     ActionLabel.Name = "Action"
     ActionLabel.Parent = ControlFrame
@@ -18644,7 +18013,7 @@ local function createControlLabel(keyText, actionText, descText, layoutOrder)
     ActionLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     ActionLabel.TextSize = 12
     ActionLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
+
     local DescLabel = _Ins("TextLabel")
     DescLabel.Name = "Description"
     DescLabel.Parent = ControlFrame
@@ -18656,7 +18025,7 @@ local function createControlLabel(keyText, actionText, descText, layoutOrder)
     DescLabel.TextColor3 = Color3.fromRGB(140, 140, 140)
     DescLabel.TextSize = 10
     DescLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
+
     return ControlFrame
 end
 
@@ -18690,7 +18059,7 @@ local LineConnect=function(part1,part2,parent)
     line.Size=_VTR_new(1,1,1)
     local mesh=_Ins("BlockMesh")
     mesh.Parent=line
-    
+
     local connection
     connection = game:GetService("RunService").RenderStepped:Connect(function()
         if not part1 or not part2 or not part1.Parent or not part2.Parent then
@@ -18698,7 +18067,7 @@ local LineConnect=function(part1,part2,parent)
             if connection then connection:Disconnect() end
             return
         end
-        
+
         local lv=_CF_new(part1.Position,part2.Position)
         local dist=(part1.Position-part2.Position).magnitude
         line.Parent=parent
@@ -18709,7 +18078,7 @@ local LineConnect=function(part1,part2,parent)
         line.CFrame=_CF_new(line.Position,part2.Position)
         mesh.Scale=_VTR_new(.25,.25,dist)
     end)
-    
+
     table.insert(activeLines, {line=line, connection=connection})
     return line, connection
 end
@@ -18724,7 +18093,7 @@ point.Locked=true
 point.Anchored=true
 point.formFactor=0
 point.Shape=0
-point.BrickColor=BrickColor.Blue() 
+point.BrickColor=BrickColor.Blue()
 point.Size=_VTR_new(1,1,1)
 point.CanCollide=false
 local mesh=_Ins("SpecialMesh")
@@ -18738,12 +18107,12 @@ local color=tool.Handle
 local onButton1Down=function(mouse)
     if (mousedown==true) then return end
     mousedown=true
-    
+
     coroutine.resume(coroutine.create(function()
         local p=point:clone()
         p.Parent=tool
         local lineObj, lineConn = LineConnect(front,p,workspace)
-        
+
         while (mousedown==true) do
             p.Parent=tool
             if (object==nil) then
@@ -18759,11 +18128,11 @@ local onButton1Down=function(mouse)
             end
             w()
         end
-        
+
         if lineConn then lineConn:Disconnect() end
         pcall(function() p:Destroy() end)
     end))
-    
+
     while (mousedown==true) do
         if (mouse.Target~=nil) then
             local t=mouse.Target
@@ -18776,15 +18145,15 @@ local onButton1Down=function(mouse)
         end
         w()
     end
-    
+
     local currentBP = _Ins("BodyPosition")
     currentBP.maxForce=_VTR_new(math.huge*math.huge,math.huge*math.huge,math.huge*math.huge)
     currentBP.P=currentBP.P*3
-    
+
     if object then
         heldObjects[object] = {BP = currentBP, dist = dist}
     end
-    
+
     while (mousedown==true) do
         if (object==nil or object.Parent==nil) then break end
         local lv=_CF_new(front.Position,mouse.Hit.p)
@@ -18792,7 +18161,7 @@ local onButton1Down=function(mouse)
         currentBP.position=front.Position+lv.lookVector*dist
         w()
     end
-    
+
     if object and not frozenObjects[object] then
         pcall(function() currentBP:Destroy() end)
         heldObjects[object] = nil
@@ -18801,85 +18170,85 @@ local onButton1Down=function(mouse)
     end
 end
 
-local onKeyDown=function(key,mouse) 
-    local key=key:lower() 
-    
-    if (key=="q") then 
-        if (dist and dist>=5) then 
+local onKeyDown=function(key,mouse)
+    local key=key:lower()
+
+    if (key=="q") then
+        if (dist and dist>=5) then
             dist=dist-5
             if heldObjects[object] then
                 heldObjects[object].dist = dist
             end
-        end 
+        end
     end
-    
-    if (key=="u") then 
-        if (object and dist ~=1) then 
+
+    if (key=="u") then
+        if (object and dist ~=1) then
             local BX=_Ins("BodyGyro")
             BX.MaxTorque=_VTR_new(math.huge,0,math.huge)
             BX.CFrame=BX.CFrame * CFrame.Angles(0, math.rad(45), 0)
             BX.D=0
             BX.Parent=object
-        end 
-    end 
-    
-    if (key=="p") then 
+        end
+    end
+
+    if (key=="p") then
         if (object and dist ~=1) then
             local BX=_Ins("BodyVelocity")
             BX.maxForce=_VTR_new(0,math.huge,0)
             BX.velocity=_VTR_new(0,1,0)
             BX.Parent=object
-        end 
-    end 
-    
-    if key == "l" then 
-        if (object==nil) then return end 
-        
-        for _,v in pairs(object:GetChildren()) do 
-            if v.ClassName == "BodyGyro" then 
-                return nil 
-            end 
-        end 
-        
-        local BG=_Ins("BodyGyro") 
-        BG.maxTorque=_VTR_new(math.huge,math.huge,math.huge) 
-        BG.cframe=_CF_new(object.CFrame.p) 
-        BG.Parent=object 
-        
+        end
+    end
+
+    if key == "l" then
+        if (object==nil) then return end
+
+        for _,v in pairs(object:GetChildren()) do
+            if v.ClassName == "BodyGyro" then
+                return nil
+            end
+        end
+
+        local BG=_Ins("BodyGyro")
+        BG.maxTorque=_VTR_new(math.huge,math.huge,math.huge)
+        BG.cframe=_CF_new(object.CFrame.p)
+        BG.Parent=object
+
         repeat w() until(object.CFrame == _CF_new(object.CFrame.p))
-        
-        BG.Parent=nil 
-        
-        if (object==nil) then return end 
-        
-        for _,v in pairs(object:GetChildren()) do 
-            if v.ClassName == "BodyGyro" then 
-                v.Parent=nil 
-            end 
-        end 
-        
-        object.Velocity=_VTR_new(0,0,0) 
-        object.RotVelocity=_VTR_new(0,0,0) 
-    end 
-    
-    if (key=="y") then 
-        if (dist ~=100) then 
+
+        BG.Parent=nil
+
+        if (object==nil) then return end
+
+        for _,v in pairs(object:GetChildren()) do
+            if v.ClassName == "BodyGyro" then
+                v.Parent=nil
+            end
+        end
+
+        object.Velocity=_VTR_new(0,0,0)
+        object.RotVelocity=_VTR_new(0,0,0)
+    end
+
+    if (key=="y") then
+        if (dist ~=100) then
             dist=100
             if heldObjects[object] then
                 heldObjects[object].dist = dist
             end
-        end 
-    end 
-    
-    if (key=="j") then 
-        if (dist~=5000) then 
+        end
+    end
+
+    if (key=="j") then
+        if (dist~=5000) then
             dist=5000
             if heldObjects[object] then
                 heldObjects[object].dist = dist
             end
-        end 
+        end
     end
-    
+
     if (key=="e") then
         if dist then
             dist=dist+5
@@ -18888,19 +18257,19 @@ local onKeyDown=function(key,mouse)
             end
         end
     end
-    
-    if (key=="x") then 
-        if dist ~= 15 then 
+
+    if (key=="x") then
+        if dist ~= 15 then
             dist=15
             if heldObjects[object] then
                 heldObjects[object].dist = dist
             end
-        end 
-    end 
-    
-    if (key=="f") then 
-        if (object==nil) then return end 
-        
+        end
+    end
+
+    if (key=="f") then
+        if (object==nil) then return end
+
         if frozenObjects[object] then
             local frozenData = frozenObjects[object]
             if frozenData.BP then
@@ -18913,23 +18282,23 @@ local onKeyDown=function(key,mouse)
         else
             local holdData = heldObjects[object]
             if not holdData then return end
-            
+
             local freezeBP = holdData.BP
-            
+
             local freezeBox = _Ins("SelectionBox")
             freezeBox.LineThickness = 0.03
             freezeBox.Color3 = Color3.fromRGB(0, 255, 0)
             freezeBox.Adornee = object
             freezeBox.Parent = object
-            
+
             frozenObjects[object] = {
                 BP = freezeBP,
                 selectionBox = freezeBox,
                 object = object
             }
-            
+
             heldObjects[object] = nil
-            
+
             object = nil
             selectionbox.Adornee = nil
         end
@@ -18939,21 +18308,21 @@ end
 local onEquipped=function(mouse)
     local char=tool.Parent
     local human=char:FindFirstChildOfClass("Humanoid")
-    
+
     if human then
-        human.Changed:connect(function() 
-            if (human.Health==0) then 
-                mousedown=false 
-                point:Remove() 
-                tool:Remove() 
-            end 
+        human.Changed:connect(function()
+            if (human.Health==0) then
+                mousedown=false
+                point:Remove()
+                tool:Remove()
+            end
         end)
     end
-    
+
     mouse.Button1Down:connect(function() onButton1Down(mouse) end)
     mouse.KeyDown:connect(function(key) onKeyDown(key,mouse) end)
     mouse.Icon="rbxasset://textures\\GunCursor.png"
-    
+
     if mb then
         uis.TouchLongPress:Connect(function() onKeyDown("y",mouse) end)
         uis.TouchEnded:Connect(function() mousedown=false end)
@@ -18963,19 +18332,19 @@ local onEquipped=function(mouse)
 end
 
 local function cleanup()
-    mousedown=false 
-    
+    mousedown=false
+
     for _, lineData in pairs(activeLines) do
         if lineData.connection then lineData.connection:Disconnect() end
         if lineData.line then pcall(function() lineData.line:Destroy() end) end
     end
     activeLines = {}
-    
+
     for obj, data in pairs(heldObjects) do
         if data.BP then pcall(function() data.BP:Destroy() end) end
     end
     heldObjects = {}
-    
+
     if object then
         object = nil
         selectionbox.Adornee = nil
@@ -18987,13 +18356,13 @@ Tool0.Unequipped:connect(cleanup)
 
 LocalPlayer.CharacterAdded:Connect(function()
     cleanup()
-    
+
     for obj, data in pairs(frozenObjects) do
         if data.BP then pcall(function() data.BP:Destroy() end) end
         if data.selectionBox then pcall(function() data.selectionBox:Destroy() end) end
     end
     frozenObjects = {}
-    
+
     w(0.1)
     selectionbox = Instance.new("SelectionBox", LocalPlayer.Character)
     selectionbox.LineThickness=0.03
@@ -19002,7 +18371,6 @@ end)
 
    end,
 })
-
 
 local Button = Tab:CreateButton({
    Name = "Invisibility Script",
@@ -19014,22 +18382,15 @@ local Button = Tab:CreateButton({
 local Button = Tab:CreateButton({
    Name = "Jenny Mod",
    Callback = function()
-   
--- JENNNYYY MODDDDD
--- this file was generated using ironbrew1
-return(function(a,a,b,b,b,b,c,d,e,f,g,h,i,j,k,l,m,m,m,n,n,n,n,n,n,o,o,o,o,o,o,o,o)local p,q,r,s,t,u,v,w,x,y,z,ba,bb,bc,bd,be,bf,bg,bh,bi,bj,bk,bl,bm,bn,bo,bp,bq,br,bs,bt,bu,bv,bw,bx,by,bz,ca local cb={}local cc={}cc[1]=3 cc[2]=3 cc[3]=0 local cd=0 local ce=0 local cf=-48575 repeat if cf>=-16235 then if cf<=43562 then if cf<=-10494 then if cf<=-12871 then if cf<=-16235 then p=table and table.move or function(cg,ch,ci,cj,ck)local cl={}local cm={}local function cn(co,cp)cm[cp]=co;return cm[cp]end local co={}co[1]=3 co[2]=0 co[3]=3 local co=0 local co=0 local co=78823 repeat if co>=64540 then if co<78823 then break else ck=ck or cg cj=cj+ci cl[4]=cm[78823+350759]or cn(-11151,78823+350759)co=-34802 end else if co==-34802 then co=cl[4]else for cl=ci,ch,-1 do local ch={}local ci={}local function cm(cn,cp)ci[cp]=cn;return ci[cp]end local cn={}cn[1]=3 cn[2]=1 cn[3]=2 local cp=0 local cp=0 local cq=-26642 repeat if cq<=-26642 then if cq==-44461 then ck[cj]=ch[1]cn[2]=(cn[2]+1)%5 ch[3]=ci[-44461+306832]or cm(55022,-44461+306832)cp,cq=80526,80526 else cj=cj-1 ch[1]=cg[cl]ch[2]=ci[-26642+306832]or cm(-44461,-26642+306832)cq=53669 end else if cq<=53669 then cq=ch[2]else if cq~=80526 then break else cp,cq=ch[3],ch[3]end end end until cq==55022 end;return ck;end end until co==64540 end q=bit32 or bit r=2^32 cd,cf=-26091,-26091 else by=function(cg,ch,ci,...)local cj=(cg[1774])local ck=cg[3455]local cl=cg[7789]local cl=cg[5697]local cm=cg[4733]local cn=cg[3540]return function(...)local cg=ba(cg[84])local co={}local cp={}local cq={}local cr=0 local cs=0 local ct={}local cu=0 local cv=k('#',...)-1 local cw=ck+1 local cw,cx=bv(...);local cx={...};local cx=1 local cy=-1 for cz=0,cv do if cz<=ck then cg[cz]=cw[cz+1];end;end;local ck,cv while true do ck=cj[cx];cv=ck[1642];if(((6)-0))>=(cv)then if cv<=2 then if cv<=1 then if(1)>(cv)then cg[ck[4671]]=cm[ck[2663]];else local cw=ck[4671]local cw=cg[cw]cr=cr+1 cq[cr]=cw end else cg[ck[4671]]=cg[ck[2663]];end else if cv>=((5)*1)then if cv<=5 then cg[ck[4671]]=ch[ck[2663]]else cg[ck[4671]]=ci[cm[ck[2663]]];end else if(3)>=(cv)then cg[ck[4671]]=cg[ck[2663]][cg[ck[6766]]];else cx=ck[2663];end end end else if cv>=16 then if cv>=26 then if cv>=35 then if not((cv)<(43))then if(((50)+0))>=(cv)then if cv<=46 then if cv>=45 then if cv<=((45)+0)then cg[ck[4671]]=#cg[ck[2663]];else ci[cm[ck[2663]]]=cg[ck[4671]];end else if cv~=44 then cg[ck[4671]]=cg[ck[2663]]-cg[ck[6766]];else local cw=ck[4671]local cz=ck[2663]local cz=(cz==0)and cy or(cw+cz-1)for da=cw,cz do cr=cr+((1)+0)cq[cr]=cg[da]end end end else if cv>=(0+(49))then if cv<=49 then local cw=ck[4671]local cz=bw(cp,cg[cw](t(cg,cw+1,ck[2663])))cy=cw+cz-1;for da=1,cz do cg[(da)+(cw)-1]=cp[da];end;else cg[ck[4671]]=cg[ck[2663]]+cg[ck[6766]];end else if cv==47 then cu=cu+1 ct[cu]=cs cs=cr else local cw,cz=ck[4671],ck[2663]local cz=cn[cz]local da={}for db=1,#cz,2 do da[cm[cz[db]]]=cm[cz[db+((1)+0)]]end cg[cw]=da end end end else if cv<=56 then if not((cv)<(54))then if cv<=55 then if cv~=55 then cg[ck[4671]]=cm else local cw=ck[4671]local cz=cr local da=cs local db=da+1 local dc=cq[db]do local dc,dd,de=dc(t(cq,db+1,cz))cg[cw]=dc cg[cw+1]=dd cg[cw+2]=de end do local cw=(cz)local cz=(-1)local db=(db)if cz>=0 then while cw<=db do cq[cw]=nil cw=cw+cz end else while cw>=db do cq[cw]=nil cw=cw+cz end end end cr=da local cw=ct[cu]ct[cu]=nil cu=cu-1 cs=cw or 0 end else cg[ck[4671]]=(cg[ck[6766]])*(cg[ck[2663]]);end else if(53)<=(cv)then cg[ck[4671]]=cj else if not((cv)~=(51))then cg[ck[4671]]=cg[ck[2663]]<cg[ck[6766]];else cg[ck[4671]]=cg end end end else if cv<=60 then if cv<=58 then if cv==57 then cg[ck[4671]]=-cg[ck[2663]];else local cj=#ck[4671]for cw=1,cj do cg[ck[4671][cw]]=cg[ck[2663][cw]];end;end else if cv==((59)*1)then local cj,cw=ck[4671],(ck[6766]*100)local cz=cg[cj]for da=(ck[2663]),(1),-1 do cz[cw+da]=cg[cj+da]end else local cj=ck[4671]local cj=cr local cw=cs local cz=cw+((1)+0)local da=cq[cz]da(t(cq,cz+1,cj))for da=cj,cz,-1 do cq[da]=nil end cr=cw local cj=ct[cu]ct[cu]=nil cu=cu-1 cs=cj or 0 end end else if cv>=63 then if cv~=64 then local cj=ck[4671]local cs=ck[2663]local cs=cs local ct=cr local cs=ct-cs+1 local cu=cq[cs]local cu=bw(cp,cu(t(cq,cs+1,ct)))cy=cj+cu-1 for cw=(cu),(1),-1 do cg[cj+cw-1]=cp[cw]end for cj=ct,cs,-1 do cq[cj]=nil end cr=cs-1 else cg[ck[4671]]=cg[ck[2663]]<=cg[ck[6766]];end else if cv~=62 then cg[ck[4671]]=cg[ck[2663]]..cg[ck[6766]];else local cj=ck[4671]local cp=cq[cr]cq[cr]=nil cr=cr-((1)+0)cg[cj]=cp()end end end end end else if cv<=((38)*1)then if(37)<=(cv)then if not((cv)>=(38))then cg[ck[4671]]=cg[ck[2663]]==cg[ck[6766]];else local cj=ck[4671]local cp=cq[cr]cq[cr]=nil cr=cr-1 local cs=cq[cr]cq[cr]=nil cr=cr-((1)-0)local cp,cs=cs(cp)do local cp,cs=cp,cs cg[cj]=cp cg[cj+1]=cs end end else if not((cv)>=(36))then local cj=ck[4671]local cj=cq[cr]cq[cr]=nil cr=cr-1 cj()else local cj,cp,cs=ck[4671],ck[2663],ck[6766]local cp=cn[cp]local cj=cg[cj]for ct=1,#cp do if not((cj)~=(nil))then break end cj=cj[cm[cp[ct]]]end cg[cs]=cj end end else if(40)>=(cv)then if cv~=40 then local cj=ck[4671]local cp=cq[cr]cq[cr]=nil cr=cr-1 local cs=cq[cr]cq[cr]=nil cr=cr-1 do local cp,cs,ct=cs(cp)cg[cj]=cp cg[cj+1]=cs cg[(2)+(cj)]=ct end else cg[ck[4671]]=cg[ck[2663]]>cg[ck[6766]];end else if cv<=41 then local cj=ck[4671]local cp=ck[2663]local cp=cp local cs=cr local cp=cs-cp+1 local ct=cq[cp]cg[cj]=ct(t(cq,cp+((1)*1),cs))do local cj=(cs)local cs=(-1)local ct=(cp)if cs>=0 then while cj<=ct do cq[cj]=nil cj=cj+cs end else while cj>=ct do cq[cj]=nil cj=cj+cs end end end cr=cp-1 else local cj=ck[2663]do local cp=(1)local cs=(1)local ct=(#cj)if cs>=0 then while cp<=ct do local cu=cj[cp]local cu=cm[cu]cr=cr+1 cq[cr]=cu cp=cp+cs end else while cp>=ct do local cj=cj[cp]local cj=cm[cj]cr=cr+1 cq[cr]=cj cp=cp+cs end end end end end end end else if cv>=30 then if cv<=32 then if cv>=32 then local cj=#ck[4671]for cp=1,cj do cg[ck[4671][cp]]=cm[ck[2663][cp]];end;else if cv~=31 then local cj=ck[4671]cg[cj]=cg[cj](cg[cj+1],cg[cj+2]);else local cj=ck[4671]local cj=cq[cr]cq[cr]=nil cr=cr-1 local cp=cq[cr]cq[cr]=nil cr=cr-1 cp(cj)end end else if cv~=34 then local cj,cp=ck[4671],ck[2663]local cs=cj+2 local cj,ct=cg[cj](cg[cj+1],cg[cs])if cj~=nil then do local cj,cp,ct,cu=cj,cj,ct,cp cg[cs]=cj cg[cs+1]=cp cg[cs+2]=ct cx=cu end end else local cj,cp=ck[4671],ck[2663]local cs,ct,cu=cg[cj],cg[cj+1],cg[cj+2]cg[cj]=g(function()for g,cw,cz,da,db,dc,dd,de,df,dg in cs,ct,cu do f(g,cw,cz,da,db,dc,dd,de,df,dg);end;end);cg[cj+1]=nil;cg[cj+2]=nil;cy=(2)+(cj);cx=cp;end end else if not((cv)>(27))then if cv<=26 then local f=ck[4671]local g=cq[cr]cq[cr]=nil cr=cr-((1)*1)local cj=cq[cr]cq[cr]=nil cr=cr-1 cg[f]=cj(g)else local f,g=ck[4671],ck[2663]local g=cg[g]cg[f]=g[1]end else if cv<=((28)-0)then cg[ck[4671]]=not cg[ck[2663]];else cg[ck[4671]]=cg[ck[2663]]~=cg[ck[6766]];end end end end else if cv<=20 then if not((cv)>(18))then if(18)<=(cv)then do for f,g in a,co do if g[1]==cg and f>=0 then g[1]={cg[f]}g[2]=1 co[f]=nil end end end local a=cq[cr]cq[cr]=nil cr=cr-1 do return a end else if(17)>(cv)then cg[ck[4671]]=by(cl[ck[2663]],nil,ci)else cg[ck[4671]]={};end end else if(20)>(cv)then local a=cl[ck[2663]]local f=a[7742]local g=#f local cj=ba(g)for cl=1,g do local f=f[cl]local g=f[2]local cp=f[3]if f[1]==((1)*1)then if cp==((0)+0)then local f=cg[g]co[g]=f cj[cl-1]=f else cj[cl-1]=cg[g]end else local f=ch[g]if cp==0 and f[((0)*1)]then f=f[0][f[1]]end cj[cl-(0+(1))]=f end end cg[ck[4671]]=by(a,cj,ci)else local a,f=ck[4671],ck[2663]local f=cn[f]local g={}for ci=1,#f do g[ci]=cm[f[ci]]end cg[a]=g end end else if cv>=24 then if cv<25 then if cg[ck[4671]]then cx=ck[2663];end;else ch[ck[2663]][1]=cg[ck[4671]]end else if cv<=22 then if cv<=((21)-0)then local a=ck[2663]local a=ch[a]cg[ck[4671]]=a[1]else local a=ck[4671]local f=cq[cr]cq[cr]=nil cr=cr-1 local g=cq[cr]cq[cr]=nil cr=cr-((1)*1)local ch=cq[cr]cq[cr]=nil cr=cr-1 cg[a]=ch(g,f)end else cg[ck[4671]]=nil;end end end end else if cv<=10 then if cv>=9 then if cv==9 then cg[ck[4671]][cg[ck[2663]]]=cg[ck[6766]];else local a=ck[4671]for f=1,#a do local a=cg[a[f]]cr=cr+1 cq[cr]=a end end else if cv==(0+(7))then local a=ck[4671]local f=ck[2663]local a=cg[a]cx=((not a)and(f)or cx)else local a,f=cg[ck[2663]],ck[4671]cg[f]=a[cg[ck[6766]]];cg[f+1]=a;end end else if cv<=13 then if cv>=((13)-0)then local a=ck[4671]local a=ck[2663]local a=a local f=cr local a=f-a+1 local g=cq[a]g(t(cq,a+1,f))do local f=(f)local g=(-1)local ch=(a)if g>=0 then while f<=ch do cq[f]=nil f=f+g end else while f>=ch do cq[f]=nil f=f+g end end end cr=a-1 else if cv~=((12)*1)then local a=ck[2663]local a=cm[a]cr=(1)+(cr)cq[cr]=a else do return end end end else if not((cv)~=(14))then local a=ck[4671]cg[a]={cg[a]}else cg[ck[4671]][1]=cg[ck[2663]]end end end end end cx=cx+1;end;end;end ce,cf=-10494,-10494 end else if cf<=-11758 then bn=nil cf=-36662 else if cf<=-10769 then bp=nil cf=-40276 else bz=bu(bg)ca=by(bz,{},l())return ca();end end end else if cf<=22741 then if cf>=21299 then if cf~=22741 then bu=nil ce,cf=45839,45839 else bt=function(a)local f,g local l={}local by={}local function bz(ca,cg)by[cg]=ca;return by[cg]end local ca={}ca[1]=2 ca[2]=4 ca[3]=3 local ca=0 local ca=-10828 local cg=0 repeat if ca>=45186 then if ca~=70933 then if g==0 then return f;elseif(g>=2147483648)then g=g-4294967296;end;return g*4294967296+f;else ca=l[43]end else if ca==-23046 then break else f=br(a)g=br(a)l[43]=by[-10828+163366]or bz(45186,-10828+163366)ca=70933 end end until ca==-23046 end cc[2]=(cc[2]+1)%5 ce,cf=21299,21299 end else t=function(a,f,g)local l=g-f+1 if l>7997 then return s(a,f,g)else return m(a,f,g)end end ce,cf=-41521,-41521 end else if cf<=25314 then br=function(a)local f,g,l,m local by={}local bz={}local function ca(cg,ch)local ci=u(ch,ch)local cg=cg+ci bz[ch]=cg;return cg end local cg={}cg[1]=3 cg[2]=0 cg[3]=0 local cg=-33152 local ch=0 local ch=0 repeat if cg<=-33152 then if cg<=-46683 then ch,cg=by[41],by[41]else f,g,l,m=e(a,bh,bh+3)bh=bh+4 by[41]=bz[u(-33152,26464)]or ca(-24923,u(-33152,26464))ch,cg=-46683,-46683 end else if cg~=23822 then return((m*16777216)+(l*65536)+(g*256)+f);else break end end until cg==23822 end ce,cf=-35892,-35892 else if cf==35433 then bk=function(a)local f local g={}local l={}local function m(by,bz)l[bz]=by;return l[bz]end local by={}by[1]=3 by[2]=3 by[3]=0 local bz=0 local bz=0 local ca=-24133 repeat if ca>=24990 then if ca~=69909 then break else return f;end else if ca<-21369 then f=0 for cg=0,2 do f=v(f,w(e(a,bh,bh),8*cg));bh=bh+1;end;by[1]=(by[1]+1)%5 g[33]=l[-24133+281654]or m(69909,-24133+281654)bz,ca=-21369,-21369 else bz,ca=g[33],g[33]end end until ca==24990 end ce,cf=-46150,-46150 else bt=nil cd=cc[3]~=1 and 45839 or 22741 ce,cf=22741,22741 end end end end else if cf<=56237 then if cf>=47208 then if cf<=47208 then br=nil ce,cf=25314,25314 else if cf==53172 then bj=nil cd=cc[2]~=1 and 35433 or-44314 cc[3]=(cc[3]+1)%5 ce,cf=-44314,-44314 else bl=function(a)local f=0 for g=0,1 do f=v(f,w(e(a,bh,bh),8*g));bh=bh+1;end;return f;end cd,cf=86152,86152 end end else if cf<45839 then bm=function(a)local f local g={}local l={}local function m(br,by)l[by]=br;return l[by]end local br={}br[1]=4 br[2]=1 br[3]=2 local br=0 local br=0 local by=-21980 repeat if by<=-21980 then if by==-36157 then break else f=0 f=v(f,w(e(a,bh,bh),8))bh=bh+1 g[34]=l[-21980+305486]or m(71326,-21980+305486)br,by=49511,49511 end else if by~=71326 then br,by=g[34],g[34]else return f;end end until by==-36157 end ce,cf=-11758,-11758 else bu=function(a)local f f={[1774]={},[4733]={},[3455]={},[5697]={},[7789]={},[7742]={},[6444]={},}bc(f,3455,bn(a))local g g=bp(a)local l={}local m=0 for br=1,g do local g,br,by,bz,ca local cg={}local ch={}local function ci(cj,ck)ch[ck]=cj;return ch[ck]end local cj={}cj[1]=4 cj[2]=0 cj[3]=3 local ck=0 local ck=-20647 local cl=0 repeat if ck<=-20647 then if ck==-44516 then cl,ck=cg[44],cg[44]else g=bn(a)~=0 br=g and 1 or 0 by=bq(a)cj[1]=(cj[1]+1)%5 cg[44]=ch[-20647+187135]or ci(64710,-20647+187135)cl,ck=-44516,-44516 end else if ck>=33558 then if ck~=64710 then cl,ck=cg[45],cg[45]else bz=m+by m=bz ca=bn(a)c(l,{br,bz,ca})cg[45]=ch[64710+318206]or ci(-10174,64710+318206)cl,ck=33558,33558 end else break end end until ck==-10174 end f[7742]=l bc(f,84,bp(a))local g=bp(a)local l={}local m,br,by,bz=0,0,0,0 do do local ca=(1)local cg=(1)local g=(g)if cg>=0 then while ca<=g do local ch ch={}ch[1642]=bp(a);local ci=bn(a)==1 local cj=(1)==(bn(a))local ck=bn(a)==1 local cl cl=bn(a)if cl==1 then local cm=bs(a)local cn cn={}local co={}local cp={}local cq,cr,cs=0,0,0 do local ct=(0)local cu=(1)local cm=(cm-1)if cu>=0 then if ct<=cm then repeat local cv={}local cw={}local function cx(cy,cz)cw[cz]=cy;return cw[cz]end local cy={}cy[1]=4 cy[2]=3 cy[3]=2 local cy=0 local cy=0 local cy=81098 repeat if cy<=-46869 then if cy~=-46869 then cp[ct]=cs ct=ct+cu cv[47]=cw[-48902+344639]or cx(60105,-48902+344639)cy=-26636 else cy=cv[46]end else if cy>=60105 then if cy<=60105 then break else do cq=cq+bq(a);cr=cr+bq(a);end cs=cs+bq(a)bc(cn,ct,cq)co[ct]=cr cv[46]=cw[81098+344639]or cx(-48902,81098+344639)cy=-46869 end else cy=cv[47]end end until cy==60105 until not(ct<=cm)end else if ct>=cm then repeat local cv={}local cw={}local function cx(cy,cz)cw[cz]=cy;return cw[cz]end local cy={}cy[1]=3 cy[2]=2 cy[3]=1 local cz=54753 local da=0 local db=0 repeat if cz<=26601 then if cz==-10983 then da,cz=cv[49],cv[49]else break end else if cz<=42074 then db,cz=cv[48],cv[48]else if cz<=54753 then do cq=cq+bq(a);cr=cr+bq(a);end cs=cs+bq(a)bc(cn,ct,cq)cv[48]=cw[54753+69228]or cx(76879,54753+69228)db,cz=42074,42074 else co[ct]=cr cp[ct]=cs ct=ct+cu cy[3]=(cy[3]+1)%5 cv[49]=cw[76879+331370]or cx(26601,76879+331370)da,cz=-10983,-10983 end end end until cz==26601 until not(ct>=cm)end end end do bc(ch,4671,cn)ch[2663]=co;end ch[6766]=cp;elseif cl==2 then local cm=bs(a)local cn cn={}local co={}local cp,cq=0,0 do local cr=(1)local cs=(1)local cm=(cm)if cs>=0 then while cr<=cm do local ct={}local cu={}local function cv(cw,cx)cu[cx]=cw;return cu[cx]end local cw={}cw[1]=1 cw[2]=2 cw[3]=3 local cw=-41647 local cx=0 local cy=0 repeat if cw<=-31101 then if cw<=-41647 then cp=cp+bq(a)cq=cq+bq(a)cn[cr]=cp ct[50]=cu[-41647+90507]or cv(-31101,-41647+90507)cy,cw=40183,40183 else bc(co,cr,cq)cr=cr+cs ct[51]=cu[-31101+352649]or cv(30774,-31101+352649)cx,cw=56004,56004 end else if cw<=30774 then break else if cw<56004 then cy,cw=ct[50],ct[50]else cx,cw=ct[51],ct[51]end end end until cw==30774 end else while cr>=cm do local cm={}local ct={}local function cu(cv,cw)ct[cw]=cv;return ct[cw]end local cv={}cv[1]=3 cv[2]=2 cv[3]=1 local cw=0 local cw=-30564 local cx=0 repeat if cw<=-27415 then if cw<=-30564 then cp=cp+bq(a)cq=cq+bq(a)cn[cr]=cp cv[2]=(cv[2]+1)%5 cm[52]=ct[-30564+204903]or cu(-27415,-30564+204903)cx,cw=40396,40396 else bc(co,cr,cq)cr=cr+cs cv[2]=(cv[2]+1)%5 cm[53]=ct[-27415+335974]or cu(-16997,-27415+335974)cw=47865 end else if cw>=40396 then if cw~=47865 then cx,cw=cm[52],cm[52]else cw=cm[53]end else break end end until cw==-16997 end end end do bc(ch,4671,cn)bc(ch,2663,co)end elseif(3)==(cl)then local cm,cn,co local cp={}local cq={}local function cr(cs,ct)cq[ct]=cs;return cq[ct]end local cs={}cs[1]=4 cs[2]=3 cs[3]=2 local cs=0 local ct=-11086 local cu=0 repeat if ct>=-29444 then if ct>=-12578 then if ct==-12578 then co=0 for cu=1,cm do do co=co+bq(a);bc(cn,cu,co)end end;do ch[4671]=cn;end cp[57]=cq[-12578+60468]or cr(-49606,-12578+60468)ct=-29444 else cp[54]={}cp[55]=cq[-11086+191539]or cr(-34272,-11086+191539)cs,ct=-29074,-29074 end else if ct<=-29444 then ct=cp[57]else cs,ct=cp[55],cp[55]end end else if ct<=-49606 then break else if ct~=-34272 then cs,ct=cp[56],cp[56]else cm=bs(a)cn=cp[54]cp[56]=cq[-34272+60468]or cr(-12578,-34272+60468)cs,ct=-46004,-46004 end end end until ct==-49606 elseif cl==4 then local cl,cm,cn,co,cp,cq,cr,cs,ct local cu={}local cv={}local function cw(cx,cy)cv[cy]=cx;return cv[cy]end local cx={}cx[1]=4 cx[2]=1 cx[3]=4 local cy=0 local cz=0 local da=31422 repeat if da>=31422 then if da<=42638 then if da>=42597 then if da==42597 then cy,da=cu[68],cu[68]else ch[4671]=cm ch[2663]=cn ch[6766]=co cu[71]=cv[42638+316528]or cw(81729,42638+316528)cy,da=-27180,-27180 end else if da==31422 then cu[61]={}cu[65]=cv[31422+316528]or cw(53469,31422+316528)cz,da=81396,81396 else da=cu[67]end end else if da<=53469 then if da<53469 then cy,da=cu[69],cu[69]else cu[62]={}cu[66]=cv[53469+185457]or cw(58112,53469+185457)cy,da=-44331,-44331 end else if da>=81396 then if da<=81396 then cz,da=cu[65],cu[65]else ch[3880]=cp cu[72]=cv[81729+54386]or cw(27831,81729+54386)cy,da=-17262,-17262 end else cu[63]={}cy=cx[3]==0 and-24231 or-12948 cu[67]=cv[58112+54386]or cw(-12948,58112+54386)da=37351 end end end else if da>=-17262 then if da>=20875 then if da<27831 then da=cu[70]else break end else if da~=-12948 then cy,da=cu[72],cu[72]else cu[64]={}cy=cx[3]~=0 and-24231 or-38587 cu[68]=cv[-12948+316528]or cw(-38587,-12948+316528)cy,da=42597,42597 end end else if da<=-38587 then if da<-38587 then cy,da=cu[66],cu[66]else cl=bs(a)cm=cu[61]cn=cu[62]co=cu[63]cu[69]=cv[-38587+54386]or cw(-24231,-38587+54386)cy,da=44025,44025 end else if da==-27180 then cy,da=cu[71],cu[71]else cp=cu[64]cq,cr,cs,ct=0,0,0,0 for cx=1,cl do local cl={}local cy={}local function cz(db,dc)cy[dc]=db;return cy[dc]end local db={}db[1]=3 db[2]=0 db[3]=2 local dc=-41857 local dd=0 local de=0 repeat if dc<=-41857 then if dc>=-44107 then if dc==-44107 then dc=cl[58]else do cq=cq+bq(a);cr=cr+bq(a);end cs=cs+bq(a)dd=db[1]~=1 and-12300 or-20549 cl[58]=cy[-41857+68486]or cz(-20549,-41857+68486)dc=-44107 end else dc=cl[60]end else if dc>=45836 then if dc~=50513 then dd,dc=cl[59],cl[59]else break end else if dc<-12300 then ct=ct+bq(a)cm[cx]=cq db[3]=(db[3]+1)%5 cl[59]=cy[-20549+68486]or cz(-12300,-20549+68486)dd,dc=45836,45836 else bc(cn,cx,cr)bc(co,cx,cs)cp[cx]=ct cl[60]=cy[-12300+199557]or cz(50513,-12300+199557)dc=-47157 end end end until dc==50513 end;cu[70]=cv[-24231+54386]or cw(42638,-24231+54386)da=20875 end end end end until da==27831 else local cl={}local cm={}local function cn(co,cp)cm[cp]=co;return cm[cp]end local co={}co[1]=3 co[2]=2 co[3]=4 local co=0 local cp=50508 local cq=0 repeat if cp<=-29413 then if cp==-47276 then co,cp=cl[73],cl[73]else co,cp=cl[74],cl[74]end else if cp<=-26485 then break else if cp<50508 then do ch[6766]=by;end bc(ch,3880,bz)cl[74]=cm[-15355+72392]or cn(-26485,-15355+72392)co,cp=-29413,-29413 else m=m+bq(a)do br=br+bq(a);by=by+bq(a);end bz=bz+bq(a)do bc(ch,4671,m)ch[2663]=br;end cl[73]=cm[50508+203463]or cn(-15355,50508+203463)co,cp=-47276,-47276 end end end until cp==-26485 end ch[6378]=ci;do ch[5221]=cj;ch[2604]=ck;end do local ci={}local cj={}local function ck(cl,cm)cj[cm]=cl;return cj[cm]end local cl={}cl[1]=1 cl[2]=3 cl[3]=4 local cm=0 local cn=57667 local co=0 repeat if cn>=42490 then if cn>=44187 then if cn<57667 then ch[4502]=ci[75]l[ca]=ch ci[77]=cj[44187+80343]or ck(-42704,44187+80343)cm,cn=-32580,-32580 else ci[75]=l[ca-1]cl[3]=(cl[3]+1)%5 ci[76]=cj[57667+211414]or ck(44187,57667+211414)cm,cn=42490,42490 end else cm,cn=ci[76],ci[76]end else if cn<=-42704 then break else cm,cn=ci[77],ci[77]end end until cn==-42704 end ca=ca+cg end else while ca>=g do local g g={}g[1642]=bp(a);local ch=bn(a)==1 local ci=(1)==(bn(a))local cj=bn(a)==1 local ck ck=bn(a)if ck==1 then local cl=bs(a)local cm cm={}local cn={}local co={}local cp,cq,cr=0,0,0 do local cs=(0)local ct=(1)local cl=(cl-1)if ct>=0 then if cs<=cl then repeat local cu={}local cv={}local function cw(cx,cy)cv[cy]=cx;return cv[cy]end local cx={}cx[1]=0 cx[2]=0 cx[3]=4 local cy=0 local cz=-29154 local da=0 repeat if cz>=-29154 then if cz>=-15900 then if cz==-15900 then break else cz=cu[78]end else do cp=cp+bq(a);cq=cq+bq(a);end cr=cr+bq(a)bc(cm,cs,cp)cx[3]=(cx[3]+1)%5 cu[78]=cv[-29154+170375]or cw(-35170,-29154+170375)cz=-11369 end else if cz~=-31362 then cn[cs]=cq co[cs]=cr cs=cs+ct cu[79]=cv[-35170+170375]or cw(-15900,-35170+170375)cy,cz=-31362,-31362 else cy,cz=cu[79],cu[79]end end until cz==-15900 until not(cs<=cl)end else if cs>=cl then repeat local cu={}local cv={}local function cw(cx,cy)cv[cy]=cx;return cv[cy]end local cx={}cx[1]=2 cx[2]=0 cx[3]=1 local cy=0 local cy=0 local cz=61782 repeat if cz>=-24373 then if cz>=61782 then if cz<=61782 then do cp=cp+bq(a);cq=cq+bq(a);end cr=cr+bq(a)bc(cm,cs,cp)cn[cs]=cq cx[1]=(cx[1]+1)%5 cu[80]=cv[61782+282237]or cw(-24373,61782+282237)cz=-26984 else cy,cz=cu[81],cu[81]end else co[cs]=cr cs=cs+ct cu[81]=cv[-24373+282237]or cw(-32770,-24373+282237)cy,cz=79553,79553 end else if cz<=-32770 then break else cz=cu[80]end end until cz==-32770 until not(cs>=cl)end end end do bc(g,4671,cm)g[2663]=cn;end g[6766]=co;elseif ck==2 then local cl=bs(a)local cm cm={}local cn={}local co,cp=0,0 do local cq=(1)local cr=(1)local cl=(cl)if cr>=0 then while cq<=cl do local cs={}local ct={}local function cu(cv,cw)ct[cw]=cv;return ct[cw]end local cv={}cv[1]=1 cv[2]=2 cv[3]=0 local cw=21827 local cx=0 local cx=0 repeat if cw<=-30627 then if cw<=-38058 then break else cw=cs[82]end else if cw<=-29046 then bc(cn,cq,cp)cq=cq+cr cv[3]=(cv[3]+1)%5 cs[83]=ct[-29046+81968]or cu(-38058,-29046+81968)cw=-20819 else if cw~=21827 then cw=cs[83]else co=co+bq(a)cp=cp+bq(a)cm[cq]=co cs[82]=ct[21827+81968]or cu(-29046,21827+81968)cw=-30627 end end end until cw==-38058 end else while cq>=cl do local cl={}local cs={}local function ct(cu,cv)cs[cv]=cu;return cs[cv]end local cu={}cu[1]=1 cu[2]=1 cu[3]=2 local cu=0 local cv=0 local cw=-16376 repeat if cw>=44555 then if cw<=50238 then if cw<=44555 then cq=cq+cr cl[86]=cs[44555+317928]or ct(86053,44555+317928)cv,cw=78848,78848 else cm[cq]=co bc(cn,cq,cp)cl[85]=cs[50238+55786]or ct(44555,50238+55786)cw=-23666 end else if cw==78848 then cv,cw=cl[86],cl[86]else break end end else if cw<=-45065 then cu,cw=cl[84],cl[84]else if cw<-16376 then cw=cl[85]else co=co+bq(a)cp=cp+bq(a)cl[84]=cs[-16376+317928]or ct(50238,-16376+317928)cu,cw=-45065,-45065 end end end until cw==86053 end end end do bc(g,4671,cm)bc(g,2663,cn)end elseif(3)==(ck)then local cl,cm,cn local co={}local cp={}local function cq(cr,cs)cp[cs]=cr;return cp[cs]end local cr={}cr[1]=2 cr[2]=1 cr[3]=0 local cs=0 local ct=-19991 local cu=0 repeat if ct<=-12219 then if ct>=-19991 then if ct<-12219 then co[87]={}cr[1]=(cr[1]+1)%5 co[88]=cp[-19991+181593]or cq(89778,-19991+181593)cs,ct=66437,66437 else cs,ct=co[90],co[90]end else cs,ct=co[89],co[89]end else if ct>=69447 then if ct<89778 then break else cl=bs(a)cm=co[87]cn=0 for cr=1,cl do do cn=cn+bq(a);bc(cm,cr,cn)end end;co[89]=cp[89778+50522]or cq(39979,89778+50522)cs,ct=-23182,-23182 end else if ct<66437 then do g[4671]=cm;end co[90]=cp[39979+50522]or cq(69447,39979+50522)cs,ct=-12219,-12219 else cs,ct=co[88],co[88]end end end until ct==69447 elseif ck==4 then local ck,cl,cm,cn,co,cp,cq,cr,cs local ct={}local cu={}local function cv(cw,cx)cu[cx]=cw;return cu[cx]end local cw={}cw[1]=2 cw[2]=1 cw[3]=3 local cx=0 local cy=-28320 local cz=0 repeat if cy>=-14535 then if cy>=38233 then if cy<=47928 then if cy~=47928 then g[2663]=cm g[6766]=cn g[3880]=co ct[105]=cu[38233+145065]or cv(82027,38233+145065)cx,cy=63957,63957 else ct[96]={}ct[100]=cu[47928+145065]or cv(-17399,47928+145065)cy=-17631 end else if cy<=62600 then cy=ct[98]else if cy==63957 then cx,cy=ct[105],ct[105]else break end end end else if cy>=23127 then if cy<=23127 then cn=ct[96]co=ct[97]ct[103]=cu[23127+145065]or cv(21794,23127+145065)cz,cy=-22467,-22467 else cy=ct[102]end else if cy<=-14535 then cx,cy=ct[101],ct[101]else cp,cq,cr,cs=0,0,0,0 for da=1,ck do local db={}local dc={}local function dd(de,df)dc[df]=de;return dc[df]end local de={}de[1]=3 de[2]=2 de[3]=0 local de=-39355 local df=0 local dg=0 repeat if de>=-13918 then if de>=43288 then if de==43288 then de=db[93]else break end else if de==-13918 then bc(cn,da,cr)co[da]=cs db[93]=dc[-13918+10822]or dd(66316,-13918+10822)de=43288 else df,de=db[91],db[91]end end else if de<=-39355 then do cp=cp+bq(a);cq=cq+bq(a);end cr=cr+bq(a)cs=cs+bq(a)db[91]=dc[-39355+10822]or dd(-14429,-39355+10822)df,de=30113,30113 else if de<-14429 then de=db[92]else cl[da]=cp bc(cm,da,cq)db[92]=dc[-14429+141893]or dd(-13918,-14429+141893)de=-35820 end end end until de==66316 end;g[4671]=cl ct[104]=cu[21794+276136]or cv(38233,21794+276136)cy=-32669 end end end else if cy>=-28320 then if cy<=-22467 then if cy==-28320 then ct[94]={}ct[98]=cu[-28320+145065]or cv(-47800,-28320+145065)cy=62600 else cz,cy=ct[103],ct[103]end else if cy==-17631 then cy=ct[100]else ct[97]={}cw[2]=(cw[2]+1)%5 ct[101]=cu[-17399+145065]or cv(-28879,-17399+145065)cx,cy=-14535,-14535 end end else if cy<=-38377 then if cy~=-38377 then ct[95]={}cw[2]=(cw[2]+1)%5 ct[99]=cu[-47800+145065]or cv(47928,-47800+145065)cy=-38377 else cy=ct[99]end else if cy<=-32669 then cy=ct[104]else ck=bs(a)cl=ct[94]cm=ct[95]cz=cw[3]~=1 and 38233 or 23127 ct[102]=cu[-28879+13994]or cv(23127,-28879+13994)cy=25610 end end end end until cy==82027 else local ck={}local cl={}local function cm(cn,co)cl[co]=cn;return cl[co]end local cn={}cn[1]=2 cn[2]=0 cn[3]=4 local co=0 local cp=0 local cp=-36342 repeat if cp<=-36342 then if cp<=-49678 then co,cp=ck[106],ck[106]else m=m+bq(a)do br=br+bq(a);by=by+bq(a);end bz=bz+bq(a)ck[106]=cl[-36342+348530]or cm(72262,-36342+348530)co,cp=-49678,-49678 end else if cp>=73577 then if cp<74034 then co,cp=ck[107],ck[107]else break end else do bc(g,4671,m)g[2663]=br;end do g[6766]=by;end bc(g,3880,bz)cn[3]=(cn[3]+1)%5 ck[107]=cl[72262+86388]or cm(74034,72262+86388)co,cp=73577,73577 end end until cp==74034 end g[6378]=ch;do g[5221]=ci;g[2604]=cj;end do local m={}local br={}local function by(bz,ch)br[ch]=bz;return br[ch]end local bz={}bz[1]=2 bz[2]=4 bz[3]=3 local ch=0 local ci=0 local ci=81457 repeat if ci<=-15615 then if ci~=-15615 then ch,ci=m[109],m[109]else g[4502]=m[108]l[ca]=g bz[1]=(bz[1]+1)%5 m[110]=br[-15615+15609]or by(57336,-15615+15609)ch,ci=74992,74992 end else if ci<=57336 then break else if ci==74992 then ch,ci=m[110],m[110]else m[108]=l[ca-1]bz[2]=(bz[2]+1)%5 m[109]=br[81457+277751]or by(-15615,81457+277751)ch,ci=-17327,-17327 end end end until ci==57336 end ca=ca+cg end end end end f[1774]=l;bc(f,7789,bn(a)==1)local g g=bp(a)local l={}do for m=0,g-1 do local g,br local by={}local bz={}local function ca(cg,ch)bz[ch]=cg;return bz[ch]end local cg={}cg[1]=3 cg[2]=2 cg[3]=4 local ch=0 local ci=-24845 local cj=0 repeat if ci>=-24845 then if ci<=-14637 then if ci<=-24845 then by[111]={}by[112]=bz[-24845+186492]or ca(22433,-24845+186492)ch,ci=53827,53827 else cj,ci=by[113],by[113]end else if ci==22433 then g=by[111]br=bp(a)for ck=1,br do bc(g,ck,bp(a))end;cg[1]=(cg[1]+1)%5 by[113]=bz[22433+55421]or ca(-45951,22433+55421)cj,ci=-14637,-14637 else ch,ci=by[112],by[112]end end else if ci<=-45951 then l[m]=g by[114]=bz[-45951+317563]or ca(-44300,-45951+317563)ch,ci=-35321,-35321 else if ci==-44300 then break else ch,ci=by[114],by[114]end end end until ci==-44300 end;f[3540]=l;end local g=bp(a)local l l={}do local m=(0)local br=(1)local g=(g-1)if br>=0 then while m<=g do local by by=bn(a)if by==0 then local bz local ca={}local cg={}local function ch(ci,cj)cg[cj]=ci;return cg[cj]end local ci={}ci[1]=0 ci[2]=2 ci[3]=0 local cj=0 local cj=0 local ck=-25378 repeat if ck>=-24008 then if ck<=-24008 then ck=ca[117]else if ck<78963 then break else if bz==0 then local cl=bp(a)local cm=b(a,bh,bh+cl-1)bh=bh+cl;l[m]=cm;end;ca[118]=cg[78963+286509]or ch(-15474,78963+286509)cj,ck=-38115,-38115 end end else if ck<-25378 then cj,ck=ca[118],ca[118]else bz=nil bz=bn(a)ci[3]=(ci[3]+1)%5 ca[117]=cg[-25378+286509]or ch(78963,-25378+286509)ck=-24008 end end until ck==-15474 elseif(1)==(by)then local bz bz=bn(a)if not((bz)~=(1))then l[m]=bq(a);else bc(l,m,bt(a))end;elseif by==2 then local bz local ca={}local cg={}local function ch(ci,cj)cg[cj]=ci;return cg[cj]end local ci={}ci[1]=3 ci[2]=2 ci[3]=3 local ci=0 local cj=50084 local ck=0 repeat if cj>=29587 then if cj<=29587 then break else if cj==50084 then bz=nil bz=bn(a)ca[115]=cg[50084+203556]or ch(-14327,50084+203556)ck,cj=50199,50199 else ck,cj=ca[115],ca[115]end end else if cj~=-14327 then ci,cj=ca[116],ca[116]else if(1)==(bz)then do bc(l,m,bp(a))end else l[m]=bi(a);end;ca[116]=cg[-14327+334627]or ch(29587,-14327+334627)ci,cj=-49496,-49496 end end until cj==29587 elseif not((by)~=(3))then bc(l,m,bo(a))elseif by==4 then local bz=bn(a)if bz==1 then bc(l,m,bq(a))else l[m]=bo(a);end;elseif by==5 then l[m]=not((bn(a))~=(1));else bc(l,m,nil)end;m=m+br end else while m>=g do local g g=bn(a)if g==0 then local by local bz={}local ca={}local function cg(ch,ci)ca[ci]=ch;return ca[ci]end local ch={}ch[1]=1 ch[2]=4 ch[3]=2 local ch=0 local ch=-27466 local ci=0 repeat if ch>=-17246 then if ch>=84702 then if ch~=85982 then break else ci,ch=bz[122],bz[122]end else ch=bz[121]end else if ch~=-27466 then if by==0 then local cj,ck local cl={}local cm={}local function cn(co,cp)cm[cp]=co;return cm[cp]end local co={}co[1]=0 co[2]=4 co[3]=2 local co=0 local co=-41808 local cp=0 repeat if co<=-35387 then if co<-35387 then cj=bp(a)ck=b(a,bh,bh+cj-1)bh=bh+cj cl[119]=cm[-41808+211489]or cn(-35387,-41808+211489)cp,co=-12973,-12973 else l[m]=ck cl[120]=cm[-35387+342560]or cn(-24673,-35387+342560)cp,co=47879,47879 end else if co>=-12973 then if co<=-12973 then cp,co=cl[119],cl[119]else cp,co=cl[120],cl[120]end else break end end until co==-24673 end;bz[122]=ca[-33681+221805]or cg(84702,-33681+221805)ci,ch=85982,85982 else by=nil by=bn(a)bz[121]=ca[-27466+221805]or cg(-33681,-27466+221805)ch=-17246 end end until ch==84702 elseif(1)==(g)then local by by=bn(a)if not((by)~=(1))then l[m]=bq(a);else bc(l,m,bt(a))end;elseif g==2 then local bt bt=bn(a)if(1)==(bt)then do bc(l,m,bp(a))end else l[m]=bi(a);end;elseif not((g)~=(3))then bc(l,m,bo(a))elseif g==4 then local bt=bn(a)if bt==1 then bc(l,m,bq(a))else l[m]=bo(a);end;elseif g==5 then l[m]=not((bn(a))~=(1));else bc(l,m,nil)end;m=m+br end end end f[4733]=l;for g=1,bp(a)do bc(f[5697],g-1,bu(a))end;local g g=bn(a)~=0 do if g then local g,l,m local br={}local bt={}local function bu(by,bz)bt[bz]=by;return bt[bz]end local by={}by[1]=3 by[2]=0 by[3]=2 local by=0 local bz=0 local bz=-38089 repeat if bz<=-16785 then if bz<=-44590 then g=bp(a)l=br[125]br[127]=bt[-44590+54153]or bu(-16785,-44590+54153)by,bz=68299,68299 else if bz<-16785 then br[125]={}br[126]=bt[-38089+316295]or bu(-44590,-38089+316295)by,bz=28185,28185 else m=0 for ca=1,g do local g,ca,cg,ch local ci={}local cj={}local function ck(cl,cm)cj[cm]=cl;return cj[cm]end local cl={}cl[1]=0 cl[2]=3 cl[3]=3 local cm=0 local cm=0 local cn=-11395 repeat if cn<=-18527 then if cn==-24684 then m=ch c(l,{ca,ch})ci[124]=cj[-24684+175302]or ck(-13757,-24684+175302)cm,cn=-18527,-18527 else cm,cn=ci[124],ci[124]end else if cn>=-11395 then if cn==-11395 then g=bn(a)~=0 ca=g and 1 or 0 cg=bq(a)ch=m+cg cl[3]=(cl[3]+1)%5 ci[123]=cj[-11395+306373]or ck(-24684,-11395+306373)cm,cn=55286,55286 else cm,cn=ci[123],ci[123]end else break end end until cn==-13757 end bc(f,6444,l)br[128]=bt[-16785+54153]or bu(60710,-16785+54153)by,bz=62060,62060 end end else if bz<=60710 then if bz<=28185 then by,bz=br[126],br[126]else break end else if bz~=68299 then by,bz=br[128],br[128]else by,bz=br[127],br[127]end end end until bz==60710 end;return f;end end cf=-41850 end end else if cf>=82069 then if cf>=85110 then if cf==85110 then bg=bf([==[\-i9:W?;0@JF,O@oT/qms8PI)6i?uaLC=dc&0_)Rs8W*1+ohR=+[^ql'f&b0rsoi"7*%Sla:EF76\GkfaSuhOruX!aa?tXi(&C/E+#6gZ:koMq3`O2IU&P'ZLAF7ZlHl47*U;#OTgEOnd%N:<Qr'JDKaAd^:kB2C$[TVqQ8ab1aY8=CrGY;0g'&?<-<NOa3>2;C`t&amEQA^k+V,=Y6\Pp`10!I6+V/_:_h8@7.V.a>)CC]'#p&;mTu%d1<63F[_?fEo+!u(H6\btr(_%K4Pb>pI%OGct)=#+m$550ga?tXk)(O^@6N/&VFI:E.R!f$aQpZQ;`F3jUDl>?S.;/dhTEIVs-jC[r:>!o!80F&V,=`t5NQ7&pLmT<<`rmR`(r\k\%<:/7_W$.YY/fN?69*'o_RM*7JrL.rX&=cKW[\:+ZhPau#`-kfOGI*aUM"6GPg7-WO<W?`N%A?@1>rIDlQFj:=sF=t#XLt2(_eDeU_ur@ZY?q,8&^T-;MRRr;]=sM9"&hO==?O,K$Z?_5iG9;/SS>#WfbSJ7<`g)-A85Keql*e&^3umTJ0QRM+!#-1YMpY"i(qNg<Fq0K-MEh,b.CDChSYu,`J6n+A7Ck[K9nL>;QI4B+Sl&OcU]eH4l.eY\E`98;m_kH;[,r?(S/L;du%38usNI^;-TkmLG0jkNb4qktEV)>,W3J&n+k_6:FV$o77aQ23b@u1l6s#3)hb)\hG)B+u#EM25rQl-qYmX'VYj7RN\5)@'#.nYZK;p_5N,hPr5Y.C.6Yj(l8hj"TjA]&O6WJ$_A"U[dAXNUNTDO,"1_=?!X+Alr0mlZs)IW(6nq^nUf=Qg;'J/ha/="Q_eMS/8coZg(m/fSCVQ,V@F"_,SKb+*<HCK`'m>7,4,ZA^_.@o>6N:a+DQ]Ze9](FE($PAifk([B;.Fo1Qbk?C.k6kU(kYJ,oj*h&.rVo16ukfG$L;aEl<o6$VXc#ToL>(`hPsS75`#)6E*qgD_#Q*;d$.r:dc&KZW>.I8l]`.e$>r3/6'QrTNf_hLP7`SX-<r;CRQb>abWKA+rsm?f(rQSTe/i'-J1fWGXKo08@pb]CEKfe/3:&nSBh;1:aj`(=V@^M7bUBV"<fab_'E'J84f;-V8HCYJ0=p$BFV5"<1t.PW.gP65d4AE]Qe;@3eO,7@q8u#BHi.&N]*VI6u1!Y5R:PU==\AVCTs#o7!,8k'nnDB_@o'q=Ap[NF:rO,JI7nIm,;?G$7l2Z#dnM\Y6a'bWgE)eX:_+Y>ELJU+Tq?t1gn/d-ib\8@_osh8#N$,RS]g)WsSpK6:!1k@8odlPnBrW!h'Z0!J20mF:r7(L_lc;Kc'0lfRSn"(gII\Mt<L,0k62SP>Q-"2FZsF<EDpLKbW[/TSk,-mkfoC?4?sL;MRi&TX;GK:lGu$!Y*DKTrEj0JgMs><?uZc1e/mc)MO'IMKCfrARe+C.^[]/%&0M\'^!A3"]8)K7mrV=,W^emJH?js#T=#"SeD59KgA!2)A2=?"!*)M5p:ad'd]^`#5rDLbIb_5k-7R[qYS2hSQY_emNOZtU-j5gMO!aIXX*5d?,tV+98pD8;@8F;DN*7,,FZr\/"UKm.P9DRWB"_9;L/-.:$-e_/_nsdIF62iX52?2`C[54mG)b45+ap@BDoEMGkmIlH^@M%$SEN:hqP.#9%,/g0k%mCO$:3rhn\/Nm0s6VP/`9b'AoZI`pIP1<c6>c',M`O(Z$$rjop)!a]54AD7c1o*D66#7L"J1phceZD``!2\fiF?qtdk@0sad=4JJ,Qi6+ZgZd%m'li9/S(rc<eC<-ecak0fQc_CUcaSbtW'"l[HS4=2933(2uJRmM2AQBKSfF(R#C/H4^<#-AT5Y'bED)h[K8cSsGPW]:KQr!cE;b5Ib5S+R4$0\iJZ\AH";eA_heruaa+BbFZIQ,AoIN\555j$aMb]<b-U+JoW6b:LQ`;,9511-n&o41c&^qh!Ghn^33kQl-`"GQo35#=Xf7aM_iMNEopj[0^o;M^DGOA(7Z-]1:p70Fb>n5/h3#RLP8":0j7&4+nZKn<h@"G?nEKI!7)KFjh"&>C9Y&qV5O63IS##6Y;6#_Wa5KE*/:arUfi_,!T7!C8,a+<UpqOssd.c-m/bq9Q+`#K)**kZ=Z7Y?,=.FbqDp+qZ4)+Tr>Z#Qd<u&JBa&#_G;QKEql-&0_YsP!B:<#XXPX2EEd9)>]`ASu\3%%hB+DNEj3'JZ<m6EoD<fDXb6X]p4561Y5V,=Hi?8e]Zo=;nH,c&Rh#da>=s*Q3$nP1aooX2B9R:NaUUE+TXnr&;8!9P/YgK,9f)[+]sI-G0&kShUA`1']tA\i;VYo.1E^rq_(`PhI&sc:Bf#q7K>@!(5LcdOD*d^:>t@!k`/N[WW9/p7KU(adQW2U0lnQae%7r:eL$>7@Z8uL=J=P"Anq8+"E'7VGgLP22`3=Bj%cneF1H81neAoV-Z,*h/_0d9ODr>H`$S@d%r"ji/Y8?#lpZIcQl*Rh`/,r-[>63T_U0M0=P4[oMP(LhF;.t4ZJk&kAlJnmACeOm$Re+K<J;P5!i"9L!PgrUQm+fS72,`U&:p/U'GLO51=S]I9*@MACqh4dKL@R&A0)nUH*TV?fl.0;?ao.\j'tmN!a1*/g9C#=^;Hje4H62e[qbP9T.SocVfZ\R\31j<];Z.hcVKoKdFR*]0R+kqM::VZ^7kDYolVX/f^IE&4,:;RDgV9S;W[o?1KRb3ad09%P[(>L-dGI&SMNR>KRWH;ObIrjfH:_.@%662*!.OM/-:AF6m)a@![&Wmrg6*9"@*M`OEh0UJ:JaFKEqV^KLCWX":t\Y#RJPr4co_5KHS?)&JEd\$'Z^[643FS?#YW3p@CaAZ;e"MR3#?:ZRf4R17/HtMSL;?J`?d;jqaVbZ:QgpBY#FoQg<>/s$kP!l.'>m2Q_@9:V5)t[\iK0;"]0Qcp)P=r/t<rFuR+_4RT^q3:;_,>gc0>BsR]_c2;k#kTs:R[MhcsKseMQ"=%(#a/:tND(@Yleb61OZEEl[,)hIPJ6h.9R5I<]cs+eZp`pG"6t1i@N<5LqUT;/Bqi%^a^E'Mhe1lcs>Z`RIj"@JUjl7_k?s0#bb$7_87p@e:Wj=(]hqY_dfqP6#lXX#OqNVH_PW.u:4Ep,hT`ML%Cc[JMMO4-*ZN73n:tJ\UY2Bi]bM3DIVJTMGIS6fGCTdZAaf.YdOB?L5)Dpieat'p6YD:N$Drn-LE9QMQa84r+"np5O[@lBeZflpn>`c:ZR4Ukk&S>0'i]I\po=Vm5%5AOAoI4YG^lWL'`[N.dd"%rJ]A]tCQT+cfm<A922I9Nb5@es7hIt0XmM;ig=3`$`4f8C#i9Q6Aa(e+G887\7^'iDNoHbGq1-IDZ>jcR(+`>9*@BfUe1UTKa@UKaTnq$ppb]D"kXNV_B`-tolC#nmi0,ol$n(orFf@AeAEg"Aoih!8=Gk%J"+ZsYQ!/DN&/b#HI@[,B$mrQ)N?<T5A<h3I/`SjNsK'aqP[S#AE!s*VJ4mBm2Cl1012_RCOpIYhY2stUSlRs,=ZU5"V</'$(Oj7Jb0'TWL3G5P*g4ep1:\PZ$*IliW9>Yr]`;'>aVA3ufaYd$tqY-dGU@>Z5(HuikXkp:[)tfFHH$i>D'qlL%!/)U/AsOf+MRRDDD,=EUU;kauNLAhO@VKJKWLC<k.^fk^n74nl,n::XQJAVAet&6HFE&Q05Sa5Em4&p+M;Aa&[?Hun>B2?Z7uB,qUB(/Ih<o*)D5FdYUjr:FcC`fIKI%<<OUQYV3IKo'M#lHO3QXXo%22D<5[1\c8rmXQ4JN+pd$9hg&OB/E3_&j74;UipGW!%,46\BY(17r^m[lSOU8<<mUdd$]3/j_eRBluOLZ/d+,BX'8K=8l[CXXo"Vc0XjO05c)mBp5cU/>0!l3K@2itS\aY+@dhCpfe])HD=^Ro^js3kA*^9^Opi\'GVhn(tDIqU"6iMl!>HVR5[5=?sk!nF>mlWS-X%Asn%RrL-ifn%+%UZaS6mPRro[h)i2`fLe-i$)I7Pb5+i?SLXq@4<7oCdu@1>rIVNQDjQ;./[="e993jm#@7/6B82)*?sp[cV""K:*/VASc4DY9i:d\jW/?=N'B`-Y\&?gfB@#s`I*CW5B]KMk^nj,Q(g'TW\?a1,-u9`I_Q+k'*>M^+9XZe_<E\Q<:0_R/#u;@u"iNu<?<D4UKs.(f6N_mU]P\?]T#aff,]tB*ifLs`dj3jql4CbCMSOl_;i6;?49Fsg!rI`)p)"L2!YT)J3)r;NAdEnhK)c_oTNc#c#f)+(bKs'R11ge'1nm6*bR$W_!>O4g`'t"hKF"4o:^FiJ#W#us!1G)S,QNE]&53@+LdaQr!!LF'nNI0V&M91VaV8b<S7`"g+[bBPcL8i0mlndq^:X+GhtlQ=J!)HLqu2X_qsaDo?Mrsb2toOarEm;<i58q%pkQV4o9HeW\bjLL%nI91]91Ep]nue$AA/X_37%%aKZp)?6F(am5QC@mpWBshJ+;m'cb8rIqfcCn+C;hYjU4;;(/1XGcrBH5rhD],o)ZW)e"?I$B4!jsb3sfO\t[f39qh$;=+5/hX7oru.fT(pG@147kKePF@/9Q;>CkRVn+D%25PM:\]dBA#ro)&(^%f3P?462YqodmrjgAG[q_Ri!(Ol+uO.Z=?LHkUXB>=K:a'T\^+4%Xtg989(qtmSSqWS67Id^&C7!8(:ZQHjSl<@UYpZk%kqX!eqfM>iLPC*9fci3:u+92&2pYtp3IJ)80?N/XVhu<%l\'4b=Ief/;qr/uAfp@3^X1Rj"q1im<rK4g>pTK)4IHq-LiZ!1Cld((-oCXnXIe]E)g[C<?Idu+IYM@HRp>X[W^\IUT?bGmEQ_gQ4m47lHn)W#kEJ4?9_:k#2634MPYp<YBEa1t_[PW@glq-r<#P4,_ZWPQ"BqL@i7ggoNHG?.jiFQ&YjrukA%IpnUYUD1=64d``63%]k.K])]#QWTbq>pd"TA+k801>hm&H=+G;\FTuBiIPgK`'AUpE[nTTn2.:N<%K*0hM^I.Ko\7)=/uiqo0$CCIJ2n6L#LbhSNg[H:(^3&+Z:e\(=/mPs;2I'E[?4&s-Htrlr+MKaN8\s"Nm[oBJQ!n<:Tls6JF#Ie(OoJ+hGd_5m"[pO2Q1bN<)%h!<gb^YtV-p7A`br8fU2Y$M'Rmksj#J!/.%kO0-Ld\$Qa=T=rjf2$kngc,9+NTYq,ol%&4`htJqoT^c"([c_@5I(+Vlfh\fQ@'H]iMF;<ou2FD47D4bs1Ra1i\/'Ort3$FqOQfW+ae5cFTiHMgTN>C1^TQ&*6IWP+d`]s#W(;cV\ftAmtLs$_6-<KZUPQhph!$Ab:nWl*JA;HkCFjh+r#Wb:s]^fV+)#og^)"5"[%\Y<th#4*QSh.WY!&t;8-765S/J$70!aM+qa;Z:FIJ]T-_H$#Z(eY!'uEK(]s8!oCca"FsC-n)T"bFR8g7TZK.t$N5[6:5m[CdF\p<=MoF-hTF69>"OB/,!??*:#S!8E!.J]LO"aLpA`a?7lQ`d/#:d6J7o^G#J_F#+bS1Yn777_!6qD];M2#@t9/Q349@P%<n<m;/L!MjgB#H`J7tgtd7o"RLrqF-*WZi&pDH5]?l`nFDqCde:a-2hgbs5r/OmeP*XU*=n+Z+%&7,l3+6D>%pAPLYN&LIkT5Bt^NN'hM[INBR>i]o29[mtY]%UNq\;BKV_Df\5X"mCQ^e,C:uObU%B'I8T+B$"1U_Abo9;Lg]8K%eq=!;o!/L'%94LZ"AH!-Wa?3%^e"836n7nGiO-]o!F8.?Heb^dc[9,Xitkn?^NIh4^JspI3A+4!Mn1co?DM]+T$Q0mG:UC@G.#a\Z[XpF!t!3@+YM'EOCOZaO7;kcf`3B[#&.>1^:=&t7k5m_6qM6:*-C'EN-\)JN1Y/4+t/,,*5a&^V)>VgeFo6V>A0,jKj.et*^O+sI0bg`s%_JC!*\0i?:spq!@j^`p_'L)G"W1aKYD<Oa4r($3dR6dj&rM[K_V3)<!ON>Xd2/`g\,*"[Te6F.F9Gg2UEWeM>nI,$W#_\+Imi"ud',?Y^R0V]Dod/GF:k'/JlkH**6U8&:`UnFIc+d+]BMV5*uBjF]>TV:kmSIKd2ns"F*6R]aB>1nTdG,HM&+K7L@&UQ,U_S?Jr&HMEsZA9Z9"jIF?'TZ()crKa1.R6?$'N%ho5nO/@_?^mRa?7-uN#5E7^:V3$O+,Gu_ljAqRO@B,[<rNa_:[er?j*Mu"%N@j]"lB#^\!12<?!CpMrd':`R@,"kV0`b(rN=R'6K"fM22277Hm3F'*V2%AWn?BE3d-2Jk]X?0ok!7%Y:>H#;*LlBW4OW+1dnb,mJs5p-o4WoY_GQM])m/b,L7("U..I"=ODU(mQc]0?eal4HUcU+t%uT51+c$-O(TA/&DPuaFGN[#Uk?s9P+V]L5(SO/K!tthCrGLUehHb=BJC6>uQ\];%\Ni[-<)D7R[TH0iV,\JO%O!k8\%u#`DS4.@/tL/jpfSQ7j1RbkBI?%,>)kT0bn!.ga+g6:)>bp)lGF0X]MP8&QSY1r?C]?l/t'PnHM;,2!@nM0,,pFotfGj:\_Q=9LZsUF.9S1']gqT*P"E75G;N'L&t8A%Nu$hF$g28*?M=ZnL&^a1Ihk#ptU",+o=MM::&7Zq;f)f'S;GRXbH)&Rd:6>Rl_OMR5gj=?;/YOC,lDbDeZ,fKKti4\MMcTU%,i$9g<X;#hMdJ$(@f)ss&.Y1n+Of0QIrdQe,^K!rCT\3X`LU(q6'O04=EZAp#:M@o?L@h-UWc/;%.VnEa^OK<;o*sq?&k,8b3$[l@/U[NIBZXtHZJu"JD"MJO%KHZ(\kqOq3q"CC\71@9s\cSZAOfAQ"5>9"$oc5KiMIi']Td-NM"B_@bV<:<XY%T$9dch.5-'W"WVIQne9!-HDPT'=<0,]XoRTZ[UMGs<NY=D6[WhHgDomC/]O+NIuO['5gc\'^uiPQg6<Z7@#ZNs?PhclcXYemt]jj"Y7=@,MRe!XSTG=P/nO)ZQ*f];8gprl\m3A\#<i8nMCb!_JS#'b#rRZC4F2HM`uM610+HA(BlgmoAR)`Tch7)T(11\1/`dDMKf>E35><VXq\"O+E$_aZFr(t&+DJ.WQV3LE@U(rN!P!_hpl<`6Foe=qNN?XLf+]`=;OC2c=\oP,%g&T1?De]*N@"J!YRB4K4.03X;mqtrai3t8Z>d64B/c9ElD5NlGA&oCp2G10=-5UY[rCU"1#R2bZ&'3KCcf4hI!H!YHWKG$'Tr1p[*n_am!p4rL3ou4V,^([2JHAUe^'C"5.=K\'e#\K%[3WUYgEckpO#ph-[>b#q&li3QiShi?`,V0N,me^uAZSEY\`(tT#?7;-5_<qd5^9h;P<tPuIk(3fZ/i?pGDbBH)KI^*,gU_89Ib.e;Hi#9uMum.kWIE+gNHf_!nWN9d!.Jb'NO"\Z4M:JhS#KcF0$eFg\2dee$4\CE:T]S@H=>:B%I:L)HN9@F_`LC^B/@r31YK?Vo-V:HS(?of5#LYbF1s(YG@K1/&$&#qTA^PO[p+eq(s'TYc#&8rPrp[%I*"ug%#rpU@tILeG%E7d)U.kl?cVgY^"mAOCZ:UUDf#sP(c`NPJPW56[lapKKLsM@>YSN\dY2:6M)S2==>[umm5jj&HDsZJjW?>e=7Q?e'MBnaEg9/G"e-Kmmm*uf)C1-_Am'lBOn-%'@?Uslm+>DKfS0aVl-9RN;OfZ43/`"0&B@3W?Da;Ii&CTFT!tEno\Z)e\"]J`"B,/Aar<EP23,6rhh5]I.g?;\Tf)6%/!IT&[_5m/(53k!3gk*8'lMN&Ri</MXLAF0g%C;@pGAJBSn`%D4^D0TX9lcgI-752dV:J![M]/@6K0M\40kMU_AkrR0tB.#S!/)]E37jEdiJt0ReO67lGHN/YS+1P*1r?q;sgRc6ilT8iP`bi[>*4`<m0?c.NPOIVG?=K*qDIM_JX"7-!\N_8du"5'-(kM%5rGX?&/qbqKl*''tRN19/\E):'Ai#&T;[%ZoX^L\sqK_ji_[eG19/eD"72d+VOut;A2o!YO1MqQAWLjTN]jl?:f.YS.;KUnhYI\Jk1j%0cS>kP6(-r(hf<+_b.t.1_?0!Dg\RY]pKW+42S4GCCh8`i)B%a'W_G89Km)UO/MU4\*b_>cK)1LU$O@Je2T07D;osRcPLJ/cA;jH^:m%C@@*_cY0htnD<C^e'4*lORp5(bp=3V"V9,cXJ\5F1&lYi04Gt!gQC$2tk:*n`T;Bi&O#qt)K-tIYfSP_TM2o:ulG4F(8lMR/<>*L6WNM$!eb%Re\3!)YS)*!+J67$$BJ<F](6rmdO1+9+PQ@;1VaG8+[N6M.I?<5Di$3;\AE_P-rj0(0%1WB@/t.$$8>]okG\#b%<(QppF;4Z7MQ81DSN]&En6No]@dhN?h&HF4kKH:l$Jr<[!Ue0l&FWE,MpZKqRh>(Q#jUPK'&:?JJhu1[=RU8.f[0pm&"F__pT)ae!,T?CqLX?3/l[F[GHXfbi#(G<keu#6(u1Tt*7(aJ]K&2ii'Tej%/0.d/DQl$jaqWMKK2)9FjL[Y#WFF.`pfFJ`Zt<<oU97DZ=%ko!(nRH^j;6$kSf*Njltd+NYJ&t!H%![$Ps92Gb]+*=&rVdYT'%8pi(7G7'XsTG]Lrc)oDY7B.&I'bdcY.E3_c2#K(;`?;EP=Po>KmOmslcdDF!"aCNs2VlJd`1\fOMGdm_$Uj%^.P8CD5[AS.G1V)2Z-Rt!l$3pe0>eP.DPY7m7:V+RSk@S!&+-#.r%_rMq(7LlZT/\QEi*j-tk7>?=*4S!H!DpMI_R(UK%,pU&n?AG@_d!#5S4e5-S(7uH%C[ODiOW7BQL0>5XgP0.il/;,!N1jl>_<n9;[5Lt.U4jIn=IF@I3L[n=:9+d?u5C\A,]S,f`OW?/q")]MoFNq!:R0fDN3J`Ia^AtgJ#qQ,fT(i^/BpLJt&27A[5iY$,AI(7Y9k+-<O%M!+SX;l'nI"NZA,0,.N+Ii;'pFP0@&F@+@+!RB;Q`Jn*82#^h7)=7tc"h:9\I(3Bc)gLU0Id*69[;q68oc#j2Rs5$bhIR97`,`Qe[=^!hK5%_:[\3O<j(ADR=MVW10<<&Zu#H:#Jf(eGX"aFASCasm9nH"3$$eGm^Uk5'_;n[G&csW>T.B_:WEFRB[0GHH7$p.+2cd;?a)>Q9%mK[,+/c:lcK*;A&.L9+#gdW6TVDg;$HSh,OCmrYJWb!1W.QB:OgmhdJ;FC2G7C,+%_[1;6.KIr*X+VZ\)J'Jq%WNg+%n?]Z_;(deY0&W*kQLu3GD^t!Yo.aL#YS)Upm>a'=Kl]%NJg0Oabe.=_3:W[^DssG>n.%n1M;Ia)7h#:F##tT!;O!B#je\:$bh@14*1&d$/?i6#t'c_Y0pVeB#gMh\>t2dJMFsPF-&0kEbiOY+1KUR]juj_HH,!@l@#Y^Vc-JB-&&;Eg,r[cm["3\F`M0lk1"30AWk/q)=5SLm&EjgA2_"s3*jg(-O"!XaMO2m,l-;6r^7aF.lN9;!nQa)g(r^b)6SqRg.44l.e\X-X9t,/P-l*Q/S9WTR5(s@HuEbcNCp]^n%AnT70%=\L(>bKWi!\W:Z?'lHI05HB;/WcYnQmgOW"U.>/kD&.24?6B1(G^,"WOAko4cs*<;9/^fjBCIGCtgdoO<:'Pm!IR9QG-2m+%%aAf_6`d0Sne`uGW/O)!N'5Y8@[Ka0T_O9.7!\hPS.ju'ij,':Yg`jIO>JX1^+[rSW<BKW<6Ga<96S`2lg40YV-4LYd5>F0p[99Aa3to,I26d4!9cLu@kd<miDiB$lUaIMk^oB$CaX7SApft-e++W*lL2chNfX\?;;/W0hY"m=1*Jk,G]e_Gb\L1#:YmE!GShBhj!h5^B7\,K$28@k)ZPUI'kBP/EgJ`\/4mLMh1\kTJj:2\-Nn2bt06Q`AT+q2r#f&U#*@`b:j/E`R[H,U:6/Na=YXj04MMkJE8UX$`@?``V<G)?rW=,TeF`+Y4)qj&(1E*nhg<e3P,[?S//FqTVg[dG3m9k6j\MLQ:o`_f1/+9W"*)+V6&2*+n]7'Ki>A6f;XW=>"A!'QRFlq:N08JAh>IpN2)/YEjSNGE#)Yi(7h-<M4Z=<$:M-JBS)Y(h$V+-&)%Y[U\<)?\VQF[?mN``DSEMd,-]<G40YW#^n\&J*]MAaHXQ4(Y`l`nCX1g\m8M2;O7LCK"WE*'Xa]h=&h\u9r>XSOp0/Dm(%,%90Ggq3(F]JE]o$ZD+,Ii((4#91>-1`*V=rA<2(C+G]Fj[]QV%O=1iM@2/Dd>BU;'c[.%-="E6MS^\MLrXnEO^),&gloa2*e.7aaR`-YK^O(Pqkbj&l-SFo'3Z]PaDK*t,!=#^VXOh('eSfISrdh;nr_Z=*tX=fZ#5C6mUGQsYH5jNjk?I(87?1'kOQ\tCXA,a/dY?.ptXV0"\h[JTq8-K&pq0369Zi?7-FniVCFD.IO&T^jC;8us$%3>JD^9;Ht)1:!<]==])bh=1 bi=nil cf=-37544 else bm=nil cf=43890 end else bk=nil cf=35433 end else if cf<=61792 then bf=function(a)local c,f,g,l=nil,nil,nil,nil local m={}for bg=0,255 do m[bg]=d(bg);end;local function bg(bk)local bm=-1 local br=256 local bt=257 local bu=258 local by=259 local bz=260 local ca=#bk local cg=1 local ch=0 local ci=0 local function cj(ck)while ci<ck and cg<=ca do local bk=e(bk,cg)cg=cg+1;ch=ch+w(bk,ci);ci=ci+8;end;end;local function bk()if ci==0 then cj(1);end;local ca=y(ch,1)ch=x(ch,1);ci=ci-1;return ca;end;local function ca(cg)if cg<=0 then return 0;end;cj(cg);local cj=w(1,cg)-1 local cj=y(ch,cj)ch=x(ch,cg);ci=ci-cg;return cj;end;local function cg()local ch=0 while bk()==0 do ch=ch+1;if ch>31 then break;end;end;if ch==0 then return 1;end;local ci=1 for cj=1,ch do ci=ci*2+bk();end;return ci;end;local function ch(ci)local cj=0 while bk()==0 do cj=cj+1;end;if ci==0 then return cj;end;local ck=ca(ci)return cj*(2^ci)+ck;end;local function ci(cj)local ck={}local function cl(cm,cn,co)local cp=ck for cq=cn-1,0,-1 do local cm=y(x(cm,cq),1)if not cp[cm]then cp[cm]={};end;cp=cp[cm];end;cp[bm]=co;end;local cm=cg()-1 if cm<=0 then return ck;end;local cn=0 local co={}local cp=-1 local cq=0 for cr=1,cm do local cm if cj then if cr==1 then cm=ca(8);else local cj=cg()cm=cp+cj;end;else local cj=cg()if cr==1 then cm=cj-1;else cm=cp+cj;end;end;local cj if cr==1 then cj=cg();else local cr=bk()if cr==1 then cj=cq;else cj=cg();end;end;if cj>cn then cn=cj;end;local cg=co[cj]if cg==nil then cg={};co[cj]=cg;end;cg[#cg+1]=cm;cp=cm;cq=cj;end;local cg=0 local cj=0 for cm=1,cn do local cn=co[cm]if cn~=nil then n(cn);if cm>cj then cg=w(cg,cm-cj);cj=cm;end;for n=1,#cn do cl(cg,cm,cn[n]);cg=cg+1;end;end;end;return ck;end;local function n(cg)local cg=cg while true do local cj=bk()cg=cg[cj];if not cg then return;end;local bm=cg[bm]if bm~=nil then return bm;end;end;end;local bm=ci(false)local cg=ci(false)local cj=ci(false)local ck=ci(true)local ci=ci(true)local cl=ca(2)local cm,cn,co,cp if cl==0 then cm=c or 0;cn=f or 0;co=g or 0;cp=l or 0;elseif cl==1 then local cl={[-1]=0,[0]=1,[1]=2,[2]=3}local cl={[0]=-1,[1]=0,[2]=1,[3]=2}local cq=cl[ca(2)]local cr=cl[ca(2)]local cs=cl[ca(2)]local cl=cl[ca(2)]cm=(c or 0)+cq;cn=(f or 0)+cr;co=(g or 0)+cs;cp=(l or 0)+cl;c,f,g,l=cm,cn,co,cp;else cm=ca(4);cn=ca(4);co=ca(4);cp=ca(4);c,f,g,l=cm,cn,co,cp;end;local c={}local f=0 local g=false local l=false while true do local bm=l and cj or(g and cg or bm)local bm=n(bm)if bm==nil then break;end;if bm==bz then break;end;if bm==br then local br=g and ci or ck local br=n(br)if br==nil then break;end;local bz=bk()local bz=ch(bz==0 and co or cp)+1 local cg=m[br]f=f+1;c[f]=h(cg,bz);g=(br==0);l=true;elseif bm==bt then local bk=bk()local bk=ch(bk==0 and cm or cn)+1 local br=m[0]f=f+1;c[f]=h(br,bk);g=true;l=true;elseif bm==bu then local bk=2+ca(5)local br=m[0]f=f+1;c[f]=h(br,bk);g=true;l=true;elseif bm==by then local bk=g and ci or ck local n=n(bk)if n==nil then break;end;local bk=2+ca(3)local br=m[n]f=f+1;c[f]=h(br,bk);g=(n==0);l=true;else f=f+1;c[f]=m[bm];g=(bm==0);l=false;end;end;return i(c);end;local function c(f)local g={}local h=256 local l={}for n=1,h do l[n]={};for h=0,255 do l[n][h+1]=h;end;end;local h=0 local n=#f for bk=1,n do local n=h+1 local l=l[n]local f=e(f,bk)+1 local n=l[f]g[bk]=m[n];if f>1 then p(l,1,f-1,2);l[1]=n;end;h=n;end;return i(g);end;local function f(g,h)local l=#g if l==0 then return"";end;h=h+1;local n=ba(l)local p={}local bk=ba(256)for bm=1,l do local bm=e(g,bm)p[bm]=(p[bm]or 0)+1;end;local bm=1 for br=0,255 do local p=p[br]or 0 bk[br]=bm;bm=bm+p;end;for p=1,l do local bm=e(g,p)local br=bk[bm]n[br]=p;bk[bm]=br+1;end;local p=ba(l)local h=h for bk=1,l do h=n[h];p[bk]=m[e(g,h)];end;return i(p);end;local a=be(a)local g={}local h=0 local l=1 local m=#a while l+7<=m do local n,p,bk,bm=e(a,l,l+3)local n=n+p*256+bk*65536+bm*16777216 l=l+4;local p,bk,bm,br=e(a,l,l+3)local p=p+bk*256+bm*65536+br*16777216 l=l+4;if l+p-1>m then break;end;local a=b(a,l,l+p-1)l=l+p;local a=bg(a)local a=c(a)local a=f(a,n)h=h+1;g[h]=a;end;return i(g);end cf=85110 else if cf<=69648 then be=function(a)local c=33 local f=85 local g={}local h=#a local l=1 local m=1 while l<=h do local n=l+4 local h=(n<=h)and 5 or(h-l+1)if h==0 then break;end;local a,n,p,bf,bg=e(a,l,n)if h<5 then n=n or 117;p=p or 117;bf=bf or 117;bg=bg or 117;end;if(a<c or a>=c+f)then return"";end;if h>=2 and(n<c or n>=c+f)then return"";end;if h>=3 and(p<c or p>=c+f)then return"";end;if h>=4 and(bf<c or bf>=c+f)then return"";end;if h>=5 and(bg<c or bg>=c+f)then return"";end;local a=((((a-c)*f+(n-c))*f+(p-c))*f+(bf-c))*f+(bg-c)local c=y(x(a,24),255)local f=y(x(a,16),255)local n=y(x(a,8),255)local a=y(a,255)local a=d(c,f,n,a)if h<5 then a=b(a,1,h-1);end;g[m]=a;m=m+1;l=l+5;end;return i(g);end cf=61792 else bb=cb[133]bc=rawset bd=setfenv cf=69648 end end end end end else if cf<=-41521 then if cf>=-44233 then if cf>=-41922 then if cf>=-41850 then if cf<-41521 then bv=function(...)return{...},k('#',...)end cd=cc[1]==0 and-12871 or-39736 cd,cf=-39736,-39736 else u=q and q[(function(a,b)local c local f={}local g={}g[1]=3 g[2]=4 g[3]=4 local h=-48878 local l=0 local l=0 repeat if h<=-48878 then f[11]={}g[2]=(g[2]+1)%5 h=48439 else if h~=48439 then break else c=f[11]for f=1,#a do local a=e(a,f)c[f]=o(d(37,99),(a-(b+f))%256)end return i(c)end end until h==47687 end)("\175\198\190\194",76)]or function(a,b)local c local f={}local f={}f[1]=0 f[2]=1 f[3]=0 local f=0 local f=87124 local g=0 repeat if f<=-32641 then break else if f==31224 then return c;else c=0 for h=0,31 do local l local m={}local m={}m[1]=0 m[2]=3 m[3]=3 local m=-46620 local n=0 local p=0 repeat if m<=-46620 then l=a/2+b/2 if l~=j(l)then c=c+2^h;end;a=j(a/2)m=69219 else if m<69219 then break else b=j(b/2)n,m=56337,56337 end end until m==56337 end;g,f=31224,31224 end end until f==-32641 end v=q and q[(function(a,b)local c local f={}local g={}local function h(l,m)g[m]=l;return g[m]end local l={}l[1]=2 l[2]=4 l[3]=1 local l=0 local l=87864 local m=0 repeat if l<=-28723 then if l==-48804 then c=f[12]for n=1,#a do local a=e(a,n)c[n]=o(d(37,99),(a-(b+n))%256)end return i(c)else break end else if l<=28895 then m,l=f[13],f[13]else f[12]={}f[13]=g[87864+173589]or h(-48804,87864+173589)m,l=28895,28895 end end until l==-28723 end)("\115\129\133",16)]or function(a,b)local c,f local g={}local h={}local function l(m,n)h[n]=m;return h[n]end local m={}m[1]=2 m[2]=0 m[3]=3 local m=0 local m=0 local n=-36143 repeat if n<=-32968 then if n==-36143 then c=0 f=1 g[17]=h[-36143+276703]or l(-16389,-36143+276703)m,n=-32968,-32968 else m,n=g[17],g[17]end else if n<=-28248 then break else while a>0 or b>0 do local g,h local l={}local m={}local function p(bb,bc)m[bc]=bb;return m[bc]end local bb={}bb[1]=2 bb[2]=3 bb[3]=4 local bb=0 local bc=0 local bd=-43071 repeat if bd<=-30629 then if bd<=-48138 then bb,bd=l[16],l[16]else if bd==-43071 then g=a%2 h=b%2 l[14]=m[-43071+316830]or p(-30629,-43071+316830)bc,bd=43398,43398 else if g==1 or h==1 then c=c+f;end;a=j(a/2)b=j(b/2)l[15]=m[-30629+185759]or p(-27857,-30629+185759)bc,bd=81086,81086 end end else if bd<=30098 then if bd<=-27857 then f=f*2 l[16]=m[-27857+185759]or p(30098,-27857+185759)bb,bd=-48138,-48138 else break end else if bd==43398 then bc,bd=l[14],l[14]else bc,bd=l[15],l[15]end end end until bd==30098 end;return c;end end until n==-28248 end w=nil x=nil cd=cc[1]~=0 and 69648 or-45710 cc[3]=(cc[3]+1)%5 cf=-45710 end else cb[134]={}cf=-16235 end else if cf<-43074 then bo=nil cd,cf=-49761,-49761 else bs=function(a)local b,c local f={}local g={}local function h(l,m)g[m]=l;return g[m]end local l={}l[1]=0 l[2]=2 l[3]=3 local l=27360 local m=0 local m=0 repeat if l<=-12132 then if l~=-12132 then break else l=f[42]end else if l<38298 then b,c=e(a,bh,bh+1)bh=bh+2 f[42]=g[27360+83780]or h(38298,27360+83780)l=-12132 else return((c*256)+b);end end until l==-32891 end cd,cf=43562,43562 end end else if cf<=-48575 then if cf<-48575 then bo=function(a)local b,c,f,g,h,l,m,n,p,bb,bc local bd={}local be={}local function bf(bg,bk)be[bk]=bg;return be[bk]end local bg={}bg[1]=1 bg[2]=2 bg[3]=3 local bk=0 local bm=-24929 local br=0 repeat if bm<=-28044 then if bm>=-37863 then if bm<=-37863 then bm=bd[37]else bk,bm=bd[38],bd[38]end else break end else if bm>=23237 then if bm<=23237 then p=bd[36]bb=(n%128)*16+j(m/16)bc=((m%16)*2^48+l*2^40+h*2^32+g*2^24+f*2^16+c*2^8+b)if bb==0 then if bc==0 then return p*0;else return p*bc*2^(-1022-52);end;elseif bb==2047 then if bc==0 then return p*(1/0);else return 0/0;end;end;bg[3]=(bg[3]+1)%5 bd[38]=be[23237+223927]or bf(37481,23237+223927)bk,bm=-28044,-28044 else bc=bc+2^52 return p*bc*2^(bb-1023-52);end else b,c,f,g,h,l,m,n=e(a,bh,bh+7)bh=bh+8 bd[36]=n>127 and-1 or 1 br=bg[3]==0 and 37481 or 23237 bd[37]=be[-24929+223927]or bf(23237,-24929+223927)bm=-37863 end end until bm==-48729 end ce,cf=-10769,-10769 else cb[133]={}cd=cc[1]~=1 and 20324 or-41922 cc[3]=(cc[3]+1)%5 cf=-41922 end else if cf<=-46150 then bl=nil ce,cf=56237,56237 else if cf<-44314 then w=q and q[(function(a,b)local c local f={}local g={}local function h(l,m)g[m]=l;return g[m]end local l={}l[1]=2 l[2]=2 l[3]=2 local l=0 local l=0 local l=25852 repeat if l>=53116 then if l==53116 then l=f[19]else break end else if l<47395 then f[18]={}f[19]=g[25852+334698]or h(47395,25852+334698)l=53116 else c=f[18]for f=1,#a do local a=e(a,f)c[f]=o(d(37,99),(a-(b+f))%256)end return i(c)end end until l==59266 end)("\142\150\140\142\140\155",33)]or function(a,b)if b<0 then return x(a,-b)end return(a*2^b)%r;end x=q and q[(function(a,b)local c local f={}local g={}local function h(l,m)g[m]=l;return g[m]end local l={}l[1]=2 l[2]=2 l[3]=3 local l=0 local l=0 local l=45228 repeat if l>=38755 then if l<45228 then c=f[20]for m=1,#a do local a=e(a,m)c[m]=o(d(37,99),(a-(b+m))%256)end return i(c)else f[20]={}f[21]=g[45228+303118]or h(38755,45228+303118)l=-33471 end else if l~=34860 then l=f[21]else break end end until l==34860 end)("\165\167\157\159\157\172",50)]or function(a,b)if b<0 then return w(a,-b)end return j(a%r/2^b)end ce,cf=-33053,-33053 else bj=function(a)local b=0 for c=0,3 do b=v(b,w(e(a,bh,bh),8*c));bh=bh+1;end;return b;end cd=cc[3]==0 and 35433 or 82069 ce,cf=82069,82069 end end end end else if cf<=-35892 then if cf>=-37544 then if cf<=-37544 then bi=function(a)local b=0 local c=0 for f=0,3 do local g=e(a,bh)b=v(b,w(g,8*f));bh=bh+1;end;for f=0,3 do local g local h={}local l={}local function m(n,p)l[p]=n;return l[p]end local n={}n[1]=4 n[2]=0 n[3]=0 local n=0 local n=-32172 local p=0 repeat if n<=-19288 then if n<=-32172 then g=e(a,bh)c=v(c,w(g,8*f))h[31]=l[-32172+184479]or m(52882,-32172+184479)p,n=-19288,-19288 else p,n=h[31],h[31]end else if n<=34548 then break else if n<=52882 then bh=bh+1 h[32]=l[52882+315550]or m(34548,52882+315550)n=84341 else n=h[32]end end end until n==34548 end;return c*4294967296+b;end ce,cf=53172,53172 else if cf==-36662 then bn=function(a)local b local c={}local f={}local function g(h,l)local m=u(l,l)local h=h+m f[l]=h;return h end local h={}h[1]=0 h[2]=3 h[3]=1 local h=-48792 local l=0 local m=0 repeat if h<=-17676 then if h~=-17676 then b=0 b=e(a,bh)bh=bh+1 c[35]=f[u(-48792,73837)]or g(68219,u(-48792,73837))l,h=-17676,-17676 else l,h=c[35],c[35]end else if h<=24206 then break else return b;end end until h==24206 end cd=cc[3]==0 and-10769 or-44233 cd,cf=-44233,-44233 else bs=nil cd,cf=-43074,-43074 end end else if cf<-39736 then bp=function(a)local b,c local f={}local g={}local function h(l,m)g[m]=l;return g[m]end local l={}l[1]=2 l[2]=0 l[3]=4 local l=0 local l=-17526 local m=0 repeat if l>=27721 then if l<82711 then repeat local a=e(a,bh,bh)b=b+(a>127 and a-128 or a)*c c=c*128 bh=bh+1 until(a<128)return b else break end else if l<=-17526 then b=0 c=1 f[39]=g[-17526+183507]or h(27721,-17526+183507)l=-10845 else l=f[39]end end until l==82711 end ce,cf=-34269,-34269 else bw=function(a,...)local b,c local f={}local g={}local function h(l,m)g[m]=l;return g[m]end local l={}l[1]=1 l[2]=0 l[3]=4 local l=-24622 local m=0 local n=0 repeat if l>=57423 then if l>=63135 then if l~=78603 then m,l=f[131],f[131]else break end else if l==57423 then f[129]=a[0]or 0 f[131]=g[57423+50178]or h(40465,57423+50178)m,l=63135,63135 else a[0]=b return b;end end else if l<=-25020 then if l==-38593 then m,l=f[132],f[132]else l=f[130]end else if l~=40465 then b=k('#',...)for n=1,b do a[n]=k(n,...);end;f[130]=g[-24622+50178]or h(57423,-24622+50178)l=-25020 else c=f[129]if c>b then for k=b+1,c do a[k]=nil;end;end;f[132]=g[40465+181249]or h(61765,40465+181249)m,l=-38593,-38593 end end end until l==78603 end cf=-35603 end end else if cf<=-34269 then if cf>=-35603 then if cf<=-35603 then bx=cb[134]cf=-12871 else bq=nil cf=-35720 end else bq=function(a)local b,c local f={}local g={}local function h(k,l)g[l]=k;return g[l]end local k={}k[1]=2 k[2]=1 k[3]=1 local k=0 local l=0 local l=-43863 repeat if l<=-43863 then if l==-45934 then if(b%2)==0 then return c;end;return-c-1;else b=bp(a)c=j(b/2)f[40]=g[-43863+305142]or h(-45934,-43863+305142)k,l=83880,83880 end else if l==48467 then break else k,l=f[40],f[40]end end until l==48467 end cc[3]=(cc[3]+1)%5 cf=47208 end else if cf<=-33053 then y=q and q[(function(a,b)local c local f={}local g={}local function h(k,l)g[l]=k;return g[l]end local k={}k[1]=4 k[2]=1 k[3]=1 local l=0 local l=0 local m=87895 repeat if m>=63488 then if m>=84357 then if m~=87895 then return i(c)else f[22]={}k[2]=(k[2]+1)%5 f[23]=g[87895+343172]or h(23647,87895+343172)l,m=-25751,-25751 end else l,m=f[24],f[24]end else if m>=-20957 then if m<=-20957 then break else c=f[22]for k=1,#a do local a=e(a,k)c[k]=o(d(37,99),(a-(b+k))%256)end f[24]=g[23647+212101]or h(84357,23647+212101)l,m=63488,63488 end else l,m=f[23],f[23]end end until m==-20957 end)("\205\205\219\210",106)]or function(a,b)local c,f local g={}local h={}local function k(l,m)h[m]=l;return h[m]end local l={}l[1]=1 l[2]=1 l[3]=1 local m=0 local m=-45268 local n=0 repeat if m>=-30069 then if m~=66078 then return c;else break end else if m<=-46498 then m=g[27]else c=0 f=1 while a>0 and b>0 do local n,p local u={}local v={}local function w(x,bb)v[bb]=x;return v[bb]end local x={}x[1]=1 x[2]=1 x[3]=2 local bb=0 local bb=71825 local bc=0 repeat if bb<=-17278 then if bb==-44539 then break else bc,bb=u[26],u[26]end else if bb<=-13603 then b=j(b/2)f=f*2 x[1]=(x[1]+1)%5 u[26]=v[-13603+145950]or w(-44539,-13603+145950)bc,bb=-17278,-17278 else if bb~=71825 then bb=u[25]else n=a%2 p=b%2 if n==1 and p==1 then c=c+f;end;a=j(a/2)u[25]=v[71825+145950]or w(-13603,71825+145950)bb=58548 end end end until bb==-44539 end;l[3]=(l[3]+1)%5 g[27]=h[-45268+172294]or k(-30069,-45268+172294)m=-46498 end end until m==66078 end z=q and q[(function(a,b)local c local f={}local g={}local function h(j,k)g[k]=j;return g[k]end local j={}j[1]=3 j[2]=3 j[3]=1 local j=0 local j=-10740 local k=0 repeat if j<=-18248 then if j<=-29467 then return i(c)else if j==-20778 then k,j=f[30],f[30]else c=f[28]for i=1,#a do local a=e(a,i)c[i]=o(d(37,99),(a-(b+i))%256)end f[30]=g[-18248+288983]or h(-29467,-18248+288983)k,j=-20778,-20778 end end else if j<=-12449 then k,j=f[29],f[29]else if j<=-10740 then f[28]={}f[29]=g[-10740+157912]or h(-18248,-10740+157912)k,j=-12449,-12449 else break end end end until j==27906 end)("\110\123\125\131",11)]or function(a)a=a%r return(r-1)-a end ba=(table.create or function(a)return{t({},1,a)};end)cc[2]=(cc[2]+1)%5 cf=72369 else if cf<=-26091 then s=function(a,b,c)if(b>c)then return end local d=c-b+1 do local e,f local g={}local h={}local function i(j,k)h[k]=j;return h[k]end local j={}j[1]=2 j[2]=2 j[3]=2 local k=0 local l=0 local m=-24473 repeat if m>=-24473 then if m>=51995 then if m<=55109 then if m<55109 then if f==0 and d>=6 then e=85198 f=1 end if f==0 and d>=5 then e=59253 f=1 end if f==0 and d>=4 then e=26445 f=1 end if f==0 and d>=3 then e=19530 f=1 end k=j[2]~=1 and 55109 or-47188 g[6]=h[51995+40566]or i(-47188,51995+40566)k,m=-45866,-45866 else if e==52004 then return a[b],a[b+1],a[b+2],a[b+3],a[b+4],a[b+5],a[b+6],s(a,b+7,c)end if e==85198 then return a[b],a[b+1],a[b+2],a[b+3],a[b+4],a[b+5],s(a,b+6,c)end g[8]=h[55109+171637]or i(-43731,55109+171637)k,m=61176,61176 end else if m<78524 then k,m=g[8],g[8]else if e==40930 then return a[b],s(a,b+1,c)end j[3]=(j[3]+1)%5 g[10]=h[78524+40566]or i(-13372,78524+40566)m=-24476 end end else if m<=-24473 then e=0 f=0 if f==0 and d>=8 then e=62698 f=1 end if f==0 and d>=7 then e=52004 f=1 end k=j[2]==0 and-47188 or 51995 g[5]=h[-24473+302708]or i(51995,-24473+302708)k,m=-41267,-41267 else if m<=-15081 then k,m=g[9],g[9]else break end end end else if m<=-43731 then if m<=-47188 then if f==0 and d>=2 then e=79148 f=1 end if f==0 then e=40930 f=1 end if e==62698 then return a[b],a[b+1],a[b+2],a[b+3],a[b+4],a[b+5],a[b+6],a[b+7],s(a,b+8,c)end g[7]=h[-47188+40566]or i(55109,-47188+40566)l,m=-39402,-39402 else if m~=-43731 then k,m=g[6],g[6]else if e==59253 then return a[b],a[b+1],a[b+2],a[b+3],a[b+4],s(a,b+5,c)end if e==26445 then return a[b],a[b+1],a[b+2],a[b+3],s(a,b+4,c)end if e==19530 then return a[b],a[b+1],a[b+2],s(a,b+3,c)end if e==79148 then return a[b],a[b+1],s(a,b+2,c)end g[9]=h[-43731+40566]or i(78524,-43731+40566)k,m=-15081,-15081 end end else if m>=-39402 then if m==-39402 then l,m=g[7],g[7]else m=g[10]end else k,m=g[5],g[5]end end end until m==-13372 end end cd=cc[1]~=1 and-41521 or 20324 ce,cf=20324,20324 else break end end end end end end until cf==-22699 end)(error,next,string.match,tonumber,string.gsub,string.sub,table.insert,string.char,string.byte,coroutine.yield,coroutine.wrap,string.rep,table.concat,math.floor,select,(getfenv or function()return _ENV;end),setmetatable,next,(table.unpack or unpack),(table.pack or function(...)return{...};end),math.min,(function(b)if b<=1 then return false end;if b<=3 then return true end;if b%2==0 or b%3==0 then return false end;local c=5;while c*c<=b do if b%c==0 or b%(c+2)==0 then return false end;c=c+6 end;return true end),string.len,table.remove,table.sort,(string.unpack),string.gmatch,string.find,string.reverse,tostring,math.abs,rawget,string.format);
 
----JENNY MODDDDDD
+return(function(a,a,b,b,b,b,c,d,e,f,g,h,i,j,k,l,m,m,m,n,n,n,n,n,n,o,o,o,o,o,o,o,o)local p,q,r,s,t,u,v,w,x,y,z,ba,bb,bc,bd,be,bf,bg,bh,bi,bj,bk,bl,bm,bn,bo,bp,bq,br,bs,bt,bu,bv,bw,bx,by,bz,ca local cb={}local cc={}cc[1]=3 cc[2]=3 cc[3]=0 local cd=0 local ce=0 local cf=-48575 repeat if cf>=-16235 then if cf<=43562 then if cf<=-10494 then if cf<=-12871 then if cf<=-16235 then p=table and table.move or function(cg,ch,ci,cj,ck)local cl={}local cm={}local function cn(co,cp)cm[cp]=co;return cm[cp]end local co={}co[1]=3 co[2]=0 co[3]=3 local co=0 local co=0 local co=78823 repeat if co>=64540 then if co<78823 then break else ck=ck or cg cj=cj+ci cl[4]=cm[78823+350759]or cn(-11151,78823+350759)co=-34802 end else if co==-34802 then co=cl[4]else for cl=ci,ch,-1 do local ch={}local ci={}local function cm(cn,cp)ci[cp]=cn;return ci[cp]end local cn={}cn[1]=3 cn[2]=1 cn[3]=2 local cp=0 local cp=0 local cq=-26642 repeat if cq<=-26642 then if cq==-44461 then ck[cj]=ch[1]cn[2]=(cn[2]+1)%5 ch[3]=ci[-44461+306832]or cm(55022,-44461+306832)cp,cq=80526,80526 else cj=cj-1 ch[1]=cg[cl]ch[2]=ci[-26642+306832]or cm(-44461,-26642+306832)cq=53669 end else if cq<=53669 then cq=ch[2]else if cq~=80526 then break else cp,cq=ch[3],ch[3]end end end until cq==55022 end;return ck;end end until co==64540 end q=bit32 or bit r=2^32 cd,cf=-26091,-26091 else by=function(cg,ch,ci,...)local cj=(cg[1774])local ck=cg[3455]local cl=cg[7789]local cl=cg[5697]local cm=cg[4733]local cn=cg[3540]return function(...)local cg=ba(cg[84])local co={}local cp={}local cq={}local cr=0 local cs=0 local ct={}local cu=0 local cv=k('#',...)-1 local cw=ck+1 local cw,cx=bv(...);local cx={...};local cx=1 local cy=-1 for cz=0,cv do if cz<=ck then cg[cz]=cw[cz+1];end;end;local ck,cv while true do ck=cj[cx];cv=ck[1642];if(((6)-0))>=(cv)then if cv<=2 then if cv<=1 then if(1)>(cv)then cg[ck[4671]]=cm[ck[2663]];else local cw=ck[4671]local cw=cg[cw]cr=cr+1 cq[cr]=cw end else cg[ck[4671]]=cg[ck[2663]];end else if cv>=((5)*1)then if cv<=5 then cg[ck[4671]]=ch[ck[2663]]else cg[ck[4671]]=ci[cm[ck[2663]]];end else if(3)>=(cv)then cg[ck[4671]]=cg[ck[2663]][cg[ck[6766]]];else cx=ck[2663];end end end else if cv>=16 then if cv>=26 then if cv>=35 then if not((cv)<(43))then if(((50)+0))>=(cv)then if cv<=46 then if cv>=45 then if cv<=((45)+0)then cg[ck[4671]]=#cg[ck[2663]];else ci[cm[ck[2663]]]=cg[ck[4671]];end else if cv~=44 then cg[ck[4671]]=cg[ck[2663]]-cg[ck[6766]];else local cw=ck[4671]local cz=ck[2663]local cz=(cz==0)and cy or(cw+cz-1)for da=cw,cz do cr=cr+((1)+0)cq[cr]=cg[da]end end end else if cv>=(0+(49))then if cv<=49 then local cw=ck[4671]local cz=bw(cp,cg[cw](t(cg,cw+1,ck[2663])))cy=cw+cz-1;for da=1,cz do cg[(da)+(cw)-1]=cp[da];end;else cg[ck[4671]]=cg[ck[2663]]+cg[ck[6766]];end else if cv==47 then cu=cu+1 ct[cu]=cs cs=cr else local cw,cz=ck[4671],ck[2663]local cz=cn[cz]local da={}for db=1,#cz,2 do da[cm[cz[db]]]=cm[cz[db+((1)+0)]]end cg[cw]=da end end end else if cv<=56 then if not((cv)<(54))then if cv<=55 then if cv~=55 then cg[ck[4671]]=cm else local cw=ck[4671]local cz=cr local da=cs local db=da+1 local dc=cq[db]do local dc,dd,de=dc(t(cq,db+1,cz))cg[cw]=dc cg[cw+1]=dd cg[cw+2]=de end do local cw=(cz)local cz=(-1)local db=(db)if cz>=0 then while cw<=db do cq[cw]=nil cw=cw+cz end else while cw>=db do cq[cw]=nil cw=cw+cz end end end cr=da local cw=ct[cu]ct[cu]=nil cu=cu-1 cs=cw or 0 end else cg[ck[4671]]=(cg[ck[6766]])*(cg[ck[2663]]);end else if(53)<=(cv)then cg[ck[4671]]=cj else if not((cv)~=(51))then cg[ck[4671]]=cg[ck[2663]]<cg[ck[6766]];else cg[ck[4671]]=cg end end end else if cv<=60 then if cv<=58 then if cv==57 then cg[ck[4671]]=-cg[ck[2663]];else local cj=#ck[4671]for cw=1,cj do cg[ck[4671][cw]]=cg[ck[2663][cw]];end;end else if cv==((59)*1)then local cj,cw=ck[4671],(ck[6766]*100)local cz=cg[cj]for da=(ck[2663]),(1),-1 do cz[cw+da]=cg[cj+da]end else local cj=ck[4671]local cj=cr local cw=cs local cz=cw+((1)+0)local da=cq[cz]da(t(cq,cz+1,cj))for da=cj,cz,-1 do cq[da]=nil end cr=cw local cj=ct[cu]ct[cu]=nil cu=cu-1 cs=cj or 0 end end else if cv>=63 then if cv~=64 then local cj=ck[4671]local cs=ck[2663]local cs=cs local ct=cr local cs=ct-cs+1 local cu=cq[cs]local cu=bw(cp,cu(t(cq,cs+1,ct)))cy=cj+cu-1 for cw=(cu),(1),-1 do cg[cj+cw-1]=cp[cw]end for cj=ct,cs,-1 do cq[cj]=nil end cr=cs-1 else cg[ck[4671]]=cg[ck[2663]]<=cg[ck[6766]];end else if cv~=62 then cg[ck[4671]]=cg[ck[2663]]..cg[ck[6766]];else local cj=ck[4671]local cp=cq[cr]cq[cr]=nil cr=cr-((1)+0)cg[cj]=cp()end end end end end else if cv<=((38)*1)then if(37)<=(cv)then if not((cv)>=(38))then cg[ck[4671]]=cg[ck[2663]]==cg[ck[6766]];else local cj=ck[4671]local cp=cq[cr]cq[cr]=nil cr=cr-1 local cs=cq[cr]cq[cr]=nil cr=cr-((1)-0)local cp,cs=cs(cp)do local cp,cs=cp,cs cg[cj]=cp cg[cj+1]=cs end end else if not((cv)>=(36))then local cj=ck[4671]local cj=cq[cr]cq[cr]=nil cr=cr-1 cj()else local cj,cp,cs=ck[4671],ck[2663],ck[6766]local cp=cn[cp]local cj=cg[cj]for ct=1,#cp do if not((cj)~=(nil))then break end cj=cj[cm[cp[ct]]]end cg[cs]=cj end end else if(40)>=(cv)then if cv~=40 then local cj=ck[4671]local cp=cq[cr]cq[cr]=nil cr=cr-1 local cs=cq[cr]cq[cr]=nil cr=cr-1 do local cp,cs,ct=cs(cp)cg[cj]=cp cg[cj+1]=cs cg[(2)+(cj)]=ct end else cg[ck[4671]]=cg[ck[2663]]>cg[ck[6766]];end else if cv<=41 then local cj=ck[4671]local cp=ck[2663]local cp=cp local cs=cr local cp=cs-cp+1 local ct=cq[cp]cg[cj]=ct(t(cq,cp+((1)*1),cs))do local cj=(cs)local cs=(-1)local ct=(cp)if cs>=0 then while cj<=ct do cq[cj]=nil cj=cj+cs end else while cj>=ct do cq[cj]=nil cj=cj+cs end end end cr=cp-1 else local cj=ck[2663]do local cp=(1)local cs=(1)local ct=(#cj)if cs>=0 then while cp<=ct do local cu=cj[cp]local cu=cm[cu]cr=cr+1 cq[cr]=cu cp=cp+cs end else while cp>=ct do local cj=cj[cp]local cj=cm[cj]cr=cr+1 cq[cr]=cj cp=cp+cs end end end end end end end else if cv>=30 then if cv<=32 then if cv>=32 then local cj=#ck[4671]for cp=1,cj do cg[ck[4671][cp]]=cm[ck[2663][cp]];end;else if cv~=31 then local cj=ck[4671]cg[cj]=cg[cj](cg[cj+1],cg[cj+2]);else local cj=ck[4671]local cj=cq[cr]cq[cr]=nil cr=cr-1 local cp=cq[cr]cq[cr]=nil cr=cr-1 cp(cj)end end else if cv~=34 then local cj,cp=ck[4671],ck[2663]local cs=cj+2 local cj,ct=cg[cj](cg[cj+1],cg[cs])if cj~=nil then do local cj,cp,ct,cu=cj,cj,ct,cp cg[cs]=cj cg[cs+1]=cp cg[cs+2]=ct cx=cu end end else local cj,cp=ck[4671],ck[2663]local cs,ct,cu=cg[cj],cg[cj+1],cg[cj+2]cg[cj]=g(function()for g,cw,cz,da,db,dc,dd,de,df,dg in cs,ct,cu do f(g,cw,cz,da,db,dc,dd,de,df,dg);end;end);cg[cj+1]=nil;cg[cj+2]=nil;cy=(2)+(cj);cx=cp;end end else if not((cv)>(27))then if cv<=26 then local f=ck[4671]local g=cq[cr]cq[cr]=nil cr=cr-((1)*1)local cj=cq[cr]cq[cr]=nil cr=cr-1 cg[f]=cj(g)else local f,g=ck[4671],ck[2663]local g=cg[g]cg[f]=g[1]end else if cv<=((28)-0)then cg[ck[4671]]=not cg[ck[2663]];else cg[ck[4671]]=cg[ck[2663]]~=cg[ck[6766]];end end end end else if cv<=20 then if not((cv)>(18))then if(18)<=(cv)then do for f,g in a,co do if g[1]==cg and f>=0 then g[1]={cg[f]}g[2]=1 co[f]=nil end end end local a=cq[cr]cq[cr]=nil cr=cr-1 do return a end else if(17)>(cv)then cg[ck[4671]]=by(cl[ck[2663]],nil,ci)else cg[ck[4671]]={};end end else if(20)>(cv)then local a=cl[ck[2663]]local f=a[7742]local g=#f local cj=ba(g)for cl=1,g do local f=f[cl]local g=f[2]local cp=f[3]if f[1]==((1)*1)then if cp==((0)+0)then local f=cg[g]co[g]=f cj[cl-1]=f else cj[cl-1]=cg[g]end else local f=ch[g]if cp==0 and f[((0)*1)]then f=f[0][f[1]]end cj[cl-(0+(1))]=f end end cg[ck[4671]]=by(a,cj,ci)else local a,f=ck[4671],ck[2663]local f=cn[f]local g={}for ci=1,#f do g[ci]=cm[f[ci]]end cg[a]=g end end else if cv>=24 then if cv<25 then if cg[ck[4671]]then cx=ck[2663];end;else ch[ck[2663]][1]=cg[ck[4671]]end else if cv<=22 then if cv<=((21)-0)then local a=ck[2663]local a=ch[a]cg[ck[4671]]=a[1]else local a=ck[4671]local f=cq[cr]cq[cr]=nil cr=cr-1 local g=cq[cr]cq[cr]=nil cr=cr-((1)*1)local ch=cq[cr]cq[cr]=nil cr=cr-1 cg[a]=ch(g,f)end else cg[ck[4671]]=nil;end end end end else if cv<=10 then if cv>=9 then if cv==9 then cg[ck[4671]][cg[ck[2663]]]=cg[ck[6766]];else local a=ck[4671]for f=1,#a do local a=cg[a[f]]cr=cr+1 cq[cr]=a end end else if cv==(0+(7))then local a=ck[4671]local f=ck[2663]local a=cg[a]cx=((not a)and(f)or cx)else local a,f=cg[ck[2663]],ck[4671]cg[f]=a[cg[ck[6766]]];cg[f+1]=a;end end else if cv<=13 then if cv>=((13)-0)then local a=ck[4671]local a=ck[2663]local a=a local f=cr local a=f-a+1 local g=cq[a]g(t(cq,a+1,f))do local f=(f)local g=(-1)local ch=(a)if g>=0 then while f<=ch do cq[f]=nil f=f+g end else while f>=ch do cq[f]=nil f=f+g end end end cr=a-1 else if cv~=((12)*1)then local a=ck[2663]local a=cm[a]cr=(1)+(cr)cq[cr]=a else do return end end end else if not((cv)~=(14))then local a=ck[4671]cg[a]={cg[a]}else cg[ck[4671]][1]=cg[ck[2663]]end end end end end cx=cx+1;end;end;end ce,cf=-10494,-10494 end else if cf<=-11758 then bn=nil cf=-36662 else if cf<=-10769 then bp=nil cf=-40276 else bz=bu(bg)ca=by(bz,{},l())return ca();end end end else if cf<=22741 then if cf>=21299 then if cf~=22741 then bu=nil ce,cf=45839,45839 else bt=function(a)local f,g local l={}local by={}local function bz(ca,cg)by[cg]=ca;return by[cg]end local ca={}ca[1]=2 ca[2]=4 ca[3]=3 local ca=0 local ca=-10828 local cg=0 repeat if ca>=45186 then if ca~=70933 then if g==0 then return f;elseif(g>=2147483648)then g=g-4294967296;end;return g*4294967296+f;else ca=l[43]end else if ca==-23046 then break else f=br(a)g=br(a)l[43]=by[-10828+163366]or bz(45186,-10828+163366)ca=70933 end end until ca==-23046 end cc[2]=(cc[2]+1)%5 ce,cf=21299,21299 end else t=function(a,f,g)local l=g-f+1 if l>7997 then return s(a,f,g)else return m(a,f,g)end end ce,cf=-41521,-41521 end else if cf<=25314 then br=function(a)local f,g,l,m local by={}local bz={}local function ca(cg,ch)local ci=u(ch,ch)local cg=cg+ci bz[ch]=cg;return cg end local cg={}cg[1]=3 cg[2]=0 cg[3]=0 local cg=-33152 local ch=0 local ch=0 repeat if cg<=-33152 then if cg<=-46683 then ch,cg=by[41],by[41]else f,g,l,m=e(a,bh,bh+3)bh=bh+4 by[41]=bz[u(-33152,26464)]or ca(-24923,u(-33152,26464))ch,cg=-46683,-46683 end else if cg~=23822 then return((m*16777216)+(l*65536)+(g*256)+f);else break end end until cg==23822 end ce,cf=-35892,-35892 else if cf==35433 then bk=function(a)local f local g={}local l={}local function m(by,bz)l[bz]=by;return l[bz]end local by={}by[1]=3 by[2]=3 by[3]=0 local bz=0 local bz=0 local ca=-24133 repeat if ca>=24990 then if ca~=69909 then break else return f;end else if ca<-21369 then f=0 for cg=0,2 do f=v(f,w(e(a,bh,bh),8*cg));bh=bh+1;end;by[1]=(by[1]+1)%5 g[33]=l[-24133+281654]or m(69909,-24133+281654)bz,ca=-21369,-21369 else bz,ca=g[33],g[33]end end until ca==24990 end ce,cf=-46150,-46150 else bt=nil cd=cc[3]~=1 and 45839 or 22741 ce,cf=22741,22741 end end end end else if cf<=56237 then if cf>=47208 then if cf<=47208 then br=nil ce,cf=25314,25314 else if cf==53172 then bj=nil cd=cc[2]~=1 and 35433 or-44314 cc[3]=(cc[3]+1)%5 ce,cf=-44314,-44314 else bl=function(a)local f=0 for g=0,1 do f=v(f,w(e(a,bh,bh),8*g));bh=bh+1;end;return f;end cd,cf=86152,86152 end end else if cf<45839 then bm=function(a)local f local g={}local l={}local function m(br,by)l[by]=br;return l[by]end local br={}br[1]=4 br[2]=1 br[3]=2 local br=0 local br=0 local by=-21980 repeat if by<=-21980 then if by==-36157 then break else f=0 f=v(f,w(e(a,bh,bh),8))bh=bh+1 g[34]=l[-21980+305486]or m(71326,-21980+305486)br,by=49511,49511 end else if by~=71326 then br,by=g[34],g[34]else return f;end end until by==-36157 end ce,cf=-11758,-11758 else bu=function(a)local f f={[1774]={},[4733]={},[3455]={},[5697]={},[7789]={},[7742]={},[6444]={},}bc(f,3455,bn(a))local g g=bp(a)local l={}local m=0 for br=1,g do local g,br,by,bz,ca local cg={}local ch={}local function ci(cj,ck)ch[ck]=cj;return ch[ck]end local cj={}cj[1]=4 cj[2]=0 cj[3]=3 local ck=0 local ck=-20647 local cl=0 repeat if ck<=-20647 then if ck==-44516 then cl,ck=cg[44],cg[44]else g=bn(a)~=0 br=g and 1 or 0 by=bq(a)cj[1]=(cj[1]+1)%5 cg[44]=ch[-20647+187135]or ci(64710,-20647+187135)cl,ck=-44516,-44516 end else if ck>=33558 then if ck~=64710 then cl,ck=cg[45],cg[45]else bz=m+by m=bz ca=bn(a)c(l,{br,bz,ca})cg[45]=ch[64710+318206]or ci(-10174,64710+318206)cl,ck=33558,33558 end else break end end until ck==-10174 end f[7742]=l bc(f,84,bp(a))local g=bp(a)local l={}local m,br,by,bz=0,0,0,0 do do local ca=(1)local cg=(1)local g=(g)if cg>=0 then while ca<=g do local ch ch={}ch[1642]=bp(a);local ci=bn(a)==1 local cj=(1)==(bn(a))local ck=bn(a)==1 local cl cl=bn(a)if cl==1 then local cm=bs(a)local cn cn={}local co={}local cp={}local cq,cr,cs=0,0,0 do local ct=(0)local cu=(1)local cm=(cm-1)if cu>=0 then if ct<=cm then repeat local cv={}local cw={}local function cx(cy,cz)cw[cz]=cy;return cw[cz]end local cy={}cy[1]=4 cy[2]=3 cy[3]=2 local cy=0 local cy=0 local cy=81098 repeat if cy<=-46869 then if cy~=-46869 then cp[ct]=cs ct=ct+cu cv[47]=cw[-48902+344639]or cx(60105,-48902+344639)cy=-26636 else cy=cv[46]end else if cy>=60105 then if cy<=60105 then break else do cq=cq+bq(a);cr=cr+bq(a);end cs=cs+bq(a)bc(cn,ct,cq)co[ct]=cr cv[46]=cw[81098+344639]or cx(-48902,81098+344639)cy=-46869 end else cy=cv[47]end end until cy==60105 until not(ct<=cm)end else if ct>=cm then repeat local cv={}local cw={}local function cx(cy,cz)cw[cz]=cy;return cw[cz]end local cy={}cy[1]=3 cy[2]=2 cy[3]=1 local cz=54753 local da=0 local db=0 repeat if cz<=26601 then if cz==-10983 then da,cz=cv[49],cv[49]else break end else if cz<=42074 then db,cz=cv[48],cv[48]else if cz<=54753 then do cq=cq+bq(a);cr=cr+bq(a);end cs=cs+bq(a)bc(cn,ct,cq)cv[48]=cw[54753+69228]or cx(76879,54753+69228)db,cz=42074,42074 else co[ct]=cr cp[ct]=cs ct=ct+cu cy[3]=(cy[3]+1)%5 cv[49]=cw[76879+331370]or cx(26601,76879+331370)da,cz=-10983,-10983 end end end until cz==26601 until not(ct>=cm)end end end do bc(ch,4671,cn)ch[2663]=co;end ch[6766]=cp;elseif cl==2 then local cm=bs(a)local cn cn={}local co={}local cp,cq=0,0 do local cr=(1)local cs=(1)local cm=(cm)if cs>=0 then while cr<=cm do local ct={}local cu={}local function cv(cw,cx)cu[cx]=cw;return cu[cx]end local cw={}cw[1]=1 cw[2]=2 cw[3]=3 local cw=-41647 local cx=0 local cy=0 repeat if cw<=-31101 then if cw<=-41647 then cp=cp+bq(a)cq=cq+bq(a)cn[cr]=cp ct[50]=cu[-41647+90507]or cv(-31101,-41647+90507)cy,cw=40183,40183 else bc(co,cr,cq)cr=cr+cs ct[51]=cu[-31101+352649]or cv(30774,-31101+352649)cx,cw=56004,56004 end else if cw<=30774 then break else if cw<56004 then cy,cw=ct[50],ct[50]else cx,cw=ct[51],ct[51]end end end until cw==30774 end else while cr>=cm do local cm={}local ct={}local function cu(cv,cw)ct[cw]=cv;return ct[cw]end local cv={}cv[1]=3 cv[2]=2 cv[3]=1 local cw=0 local cw=-30564 local cx=0 repeat if cw<=-27415 then if cw<=-30564 then cp=cp+bq(a)cq=cq+bq(a)cn[cr]=cp cv[2]=(cv[2]+1)%5 cm[52]=ct[-30564+204903]or cu(-27415,-30564+204903)cx,cw=40396,40396 else bc(co,cr,cq)cr=cr+cs cv[2]=(cv[2]+1)%5 cm[53]=ct[-27415+335974]or cu(-16997,-27415+335974)cw=47865 end else if cw>=40396 then if cw~=47865 then cx,cw=cm[52],cm[52]else cw=cm[53]end else break end end until cw==-16997 end end end do bc(ch,4671,cn)bc(ch,2663,co)end elseif(3)==(cl)then local cm,cn,co local cp={}local cq={}local function cr(cs,ct)cq[ct]=cs;return cq[ct]end local cs={}cs[1]=4 cs[2]=3 cs[3]=2 local cs=0 local ct=-11086 local cu=0 repeat if ct>=-29444 then if ct>=-12578 then if ct==-12578 then co=0 for cu=1,cm do do co=co+bq(a);bc(cn,cu,co)end end;do ch[4671]=cn;end cp[57]=cq[-12578+60468]or cr(-49606,-12578+60468)ct=-29444 else cp[54]={}cp[55]=cq[-11086+191539]or cr(-34272,-11086+191539)cs,ct=-29074,-29074 end else if ct<=-29444 then ct=cp[57]else cs,ct=cp[55],cp[55]end end else if ct<=-49606 then break else if ct~=-34272 then cs,ct=cp[56],cp[56]else cm=bs(a)cn=cp[54]cp[56]=cq[-34272+60468]or cr(-12578,-34272+60468)cs,ct=-46004,-46004 end end end until ct==-49606 elseif cl==4 then local cl,cm,cn,co,cp,cq,cr,cs,ct local cu={}local cv={}local function cw(cx,cy)cv[cy]=cx;return cv[cy]end local cx={}cx[1]=4 cx[2]=1 cx[3]=4 local cy=0 local cz=0 local da=31422 repeat if da>=31422 then if da<=42638 then if da>=42597 then if da==42597 then cy,da=cu[68],cu[68]else ch[4671]=cm ch[2663]=cn ch[6766]=co cu[71]=cv[42638+316528]or cw(81729,42638+316528)cy,da=-27180,-27180 end else if da==31422 then cu[61]={}cu[65]=cv[31422+316528]or cw(53469,31422+316528)cz,da=81396,81396 else da=cu[67]end end else if da<=53469 then if da<53469 then cy,da=cu[69],cu[69]else cu[62]={}cu[66]=cv[53469+185457]or cw(58112,53469+185457)cy,da=-44331,-44331 end else if da>=81396 then if da<=81396 then cz,da=cu[65],cu[65]else ch[3880]=cp cu[72]=cv[81729+54386]or cw(27831,81729+54386)cy,da=-17262,-17262 end else cu[63]={}cy=cx[3]==0 and-24231 or-12948 cu[67]=cv[58112+54386]or cw(-12948,58112+54386)da=37351 end end end else if da>=-17262 then if da>=20875 then if da<27831 then da=cu[70]else break end else if da~=-12948 then cy,da=cu[72],cu[72]else cu[64]={}cy=cx[3]~=0 and-24231 or-38587 cu[68]=cv[-12948+316528]or cw(-38587,-12948+316528)cy,da=42597,42597 end end else if da<=-38587 then if da<-38587 then cy,da=cu[66],cu[66]else cl=bs(a)cm=cu[61]cn=cu[62]co=cu[63]cu[69]=cv[-38587+54386]or cw(-24231,-38587+54386)cy,da=44025,44025 end else if da==-27180 then cy,da=cu[71],cu[71]else cp=cu[64]cq,cr,cs,ct=0,0,0,0 for cx=1,cl do local cl={}local cy={}local function cz(db,dc)cy[dc]=db;return cy[dc]end local db={}db[1]=3 db[2]=0 db[3]=2 local dc=-41857 local dd=0 local de=0 repeat if dc<=-41857 then if dc>=-44107 then if dc==-44107 then dc=cl[58]else do cq=cq+bq(a);cr=cr+bq(a);end cs=cs+bq(a)dd=db[1]~=1 and-12300 or-20549 cl[58]=cy[-41857+68486]or cz(-20549,-41857+68486)dc=-44107 end else dc=cl[60]end else if dc>=45836 then if dc~=50513 then dd,dc=cl[59],cl[59]else break end else if dc<-12300 then ct=ct+bq(a)cm[cx]=cq db[3]=(db[3]+1)%5 cl[59]=cy[-20549+68486]or cz(-12300,-20549+68486)dd,dc=45836,45836 else bc(cn,cx,cr)bc(co,cx,cs)cp[cx]=ct cl[60]=cy[-12300+199557]or cz(50513,-12300+199557)dc=-47157 end end end until dc==50513 end;cu[70]=cv[-24231+54386]or cw(42638,-24231+54386)da=20875 end end end end until da==27831 else local cl={}local cm={}local function cn(co,cp)cm[cp]=co;return cm[cp]end local co={}co[1]=3 co[2]=2 co[3]=4 local co=0 local cp=50508 local cq=0 repeat if cp<=-29413 then if cp==-47276 then co,cp=cl[73],cl[73]else co,cp=cl[74],cl[74]end else if cp<=-26485 then break else if cp<50508 then do ch[6766]=by;end bc(ch,3880,bz)cl[74]=cm[-15355+72392]or cn(-26485,-15355+72392)co,cp=-29413,-29413 else m=m+bq(a)do br=br+bq(a);by=by+bq(a);end bz=bz+bq(a)do bc(ch,4671,m)ch[2663]=br;end cl[73]=cm[50508+203463]or cn(-15355,50508+203463)co,cp=-47276,-47276 end end end until cp==-26485 end ch[6378]=ci;do ch[5221]=cj;ch[2604]=ck;end do local ci={}local cj={}local function ck(cl,cm)cj[cm]=cl;return cj[cm]end local cl={}cl[1]=1 cl[2]=3 cl[3]=4 local cm=0 local cn=57667 local co=0 repeat if cn>=42490 then if cn>=44187 then if cn<57667 then ch[4502]=ci[75]l[ca]=ch ci[77]=cj[44187+80343]or ck(-42704,44187+80343)cm,cn=-32580,-32580 else ci[75]=l[ca-1]cl[3]=(cl[3]+1)%5 ci[76]=cj[57667+211414]or ck(44187,57667+211414)cm,cn=42490,42490 end else cm,cn=ci[76],ci[76]end else if cn<=-42704 then break else cm,cn=ci[77],ci[77]end end until cn==-42704 end ca=ca+cg end else while ca>=g do local g g={}g[1642]=bp(a);local ch=bn(a)==1 local ci=(1)==(bn(a))local cj=bn(a)==1 local ck ck=bn(a)if ck==1 then local cl=bs(a)local cm cm={}local cn={}local co={}local cp,cq,cr=0,0,0 do local cs=(0)local ct=(1)local cl=(cl-1)if ct>=0 then if cs<=cl then repeat local cu={}local cv={}local function cw(cx,cy)cv[cy]=cx;return cv[cy]end local cx={}cx[1]=0 cx[2]=0 cx[3]=4 local cy=0 local cz=-29154 local da=0 repeat if cz>=-29154 then if cz>=-15900 then if cz==-15900 then break else cz=cu[78]end else do cp=cp+bq(a);cq=cq+bq(a);end cr=cr+bq(a)bc(cm,cs,cp)cx[3]=(cx[3]+1)%5 cu[78]=cv[-29154+170375]or cw(-35170,-29154+170375)cz=-11369 end else if cz~=-31362 then cn[cs]=cq co[cs]=cr cs=cs+ct cu[79]=cv[-35170+170375]or cw(-15900,-35170+170375)cy,cz=-31362,-31362 else cy,cz=cu[79],cu[79]end end until cz==-15900 until not(cs<=cl)end else if cs>=cl then repeat local cu={}local cv={}local function cw(cx,cy)cv[cy]=cx;return cv[cy]end local cx={}cx[1]=2 cx[2]=0 cx[3]=1 local cy=0 local cy=0 local cz=61782 repeat if cz>=-24373 then if cz>=61782 then if cz<=61782 then do cp=cp+bq(a);cq=cq+bq(a);end cr=cr+bq(a)bc(cm,cs,cp)cn[cs]=cq cx[1]=(cx[1]+1)%5 cu[80]=cv[61782+282237]or cw(-24373,61782+282237)cz=-26984 else cy,cz=cu[81],cu[81]end else co[cs]=cr cs=cs+ct cu[81]=cv[-24373+282237]or cw(-32770,-24373+282237)cy,cz=79553,79553 end else if cz<=-32770 then break else cz=cu[80]end end until cz==-32770 until not(cs>=cl)end end end do bc(g,4671,cm)g[2663]=cn;end g[6766]=co;elseif ck==2 then local cl=bs(a)local cm cm={}local cn={}local co,cp=0,0 do local cq=(1)local cr=(1)local cl=(cl)if cr>=0 then while cq<=cl do local cs={}local ct={}local function cu(cv,cw)ct[cw]=cv;return ct[cw]end local cv={}cv[1]=1 cv[2]=2 cv[3]=0 local cw=21827 local cx=0 local cx=0 repeat if cw<=-30627 then if cw<=-38058 then break else cw=cs[82]end else if cw<=-29046 then bc(cn,cq,cp)cq=cq+cr cv[3]=(cv[3]+1)%5 cs[83]=ct[-29046+81968]or cu(-38058,-29046+81968)cw=-20819 else if cw~=21827 then cw=cs[83]else co=co+bq(a)cp=cp+bq(a)cm[cq]=co cs[82]=ct[21827+81968]or cu(-29046,21827+81968)cw=-30627 end end end until cw==-38058 end else while cq>=cl do local cl={}local cs={}local function ct(cu,cv)cs[cv]=cu;return cs[cv]end local cu={}cu[1]=1 cu[2]=1 cu[3]=2 local cu=0 local cv=0 local cw=-16376 repeat if cw>=44555 then if cw<=50238 then if cw<=44555 then cq=cq+cr cl[86]=cs[44555+317928]or ct(86053,44555+317928)cv,cw=78848,78848 else cm[cq]=co bc(cn,cq,cp)cl[85]=cs[50238+55786]or ct(44555,50238+55786)cw=-23666 end else if cw==78848 then cv,cw=cl[86],cl[86]else break end end else if cw<=-45065 then cu,cw=cl[84],cl[84]else if cw<-16376 then cw=cl[85]else co=co+bq(a)cp=cp+bq(a)cl[84]=cs[-16376+317928]or ct(50238,-16376+317928)cu,cw=-45065,-45065 end end end until cw==86053 end end end do bc(g,4671,cm)bc(g,2663,cn)end elseif(3)==(ck)then local cl,cm,cn local co={}local cp={}local function cq(cr,cs)cp[cs]=cr;return cp[cs]end local cr={}cr[1]=2 cr[2]=1 cr[3]=0 local cs=0 local ct=-19991 local cu=0 repeat if ct<=-12219 then if ct>=-19991 then if ct<-12219 then co[87]={}cr[1]=(cr[1]+1)%5 co[88]=cp[-19991+181593]or cq(89778,-19991+181593)cs,ct=66437,66437 else cs,ct=co[90],co[90]end else cs,ct=co[89],co[89]end else if ct>=69447 then if ct<89778 then break else cl=bs(a)cm=co[87]cn=0 for cr=1,cl do do cn=cn+bq(a);bc(cm,cr,cn)end end;co[89]=cp[89778+50522]or cq(39979,89778+50522)cs,ct=-23182,-23182 end else if ct<66437 then do g[4671]=cm;end co[90]=cp[39979+50522]or cq(69447,39979+50522)cs,ct=-12219,-12219 else cs,ct=co[88],co[88]end end end until ct==69447 elseif ck==4 then local ck,cl,cm,cn,co,cp,cq,cr,cs local ct={}local cu={}local function cv(cw,cx)cu[cx]=cw;return cu[cx]end local cw={}cw[1]=2 cw[2]=1 cw[3]=3 local cx=0 local cy=-28320 local cz=0 repeat if cy>=-14535 then if cy>=38233 then if cy<=47928 then if cy~=47928 then g[2663]=cm g[6766]=cn g[3880]=co ct[105]=cu[38233+145065]or cv(82027,38233+145065)cx,cy=63957,63957 else ct[96]={}ct[100]=cu[47928+145065]or cv(-17399,47928+145065)cy=-17631 end else if cy<=62600 then cy=ct[98]else if cy==63957 then cx,cy=ct[105],ct[105]else break end end end else if cy>=23127 then if cy<=23127 then cn=ct[96]co=ct[97]ct[103]=cu[23127+145065]or cv(21794,23127+145065)cz,cy=-22467,-22467 else cy=ct[102]end else if cy<=-14535 then cx,cy=ct[101],ct[101]else cp,cq,cr,cs=0,0,0,0 for da=1,ck do local db={}local dc={}local function dd(de,df)dc[df]=de;return dc[df]end local de={}de[1]=3 de[2]=2 de[3]=0 local de=-39355 local df=0 local dg=0 repeat if de>=-13918 then if de>=43288 then if de==43288 then de=db[93]else break end else if de==-13918 then bc(cn,da,cr)co[da]=cs db[93]=dc[-13918+10822]or dd(66316,-13918+10822)de=43288 else df,de=db[91],db[91]end end else if de<=-39355 then do cp=cp+bq(a);cq=cq+bq(a);end cr=cr+bq(a)cs=cs+bq(a)db[91]=dc[-39355+10822]or dd(-14429,-39355+10822)df,de=30113,30113 else if de<-14429 then de=db[92]else cl[da]=cp bc(cm,da,cq)db[92]=dc[-14429+141893]or dd(-13918,-14429+141893)de=-35820 end end end until de==66316 end;g[4671]=cl ct[104]=cu[21794+276136]or cv(38233,21794+276136)cy=-32669 end end end else if cy>=-28320 then if cy<=-22467 then if cy==-28320 then ct[94]={}ct[98]=cu[-28320+145065]or cv(-47800,-28320+145065)cy=62600 else cz,cy=ct[103],ct[103]end else if cy==-17631 then cy=ct[100]else ct[97]={}cw[2]=(cw[2]+1)%5 ct[101]=cu[-17399+145065]or cv(-28879,-17399+145065)cx,cy=-14535,-14535 end end else if cy<=-38377 then if cy~=-38377 then ct[95]={}cw[2]=(cw[2]+1)%5 ct[99]=cu[-47800+145065]or cv(47928,-47800+145065)cy=-38377 else cy=ct[99]end else if cy<=-32669 then cy=ct[104]else ck=bs(a)cl=ct[94]cm=ct[95]cz=cw[3]~=1 and 38233 or 23127 ct[102]=cu[-28879+13994]or cv(23127,-28879+13994)cy=25610 end end end end until cy==82027 else local ck={}local cl={}local function cm(cn,co)cl[co]=cn;return cl[co]end local cn={}cn[1]=2 cn[2]=0 cn[3]=4 local co=0 local cp=0 local cp=-36342 repeat if cp<=-36342 then if cp<=-49678 then co,cp=ck[106],ck[106]else m=m+bq(a)do br=br+bq(a);by=by+bq(a);end bz=bz+bq(a)ck[106]=cl[-36342+348530]or cm(72262,-36342+348530)co,cp=-49678,-49678 end else if cp>=73577 then if cp<74034 then co,cp=ck[107],ck[107]else break end else do bc(g,4671,m)g[2663]=br;end do g[6766]=by;end bc(g,3880,bz)cn[3]=(cn[3]+1)%5 ck[107]=cl[72262+86388]or cm(74034,72262+86388)co,cp=73577,73577 end end until cp==74034 end g[6378]=ch;do g[5221]=ci;g[2604]=cj;end do local m={}local br={}local function by(bz,ch)br[ch]=bz;return br[ch]end local bz={}bz[1]=2 bz[2]=4 bz[3]=3 local ch=0 local ci=0 local ci=81457 repeat if ci<=-15615 then if ci~=-15615 then ch,ci=m[109],m[109]else g[4502]=m[108]l[ca]=g bz[1]=(bz[1]+1)%5 m[110]=br[-15615+15609]or by(57336,-15615+15609)ch,ci=74992,74992 end else if ci<=57336 then break else if ci==74992 then ch,ci=m[110],m[110]else m[108]=l[ca-1]bz[2]=(bz[2]+1)%5 m[109]=br[81457+277751]or by(-15615,81457+277751)ch,ci=-17327,-17327 end end end until ci==57336 end ca=ca+cg end end end end f[1774]=l;bc(f,7789,bn(a)==1)local g g=bp(a)local l={}do for m=0,g-1 do local g,br local by={}local bz={}local function ca(cg,ch)bz[ch]=cg;return bz[ch]end local cg={}cg[1]=3 cg[2]=2 cg[3]=4 local ch=0 local ci=-24845 local cj=0 repeat if ci>=-24845 then if ci<=-14637 then if ci<=-24845 then by[111]={}by[112]=bz[-24845+186492]or ca(22433,-24845+186492)ch,ci=53827,53827 else cj,ci=by[113],by[113]end else if ci==22433 then g=by[111]br=bp(a)for ck=1,br do bc(g,ck,bp(a))end;cg[1]=(cg[1]+1)%5 by[113]=bz[22433+55421]or ca(-45951,22433+55421)cj,ci=-14637,-14637 else ch,ci=by[112],by[112]end end else if ci<=-45951 then l[m]=g by[114]=bz[-45951+317563]or ca(-44300,-45951+317563)ch,ci=-35321,-35321 else if ci==-44300 then break else ch,ci=by[114],by[114]end end end until ci==-44300 end;f[3540]=l;end local g=bp(a)local l l={}do local m=(0)local br=(1)local g=(g-1)if br>=0 then while m<=g do local by by=bn(a)if by==0 then local bz local ca={}local cg={}local function ch(ci,cj)cg[cj]=ci;return cg[cj]end local ci={}ci[1]=0 ci[2]=2 ci[3]=0 local cj=0 local cj=0 local ck=-25378 repeat if ck>=-24008 then if ck<=-24008 then ck=ca[117]else if ck<78963 then break else if bz==0 then local cl=bp(a)local cm=b(a,bh,bh+cl-1)bh=bh+cl;l[m]=cm;end;ca[118]=cg[78963+286509]or ch(-15474,78963+286509)cj,ck=-38115,-38115 end end else if ck<-25378 then cj,ck=ca[118],ca[118]else bz=nil bz=bn(a)ci[3]=(ci[3]+1)%5 ca[117]=cg[-25378+286509]or ch(78963,-25378+286509)ck=-24008 end end until ck==-15474 elseif(1)==(by)then local bz bz=bn(a)if not((bz)~=(1))then l[m]=bq(a);else bc(l,m,bt(a))end;elseif by==2 then local bz local ca={}local cg={}local function ch(ci,cj)cg[cj]=ci;return cg[cj]end local ci={}ci[1]=3 ci[2]=2 ci[3]=3 local ci=0 local cj=50084 local ck=0 repeat if cj>=29587 then if cj<=29587 then break else if cj==50084 then bz=nil bz=bn(a)ca[115]=cg[50084+203556]or ch(-14327,50084+203556)ck,cj=50199,50199 else ck,cj=ca[115],ca[115]end end else if cj~=-14327 then ci,cj=ca[116],ca[116]else if(1)==(bz)then do bc(l,m,bp(a))end else l[m]=bi(a);end;ca[116]=cg[-14327+334627]or ch(29587,-14327+334627)ci,cj=-49496,-49496 end end until cj==29587 elseif not((by)~=(3))then bc(l,m,bo(a))elseif by==4 then local bz=bn(a)if bz==1 then bc(l,m,bq(a))else l[m]=bo(a);end;elseif by==5 then l[m]=not((bn(a))~=(1));else bc(l,m,nil)end;m=m+br end else while m>=g do local g g=bn(a)if g==0 then local by local bz={}local ca={}local function cg(ch,ci)ca[ci]=ch;return ca[ci]end local ch={}ch[1]=1 ch[2]=4 ch[3]=2 local ch=0 local ch=-27466 local ci=0 repeat if ch>=-17246 then if ch>=84702 then if ch~=85982 then break else ci,ch=bz[122],bz[122]end else ch=bz[121]end else if ch~=-27466 then if by==0 then local cj,ck local cl={}local cm={}local function cn(co,cp)cm[cp]=co;return cm[cp]end local co={}co[1]=0 co[2]=4 co[3]=2 local co=0 local co=-41808 local cp=0 repeat if co<=-35387 then if co<-35387 then cj=bp(a)ck=b(a,bh,bh+cj-1)bh=bh+cj cl[119]=cm[-41808+211489]or cn(-35387,-41808+211489)cp,co=-12973,-12973 else l[m]=ck cl[120]=cm[-35387+342560]or cn(-24673,-35387+342560)cp,co=47879,47879 end else if co>=-12973 then if co<=-12973 then cp,co=cl[119],cl[119]else cp,co=cl[120],cl[120]end else break end end until co==-24673 end;bz[122]=ca[-33681+221805]or cg(84702,-33681+221805)ci,ch=85982,85982 else by=nil by=bn(a)bz[121]=ca[-27466+221805]or cg(-33681,-27466+221805)ch=-17246 end end until ch==84702 elseif(1)==(g)then local by by=bn(a)if not((by)~=(1))then l[m]=bq(a);else bc(l,m,bt(a))end;elseif g==2 then local bt bt=bn(a)if(1)==(bt)then do bc(l,m,bp(a))end else l[m]=bi(a);end;elseif not((g)~=(3))then bc(l,m,bo(a))elseif g==4 then local bt=bn(a)if bt==1 then bc(l,m,bq(a))else l[m]=bo(a);end;elseif g==5 then l[m]=not((bn(a))~=(1));else bc(l,m,nil)end;m=m+br end end end f[4733]=l;for g=1,bp(a)do bc(f[5697],g-1,bu(a))end;local g g=bn(a)~=0 do if g then local g,l,m local br={}local bt={}local function bu(by,bz)bt[bz]=by;return bt[bz]end local by={}by[1]=3 by[2]=0 by[3]=2 local by=0 local bz=0 local bz=-38089 repeat if bz<=-16785 then if bz<=-44590 then g=bp(a)l=br[125]br[127]=bt[-44590+54153]or bu(-16785,-44590+54153)by,bz=68299,68299 else if bz<-16785 then br[125]={}br[126]=bt[-38089+316295]or bu(-44590,-38089+316295)by,bz=28185,28185 else m=0 for ca=1,g do local g,ca,cg,ch local ci={}local cj={}local function ck(cl,cm)cj[cm]=cl;return cj[cm]end local cl={}cl[1]=0 cl[2]=3 cl[3]=3 local cm=0 local cm=0 local cn=-11395 repeat if cn<=-18527 then if cn==-24684 then m=ch c(l,{ca,ch})ci[124]=cj[-24684+175302]or ck(-13757,-24684+175302)cm,cn=-18527,-18527 else cm,cn=ci[124],ci[124]end else if cn>=-11395 then if cn==-11395 then g=bn(a)~=0 ca=g and 1 or 0 cg=bq(a)ch=m+cg cl[3]=(cl[3]+1)%5 ci[123]=cj[-11395+306373]or ck(-24684,-11395+306373)cm,cn=55286,55286 else cm,cn=ci[123],ci[123]end else break end end until cn==-13757 end bc(f,6444,l)br[128]=bt[-16785+54153]or bu(60710,-16785+54153)by,bz=62060,62060 end end else if bz<=60710 then if bz<=28185 then by,bz=br[126],br[126]else break end else if bz~=68299 then by,bz=br[128],br[128]else by,bz=br[127],br[127]end end end until bz==60710 end;return f;end end cf=-41850 end end else if cf>=82069 then if cf>=85110 then if cf==85110 then bg=bf([==[\-i9:W?;0@JF,O@oT/qms8PI)6i?uaLC=dc&0_)Rs8W*1+ohR=+[^ql'f&b0rsoi"7*%Sla:EF76\GkfaSuhOruX!aa?tXi(&C/E+#6gZ:koMq3`O2IU&P'ZLAF7ZlHl47*U;#OTgEOnd%N:<Qr'JDKaAd^:kB2C$[TVqQ8ab1aY8=CrGY;0g'&?<-<NOa3>2;C`t&amEQA^k+V,=Y6\Pp`10!I6+V/_:_h8@7.V.a>)CC]'#p&;mTu%d1<63F[_?fEo+!u(H6\btr(_%K4Pb>pI%OGct)=#+m$550ga?tXk)(O^@6N/&VFI:E.R!f$aQpZQ;`F3jUDl>?S.;/dhTEIVs-jC[r:>!o!80F&V,=`t5NQ7&pLmT<<`rmR`(r\k\%<:/7_W$.YY/fN?69*'o_RM*7JrL.rX&=cKW[\:+ZhPau#`-kfOGI*aUM"6GPg7-WO<W?`N%A?@1>rIDlQFj:=sF=t#XLt2(_eDeU_ur@ZY?q,8&^T-;MRRr;]=sM9"&hO==?O,K$Z?_5iG9;/SS>#WfbSJ7<`g)-A85Keql*e&^3umTJ0QRM+!#-1YMpY"i(qNg<Fq0K-MEh,b.CDChSYu,`J6n+A7Ck[K9nL>;QI4B+Sl&OcU]eH4l.eY\E`98;m_kH;[,r?(S/L;du%38usNI^;-TkmLG0jkNb4qktEV)>,W3J&n+k_6:FV$o77aQ23b@u1l6s#3)hb)\hG)B+u#EM25rQl-qYmX'VYj7RN\5)@'#.nYZK;p_5N,hPr5Y.C.6Yj(l8hj"TjA]&O6WJ$_A"U[dAXNUNTDO,"1_=?!X+Alr0mlZs)IW(6nq^nUf=Qg;'J/ha/="Q_eMS/8coZg(m/fSCVQ,V@F"_,SKb+*<HCK`'m>7,4,ZA^_.@o>6N:a+DQ]Ze9](FE($PAifk([B;.Fo1Qbk?C.k6kU(kYJ,oj*h&.rVo16ukfG$L;aEl<o6$VXc#ToL>(`hPsS75`#)6E*qgD_#Q*;d$.r:dc&KZW>.I8l]`.e$>r3/6'QrTNf_hLP7`SX-<r;CRQb>abWKA+rsm?f(rQSTe/i'-J1fWGXKo08@pb]CEKfe/3:&nSBh;1:aj`(=V@^M7bUBV"<fab_'E'J84f;-V8HCYJ0=p$BFV5"<1t.PW.gP65d4AE]Qe;@3eO,7@q8u#BHi.&N]*VI6u1!Y5R:PU==\AVCTs#o7!,8k'nnDB_@o'q=Ap[NF:rO,JI7nIm,;?G$7l2Z#dnM\Y6a'bWgE)eX:_+Y>ELJU+Tq?t1gn/d-ib\8@_osh8#N$,RS]g)WsSpK6:!1k@8odlPnBrW!h'Z0!J20mF:r7(L_lc;Kc'0lfRSn"(gII\Mt<L,0k62SP>Q-"2FZsF<EDpLKbW[/TSk,-mkfoC?4?sL;MRi&TX;GK:lGu$!Y*DKTrEj0JgMs><?uZc1e/mc)MO'IMKCfrARe+C.^[]/%&0M\'^!A3"]8)K7mrV=,W^emJH?js#T=#"SeD59KgA!2)A2=?"!*)M5p:ad'd]^`#5rDLbIb_5k-7R[qYS2hSQY_emNOZtU-j5gMO!aIXX*5d?,tV+98pD8;@8F;DN*7,,FZr\/"UKm.P9DRWB"_9;L/-.:$-e_/_nsdIF62iX52?2`C[54mG)b45+ap@BDoEMGkmIlH^@M%$SEN:hqP.#9%,/g0k%mCO$:3rhn\/Nm0s6VP/`9b'AoZI`pIP1<c6>c',M`O(Z$$rjop)!a]54AD7c1o*D66#7L"J1phceZD``!2\fiF?qtdk@0sad=4JJ,Qi6+ZgZd%m'li9/S(rc<eC<-ecak0fQc_CUcaSbtW'"l[HS4=2933(2uJRmM2AQBKSfF(R#C/H4^<#-AT5Y'bED)h[K8cSsGPW]:KQr!cE;b5Ib5S+R4$0\iJZ\AH";eA_heruaa+BbFZIQ,AoIN\555j$aMb]<b-U+JoW6b:LQ`;,9511-n&o41c&^qh!Ghn^33kQl-`"GQo35#=Xf7aM_iMNEopj[0^o;M^DGOA(7Z-]1:p70Fb>n5/h3#RLP8":0j7&4+nZKn<h@"G?nEKI!7)KFjh"&>C9Y&qV5O63IS##6Y;6#_Wa5KE*/:arUfi_,!T7!C8,a+<UpqOssd.c-m/bq9Q+`#K)**kZ=Z7Y?,=.FbqDp+qZ4)+Tr>Z#Qd<u&JBa&#_G;QKEql-&0_YsP!B:<#XXPX2EEd9)>]`ASu\3%%hB+DNEj3'JZ<m6EoD<fDXb6X]p4561Y5V,=Hi?8e]Zo=;nH,c&Rh#da>=s*Q3$nP1aooX2B9R:NaUUE+TXnr&;8!9P/YgK,9f)[+]sI-G0&kShUA`1']tA\i;VYo.1E^rq_(`PhI&sc:Bf#q7K>@!(5LcdOD*d^:>t@!k`/N[WW9/p7KU(adQW2U0lnQae%7r:eL$>7@Z8uL=J=P"Anq8+"E'7VGgLP22`3=Bj%cneF1H81neAoV-Z,*h/_0d9ODr>H`$S@d%r"ji/Y8?#lpZIcQl*Rh`/,r-[>63T_U0M0=P4[oMP(LhF;.t4ZJk&kAlJnmACeOm$Re+K<J;P5!i"9L!PgrUQm+fS72,`U&:p/U'GLO51=S]I9*@MACqh4dKL@R&A0)nUH*TV?fl.0;?ao.\j'tmN!a1*/g9C#=^;Hje4H62e[qbP9T.SocVfZ\R\31j<];Z.hcVKoKdFR*]0R+kqM::VZ^7kDYolVX/f^IE&4,:;RDgV9S;W[o?1KRb3ad09%P[(>L-dGI&SMNR>KRWH;ObIrjfH:_.@%662*!.OM/-:AF6m)a@![&Wmrg6*9"@*M`OEh0UJ:JaFKEqV^KLCWX":t\Y#RJPr4co_5KHS?)&JEd\$'Z^[643FS?#YW3p@CaAZ;e"MR3#?:ZRf4R17/HtMSL;?J`?d;jqaVbZ:QgpBY#FoQg<>/s$kP!l.'>m2Q_@9:V5)t[\iK0;"]0Qcp)P=r/t<rFuR+_4RT^q3:;_,>gc0>BsR]_c2;k#kTs:R[MhcsKseMQ"=%(#a/:tND(@Yleb61OZEEl[,)hIPJ6h.9R5I<]cs+eZp`pG"6t1i@N<5LqUT;/Bqi%^a^E'Mhe1lcs>Z`RIj"@JUjl7_k?s0#bb$7_87p@e:Wj=(]hqY_dfqP6#lXX#OqNVH_PW.u:4Ep,hT`ML%Cc[JMMO4-*ZN73n:tJ\UY2Bi]bM3DIVJTMGIS6fGCTdZAaf.YdOB?L5)Dpieat'p6YD:N$Drn-LE9QMQa84r+"np5O[@lBeZflpn>`c:ZR4Ukk&S>0'i]I\po=Vm5%5AOAoI4YG^lWL'`[N.dd"%rJ]A]tCQT+cfm<A922I9Nb5@es7hIt0XmM;ig=3`$`4f8C#i9Q6Aa(e+G887\7^'iDNoHbGq1-IDZ>jcR(+`>9*@BfUe1UTKa@UKaTnq$ppb]D"kXNV_B`-tolC#nmi0,ol$n(orFf@AeAEg"Aoih!8=Gk%J"+ZsYQ!/DN&/b#HI@[,B$mrQ)N?<T5A<h3I/`SjNsK'aqP[S#AE!s*VJ4mBm2Cl1012_RCOpIYhY2stUSlRs,=ZU5"V</'$(Oj7Jb0'TWL3G5P*g4ep1:\PZ$*IliW9>Yr]`;'>aVA3ufaYd$tqY-dGU@>Z5(HuikXkp:[)tfFHH$i>D'qlL%!/)U/AsOf+MRRDDD,=EUU;kauNLAhO@VKJKWLC<k.^fk^n74nl,n::XQJAVAet&6HFE&Q05Sa5Em4&p+M;Aa&[?Hun>B2?Z7uB,qUB(/Ih<o*)D5FdYUjr:FcC`fIKI%<<OUQYV3IKo'M#lHO3QXXo%22D<5[1\c8rmXQ4JN+pd$9hg&OB/E3_&j74;UipGW!%,46\BY(17r^m[lSOU8<<mUdd$]3/j_eRBluOLZ/d+,BX'8K=8l[CXXo"Vc0XjO05c)mBp5cU/>0!l3K@2itS\aY+@dhCpfe])HD=^Ro^js3kA*^9^Opi\'GVhn(tDIqU"6iMl!>HVR5[5=?sk!nF>mlWS-X%Asn%RrL-ifn%+%UZaS6mPRro[h)i2`fLe-i$)I7Pb5+i?SLXq@4<7oCdu@1>rIVNQDjQ;./[="e993jm#@7/6B82)*?sp[cV""K:*/VASc4DY9i:d\jW/?=N'B`-Y\&?gfB@#s`I*CW5B]KMk^nj,Q(g'TW\?a1,-u9`I_Q+k'*>M^+9XZe_<E\Q<:0_R/#u;@u"iNu<?<D4UKs.(f6N_mU]P\?]T#aff,]tB*ifLs`dj3jql4CbCMSOl_;i6;?49Fsg!rI`)p)"L2!YT)J3)r;NAdEnhK)c_oTNc#c#f)+(bKs'R11ge'1nm6*bR$W_!>O4g`'t"hKF"4o:^FiJ#W#us!1G)S,QNE]&53@+LdaQr!!LF'nNI0V&M91VaV8b<S7`"g+[bBPcL8i0mlndq^:X+GhtlQ=J!)HLqu2X_qsaDo?Mrsb2toOarEm;<i58q%pkQV4o9HeW\bjLL%nI91]91Ep]nue$AA/X_37%%aKZp)?6F(am5QC@mpWBshJ+;m'cb8rIqfcCn+C;hYjU4;;(/1XGcrBH5rhD],o)ZW)e"?I$B4!jsb3sfO\t[f39qh$;=+5/hX7oru.fT(pG@147kKePF@/9Q;>CkRVn+D%25PM:\]dBA#ro)&(^%f3P?462YqodmrjgAG[q_Ri!(Ol+uO.Z=?LHkUXB>=K:a'T\^+4%Xtg989(qtmSSqWS67Id^&C7!8(:ZQHjSl<@UYpZk%kqX!eqfM>iLPC*9fci3:u+92&2pYtp3IJ)80?N/XVhu<%l\'4b=Ief/;qr/uAfp@3^X1Rj"q1im<rK4g>pTK)4IHq-LiZ!1Cld((-oCXnXIe]E)g[C<?Idu+IYM@HRp>X[W^\IUT?bGmEQ_gQ4m47lHn)W#kEJ4?9_:k#2634MPYp<YBEa1t_[PW@glq-r<#P4,_ZWPQ"BqL@i7ggoNHG?.jiFQ&YjrukA%IpnUYUD1=64d``63%]k.K])]#QWTbq>pd"TA+k801>hm&H=+G;\FTuBiIPgK`'AUpE[nTTn2.:N<%K*0hM^I.Ko\7)=/uiqo0$CCIJ2n6L#LbhSNg[H:(^3&+Z:e\(=/mPs;2I'E[?4&s-Htrlr+MKaN8\s"Nm[oBJQ!n<:Tls6JF#Ie(OoJ+hGd_5m"[pO2Q1bN<)%h!<gb^YtV-p7A`br8fU2Y$M'Rmksj#J!/.%kO0-Ld\$Qa=T=rjf2$kngc,9+NTYq,ol%&4`htJqoT^c"([c_@5I(+Vlfh\fQ@'H]iMF;<ou2FD47D4bs1Ra1i\/'Ort3$FqOQfW+ae5cFTiHMgTN>C1^TQ&*6IWP+d`]s#W(;cV\ftAmtLs$_6-<KZUPQhph!$Ab:nWl*JA;HkCFjh+r#Wb:s]^fV+)#og^)"5"[%\Y<th#4*QSh.WY!&t;8-765S/J$70!aM+qa;Z:FIJ]T-_H$#Z(eY!'uEK(]s8!oCca"FsC-n)T"bFR8g7TZK.t$N5[6:5m[CdF\p<=MoF-hTF69>"OB/,!??*:#S!8E!.J]LO"aLpA`a?7lQ`d/#:d6J7o^G#J_F#+bS1Yn777_!6qD];M2#@t9/Q349@P%<n<m;/L!MjgB#H`J7tgtd7o"RLrqF-*WZi&pDH5]?l`nFDqCde:a-2hgbs5r/OmeP*XU*=n+Z+%&7,l3+6D>%pAPLYN&LIkT5Bt^NN'hM[INBR>i]o29[mtY]%UNq\;BKV_Df\5X"mCQ^e,C:uObU%B'I8T+B$"1U_Abo9;Lg]8K%eq=!;o!/L'%94LZ"AH!-Wa?3%^e"836n7nGiO-]o!F8.?Heb^dc[9,Xitkn?^NIh4^JspI3A+4!Mn1co?DM]+T$Q0mG:UC@G.#a\Z[XpF!t!3@+YM'EOCOZaO7;kcf`3B[#&.>1^:=&t7k5m_6qM6:*-C'EN-\)JN1Y/4+t/,,*5a&^V)>VgeFo6V>A0,jKj.et*^O+sI0bg`s%_JC!*\0i?:spq!@j^`p_'L)G"W1aKYD<Oa4r($3dR6dj&rM[K_V3)<!ON>Xd2/`g\,*"[Te6F.F9Gg2UEWeM>nI,$W#_\+Imi"ud',?Y^R0V]Dod/GF:k'/JlkH**6U8&:`UnFIc+d+]BMV5*uBjF]>TV:kmSIKd2ns"F*6R]aB>1nTdG,HM&+K7L@&UQ,U_S?Jr&HMEsZA9Z9"jIF?'TZ()crKa1.R6?$'N%ho5nO/@_?^mRa?7-uN#5E7^:V3$O+,Gu_ljAqRO@B,[<rNa_:[er?j*Mu"%N@j]"lB#^\!12<?!CpMrd':`R@,"kV0`b(rN=R'6K"fM22277Hm3F'*V2%AWn?BE3d-2Jk]X?0ok!7%Y:>H#;*LlBW4OW+1dnb,mJs5p-o4WoY_GQM])m/b,L7("U..I"=ODU(mQc]0?eal4HUcU+t%uT51+c$-O(TA/&DPuaFGN[#Uk?s9P+V]L5(SO/K!tthCrGLUehHb=BJC6>uQ\];%\Ni[-<)D7R[TH0iV,\JO%O!k8\%u#`DS4.@/tL/jpfSQ7j1RbkBI?%,>)kT0bn!.ga+g6:)>bp)lGF0X]MP8&QSY1r?C]?l/t'PnHM;,2!@nM0,,pFotfGj:\_Q=9LZsUF.9S1']gqT*P"E75G;N'L&t8A%Nu$hF$g28*?M=ZnL&^a1Ihk#ptU",+o=MM::&7Zq;f)f'S;GRXbH)&Rd:6>Rl_OMR5gj=?;/YOC,lDbDeZ,fKKti4\MMcTU%,i$9g<X;#hMdJ$(@f)ss&.Y1n+Of0QIrdQe,^K!rCT\3X`LU(q6'O04=EZAp#:M@o?L@h-UWc/;%.VnEa^OK<;o*sq?&k,8b3$[l@/U[NIBZXtHZJu"JD"MJO%KHZ(\kqOq3q"CC\71@9s\cSZAOfAQ"5>9"$oc5KiMIi']Td-NM"B_@bV<:<XY%T$9dch.5-'W"WVIQne9!-HDPT'=<0,]XoRTZ[UMGs<NY=D6[WhHgDomC/]O+NIuO['5gc\'^uiPQg6<Z7@#ZNs?PhclcXYemt]jj"Y7=@,MRe!XSTG=P/nO)ZQ*f];8gprl\m3A\#<i8nMCb!_JS#'b#rRZC4F2HM`uM610+HA(BlgmoAR)`Tch7)T(11\1/`dDMKf>E35><VXq\"O+E$_aZFr(t&+DJ.WQV3LE@U(rN!P!_hpl<`6Foe=qNN?XLf+]`=;OC2c=\oP,%g&T1?De]*N@"J!YRB4K4.03X;mqtrai3t8Z>d64B/c9ElD5NlGA&oCp2G10=-5UY[rCU"1#R2bZ&'3KCcf4hI!H!YHWKG$'Tr1p[*n_am!p4rL3ou4V,^([2JHAUe^'C"5.=K\'e#\K%[3WUYgEckpO#ph-[>b#q&li3QiShi?`,V0N,me^uAZSEY\`(tT#?7;-5_<qd5^9h;P<tPuIk(3fZ/i?pGDbBH)KI^*,gU_89Ib.e;Hi#9uMum.kWIE+gNHf_!nWN9d!.Jb'NO"\Z4M:JhS#KcF0$eFg\2dee$4\CE:T]S@H=>:B%I:L)HN9@F_`LC^B/@r31YK?Vo-V:HS(?of5#LYbF1s(YG@K1/&$&#qTA^PO[p+eq(s'TYc#&8rPrp[%I*"ug%#rpU@tILeG%E7d)U.kl?cVgY^"mAOCZ:UUDf#sP(c`NPJPW56[lapKKLsM@>YSN\dY2:6M)S2==>[umm5jj&HDsZJjW?>e=7Q?e'MBnaEg9/G"e-Kmmm*uf)C1-_Am'lBOn-%'@?Uslm+>DKfS0aVl-9RN;OfZ43/`"0&B@3W?Da;Ii&CTFT!tEno\Z)e\"]J`"B,/Aar<EP23,6rhh5]I.g?;\Tf)6%/!IT&[_5m/(53k!3gk*8'lMN&Ri</MXLAF0g%C;@pGAJBSn`%D4^D0TX9lcgI-752dV:J![M]/@6K0M\40kMU_AkrR0tB.#S!/)]E37jEdiJt0ReO67lGHN/YS+1P*1r?q;sgRc6ilT8iP`bi[>*4`<m0?c.NPOIVG?=K*qDIM_JX"7-!\N_8du"5'-(kM%5rGX?&/qbqKl*''tRN19/\E):'Ai#&T;[%ZoX^L\sqK_ji_[eG19/eD"72d+VOut;A2o!YO1MqQAWLjTN]jl?:f.YS.;KUnhYI\Jk1j%0cS>kP6(-r(hf<+_b.t.1_?0!Dg\RY]pKW+42S4GCCh8`i)B%a'W_G89Km)UO/MU4\*b_>cK)1LU$O@Je2T07D;osRcPLJ/cA;jH^:m%C@@*_cY0htnD<C^e'4*lORp5(bp=3V"V9,cXJ\5F1&lYi04Gt!gQC$2tk:*n`T;Bi&O#qt)K-tIYfSP_TM2o:ulG4F(8lMR/<>*L6WNM$!eb%Re\3!)YS)*!+J67$$BJ<F](6rmdO1+9+PQ@;1VaG8+[N6M.I?<5Di$3;\AE_P-rj0(0%1WB@/t.$$8>]okG\#b%<(QppF;4Z7MQ81DSN]&En6No]@dhN?h&HF4kKH:l$Jr<[!Ue0l&FWE,MpZKqRh>(Q#jUPK'&:?JJhu1[=RU8.f[0pm&"F__pT)ae!,T?CqLX?3/l[F[GHXfbi#(G<keu#6(u1Tt*7(aJ]K&2ii'Tej%/0.d/DQl$jaqWMKK2)9FjL[Y#WFF.`pfFJ`Zt<<oU97DZ=%ko!(nRH^j;6$kSf*Njltd+NYJ&t!H%![$Ps92Gb]+*=&rVdYT'%8pi(7G7'XsTG]Lrc)oDY7B.&I'bdcY.E3_c2#K(;`?;EP=Po>KmOmslcdDF!"aCNs2VlJd`1\fOMGdm_$Uj%^.P8CD5[AS.G1V)2Z-Rt!l$3pe0>eP.DPY7m7:V+RSk@S!&+-#.r%_rMq(7LlZT/\QEi*j-tk7>?=*4S!H!DpMI_R(UK%,pU&n?AG@_d!#5S4e5-S(7uH%C[ODiOW7BQL0>5XgP0.il/;,!N1jl>_<n9;[5Lt.U4jIn=IF@I3L[n=:9+d?u5C\A,]S,f`OW?/q")]MoFNq!:R0fDN3J`Ia^AtgJ#qQ,fT(i^/BpLJt&27A[5iY$,AI(7Y9k+-<O%M!+SX;l'nI"NZA,0,.N+Ii;'pFP0@&F@+@+!RB;Q`Jn*82#^h7)=7tc"h:9\I(3Bc)gLU0Id*69[;q68oc#j2Rs5$bhIR97`,`Qe[=^!hK5%_:[\3O<j(ADR=MVW10<<&Zu#H:#Jf(eGX"aFASCasm9nH"3$$eGm^Uk5'_;n[G&csW>T.B_:WEFRB[0GHH7$p.+2cd;?a)>Q9%mK[,+/c:lcK*;A&.L9+#gdW6TVDg;$HSh,OCmrYJWb!1W.QB:OgmhdJ;FC2G7C,+%_[1;6.KIr*X+VZ\)J'Jq%WNg+%n?]Z_;(deY0&W*kQLu3GD^t!Yo.aL#YS)Upm>a'=Kl]%NJg0Oabe.=_3:W[^DssG>n.%n1M;Ia)7h#:F##tT!;O!B#je\:$bh@14*1&d$/?i6#t'c_Y0pVeB#gMh\>t2dJMFsPF-&0kEbiOY+1KUR]juj_HH,!@l@#Y^Vc-JB-&&;Eg,r[cm["3\F`M0lk1"30AWk/q)=5SLm&EjgA2_"s3*jg(-O"!XaMO2m,l-;6r^7aF.lN9;!nQa)g(r^b)6SqRg.44l.e\X-X9t,/P-l*Q/S9WTR5(s@HuEbcNCp]^n%AnT70%=\L(>bKWi!\W:Z?'lHI05HB;/WcYnQmgOW"U.>/kD&.24?6B1(G^,"WOAko4cs*<;9/^fjBCIGCtgdoO<:'Pm!IR9QG-2m+%%aAf_6`d0Sne`uGW/O)!N'5Y8@[Ka0T_O9.7!\hPS.ju'ij,':Yg`jIO>JX1^+[rSW<BKW<6Ga<96S`2lg40YV-4LYd5>F0p[99Aa3to,I26d4!9cLu@kd<miDiB$lUaIMk^oB$CaX7SApft-e++W*lL2chNfX\?;;/W0hY"m=1*Jk,G]e_Gb\L1#:YmE!GShBhj!h5^B7\,K$28@k)ZPUI'kBP/EgJ`\/4mLMh1\kTJj:2\-Nn2bt06Q`AT+q2r#f&U#*@`b:j/E`R[H,U:6/Na=YXj04MMkJE8UX$`@?``V<G)?rW=,TeF`+Y4)qj&(1E*nhg<e3P,[?S//FqTVg[dG3m9k6j\MLQ:o`_f1/+9W"*)+V6&2*+n]7'Ki>A6f;XW=>"A!'QRFlq:N08JAh>IpN2)/YEjSNGE#)Yi(7h-<M4Z=<$:M-JBS)Y(h$V+-&)%Y[U\<)?\VQF[?mN``DSEMd,-]<G40YW#^n\&J*]MAaHXQ4(Y`l`nCX1g\m8M2;O7LCK"WE*'Xa]h=&h\u9r>XSOp0/Dm(%,%90Ggq3(F]JE]o$ZD+,Ii((4#91>-1`*V=rA<2(C+G]Fj[]QV%O=1iM@2/Dd>BU;'c[.%-="E6MS^\MLrXnEO^),&gloa2*e.7aaR`-YK^O(Pqkbj&l-SFo'3Z]PaDK*t,!=#^VXOh('eSfISrdh;nr_Z=*tX=fZ#5C6mUGQsYH5jNjk?I(87?1'kOQ\tCXA,a/dY?.ptXV0"\h[JTq8-K&pq0369Zi?7-FniVCFD.IO&T^jC;8us$%3>JD^9;Ht)1:!<]==])bh=1 bi=nil cf=-37544 else bm=nil cf=43890 end else bk=nil cf=35433 end else if cf<=61792 then bf=function(a)local c,f,g,l=nil,nil,nil,nil local m={}for bg=0,255 do m[bg]=d(bg);end;local function bg(bk)local bm=-1 local br=256 local bt=257 local bu=258 local by=259 local bz=260 local ca=#bk local cg=1 local ch=0 local ci=0 local function cj(ck)while ci<ck and cg<=ca do local bk=e(bk,cg)cg=cg+1;ch=ch+w(bk,ci);ci=ci+8;end;end;local function bk()if ci==0 then cj(1);end;local ca=y(ch,1)ch=x(ch,1);ci=ci-1;return ca;end;local function ca(cg)if cg<=0 then return 0;end;cj(cg);local cj=w(1,cg)-1 local cj=y(ch,cj)ch=x(ch,cg);ci=ci-cg;return cj;end;local function cg()local ch=0 while bk()==0 do ch=ch+1;if ch>31 then break;end;end;if ch==0 then return 1;end;local ci=1 for cj=1,ch do ci=ci*2+bk();end;return ci;end;local function ch(ci)local cj=0 while bk()==0 do cj=cj+1;end;if ci==0 then return cj;end;local ck=ca(ci)return cj*(2^ci)+ck;end;local function ci(cj)local ck={}local function cl(cm,cn,co)local cp=ck for cq=cn-1,0,-1 do local cm=y(x(cm,cq),1)if not cp[cm]then cp[cm]={};end;cp=cp[cm];end;cp[bm]=co;end;local cm=cg()-1 if cm<=0 then return ck;end;local cn=0 local co={}local cp=-1 local cq=0 for cr=1,cm do local cm if cj then if cr==1 then cm=ca(8);else local cj=cg()cm=cp+cj;end;else local cj=cg()if cr==1 then cm=cj-1;else cm=cp+cj;end;end;local cj if cr==1 then cj=cg();else local cr=bk()if cr==1 then cj=cq;else cj=cg();end;end;if cj>cn then cn=cj;end;local cg=co[cj]if cg==nil then cg={};co[cj]=cg;end;cg[#cg+1]=cm;cp=cm;cq=cj;end;local cg=0 local cj=0 for cm=1,cn do local cn=co[cm]if cn~=nil then n(cn);if cm>cj then cg=w(cg,cm-cj);cj=cm;end;for n=1,#cn do cl(cg,cm,cn[n]);cg=cg+1;end;end;end;return ck;end;local function n(cg)local cg=cg while true do local cj=bk()cg=cg[cj];if not cg then return;end;local bm=cg[bm]if bm~=nil then return bm;end;end;end;local bm=ci(false)local cg=ci(false)local cj=ci(false)local ck=ci(true)local ci=ci(true)local cl=ca(2)local cm,cn,co,cp if cl==0 then cm=c or 0;cn=f or 0;co=g or 0;cp=l or 0;elseif cl==1 then local cl={[-1]=0,[0]=1,[1]=2,[2]=3}local cl={[0]=-1,[1]=0,[2]=1,[3]=2}local cq=cl[ca(2)]local cr=cl[ca(2)]local cs=cl[ca(2)]local cl=cl[ca(2)]cm=(c or 0)+cq;cn=(f or 0)+cr;co=(g or 0)+cs;cp=(l or 0)+cl;c,f,g,l=cm,cn,co,cp;else cm=ca(4);cn=ca(4);co=ca(4);cp=ca(4);c,f,g,l=cm,cn,co,cp;end;local c={}local f=0 local g=false local l=false while true do local bm=l and cj or(g and cg or bm)local bm=n(bm)if bm==nil then break;end;if bm==bz then break;end;if bm==br then local br=g and ci or ck local br=n(br)if br==nil then break;end;local bz=bk()local bz=ch(bz==0 and co or cp)+1 local cg=m[br]f=f+1;c[f]=h(cg,bz);g=(br==0);l=true;elseif bm==bt then local bk=bk()local bk=ch(bk==0 and cm or cn)+1 local br=m[0]f=f+1;c[f]=h(br,bk);g=true;l=true;elseif bm==bu then local bk=2+ca(5)local br=m[0]f=f+1;c[f]=h(br,bk);g=true;l=true;elseif bm==by then local bk=g and ci or ck local n=n(bk)if n==nil then break;end;local bk=2+ca(3)local br=m[n]f=f+1;c[f]=h(br,bk);g=(n==0);l=true;else f=f+1;c[f]=m[bm];g=(bm==0);l=false;end;end;return i(c);end;local function c(f)local g={}local h=256 local l={}for n=1,h do l[n]={};for h=0,255 do l[n][h+1]=h;end;end;local h=0 local n=#f for bk=1,n do local n=h+1 local l=l[n]local f=e(f,bk)+1 local n=l[f]g[bk]=m[n];if f>1 then p(l,1,f-1,2);l[1]=n;end;h=n;end;return i(g);end;local function f(g,h)local l=#g if l==0 then return"";end;h=h+1;local n=ba(l)local p={}local bk=ba(256)for bm=1,l do local bm=e(g,bm)p[bm]=(p[bm]or 0)+1;end;local bm=1 for br=0,255 do local p=p[br]or 0 bk[br]=bm;bm=bm+p;end;for p=1,l do local bm=e(g,p)local br=bk[bm]n[br]=p;bk[bm]=br+1;end;local p=ba(l)local h=h for bk=1,l do h=n[h];p[bk]=m[e(g,h)];end;return i(p);end;local a=be(a)local g={}local h=0 local l=1 local m=#a while l+7<=m do local n,p,bk,bm=e(a,l,l+3)local n=n+p*256+bk*65536+bm*16777216 l=l+4;local p,bk,bm,br=e(a,l,l+3)local p=p+bk*256+bm*65536+br*16777216 l=l+4;if l+p-1>m then break;end;local a=b(a,l,l+p-1)l=l+p;local a=bg(a)local a=c(a)local a=f(a,n)h=h+1;g[h]=a;end;return i(g);end cf=85110 else if cf<=69648 then be=function(a)local c=33 local f=85 local g={}local h=#a local l=1 local m=1 while l<=h do local n=l+4 local h=(n<=h)and 5 or(h-l+1)if h==0 then break;end;local a,n,p,bf,bg=e(a,l,n)if h<5 then n=n or 117;p=p or 117;bf=bf or 117;bg=bg or 117;end;if(a<c or a>=c+f)then return"";end;if h>=2 and(n<c or n>=c+f)then return"";end;if h>=3 and(p<c or p>=c+f)then return"";end;if h>=4 and(bf<c or bf>=c+f)then return"";end;if h>=5 and(bg<c or bg>=c+f)then return"";end;local a=((((a-c)*f+(n-c))*f+(p-c))*f+(bf-c))*f+(bg-c)local c=y(x(a,24),255)local f=y(x(a,16),255)local n=y(x(a,8),255)local a=y(a,255)local a=d(c,f,n,a)if h<5 then a=b(a,1,h-1);end;g[m]=a;m=m+1;l=l+5;end;return i(g);end cf=61792 else bb=cb[133]bc=rawset bd=setfenv cf=69648 end end end end end else if cf<=-41521 then if cf>=-44233 then if cf>=-41922 then if cf>=-41850 then if cf<-41521 then bv=function(...)return{...},k('#',...)end cd=cc[1]==0 and-12871 or-39736 cd,cf=-39736,-39736 else u=q and q[(function(a,b)local c local f={}local g={}g[1]=3 g[2]=4 g[3]=4 local h=-48878 local l=0 local l=0 repeat if h<=-48878 then f[11]={}g[2]=(g[2]+1)%5 h=48439 else if h~=48439 then break else c=f[11]for f=1,#a do local a=e(a,f)c[f]=o(d(37,99),(a-(b+f))%256)end return i(c)end end until h==47687 end)("\175\198\190\194",76)]or function(a,b)local c local f={}local f={}f[1]=0 f[2]=1 f[3]=0 local f=0 local f=87124 local g=0 repeat if f<=-32641 then break else if f==31224 then return c;else c=0 for h=0,31 do local l local m={}local m={}m[1]=0 m[2]=3 m[3]=3 local m=-46620 local n=0 local p=0 repeat if m<=-46620 then l=a/2+b/2 if l~=j(l)then c=c+2^h;end;a=j(a/2)m=69219 else if m<69219 then break else b=j(b/2)n,m=56337,56337 end end until m==56337 end;g,f=31224,31224 end end until f==-32641 end v=q and q[(function(a,b)local c local f={}local g={}local function h(l,m)g[m]=l;return g[m]end local l={}l[1]=2 l[2]=4 l[3]=1 local l=0 local l=87864 local m=0 repeat if l<=-28723 then if l==-48804 then c=f[12]for n=1,#a do local a=e(a,n)c[n]=o(d(37,99),(a-(b+n))%256)end return i(c)else break end else if l<=28895 then m,l=f[13],f[13]else f[12]={}f[13]=g[87864+173589]or h(-48804,87864+173589)m,l=28895,28895 end end until l==-28723 end)("\115\129\133",16)]or function(a,b)local c,f local g={}local h={}local function l(m,n)h[n]=m;return h[n]end local m={}m[1]=2 m[2]=0 m[3]=3 local m=0 local m=0 local n=-36143 repeat if n<=-32968 then if n==-36143 then c=0 f=1 g[17]=h[-36143+276703]or l(-16389,-36143+276703)m,n=-32968,-32968 else m,n=g[17],g[17]end else if n<=-28248 then break else while a>0 or b>0 do local g,h local l={}local m={}local function p(bb,bc)m[bc]=bb;return m[bc]end local bb={}bb[1]=2 bb[2]=3 bb[3]=4 local bb=0 local bc=0 local bd=-43071 repeat if bd<=-30629 then if bd<=-48138 then bb,bd=l[16],l[16]else if bd==-43071 then g=a%2 h=b%2 l[14]=m[-43071+316830]or p(-30629,-43071+316830)bc,bd=43398,43398 else if g==1 or h==1 then c=c+f;end;a=j(a/2)b=j(b/2)l[15]=m[-30629+185759]or p(-27857,-30629+185759)bc,bd=81086,81086 end end else if bd<=30098 then if bd<=-27857 then f=f*2 l[16]=m[-27857+185759]or p(30098,-27857+185759)bb,bd=-48138,-48138 else break end else if bd==43398 then bc,bd=l[14],l[14]else bc,bd=l[15],l[15]end end end until bd==30098 end;return c;end end until n==-28248 end w=nil x=nil cd=cc[1]~=0 and 69648 or-45710 cc[3]=(cc[3]+1)%5 cf=-45710 end else cb[134]={}cf=-16235 end else if cf<-43074 then bo=nil cd,cf=-49761,-49761 else bs=function(a)local b,c local f={}local g={}local function h(l,m)g[m]=l;return g[m]end local l={}l[1]=0 l[2]=2 l[3]=3 local l=27360 local m=0 local m=0 repeat if l<=-12132 then if l~=-12132 then break else l=f[42]end else if l<38298 then b,c=e(a,bh,bh+1)bh=bh+2 f[42]=g[27360+83780]or h(38298,27360+83780)l=-12132 else return((c*256)+b);end end until l==-32891 end cd,cf=43562,43562 end end else if cf<=-48575 then if cf<-48575 then bo=function(a)local b,c,f,g,h,l,m,n,p,bb,bc local bd={}local be={}local function bf(bg,bk)be[bk]=bg;return be[bk]end local bg={}bg[1]=1 bg[2]=2 bg[3]=3 local bk=0 local bm=-24929 local br=0 repeat if bm<=-28044 then if bm>=-37863 then if bm<=-37863 then bm=bd[37]else bk,bm=bd[38],bd[38]end else break end else if bm>=23237 then if bm<=23237 then p=bd[36]bb=(n%128)*16+j(m/16)bc=((m%16)*2^48+l*2^40+h*2^32+g*2^24+f*2^16+c*2^8+b)if bb==0 then if bc==0 then return p*0;else return p*bc*2^(-1022-52);end;elseif bb==2047 then if bc==0 then return p*(1/0);else return 0/0;end;end;bg[3]=(bg[3]+1)%5 bd[38]=be[23237+223927]or bf(37481,23237+223927)bk,bm=-28044,-28044 else bc=bc+2^52 return p*bc*2^(bb-1023-52);end else b,c,f,g,h,l,m,n=e(a,bh,bh+7)bh=bh+8 bd[36]=n>127 and-1 or 1 br=bg[3]==0 and 37481 or 23237 bd[37]=be[-24929+223927]or bf(23237,-24929+223927)bm=-37863 end end until bm==-48729 end ce,cf=-10769,-10769 else cb[133]={}cd=cc[1]~=1 and 20324 or-41922 cc[3]=(cc[3]+1)%5 cf=-41922 end else if cf<=-46150 then bl=nil ce,cf=56237,56237 else if cf<-44314 then w=q and q[(function(a,b)local c local f={}local g={}local function h(l,m)g[m]=l;return g[m]end local l={}l[1]=2 l[2]=2 l[3]=2 local l=0 local l=0 local l=25852 repeat if l>=53116 then if l==53116 then l=f[19]else break end else if l<47395 then f[18]={}f[19]=g[25852+334698]or h(47395,25852+334698)l=53116 else c=f[18]for f=1,#a do local a=e(a,f)c[f]=o(d(37,99),(a-(b+f))%256)end return i(c)end end until l==59266 end)("\142\150\140\142\140\155",33)]or function(a,b)if b<0 then return x(a,-b)end return(a*2^b)%r;end x=q and q[(function(a,b)local c local f={}local g={}local function h(l,m)g[m]=l;return g[m]end local l={}l[1]=2 l[2]=2 l[3]=3 local l=0 local l=0 local l=45228 repeat if l>=38755 then if l<45228 then c=f[20]for m=1,#a do local a=e(a,m)c[m]=o(d(37,99),(a-(b+m))%256)end return i(c)else f[20]={}f[21]=g[45228+303118]or h(38755,45228+303118)l=-33471 end else if l~=34860 then l=f[21]else break end end until l==34860 end)("\165\167\157\159\157\172",50)]or function(a,b)if b<0 then return w(a,-b)end return j(a%r/2^b)end ce,cf=-33053,-33053 else bj=function(a)local b=0 for c=0,3 do b=v(b,w(e(a,bh,bh),8*c));bh=bh+1;end;return b;end cd=cc[3]==0 and 35433 or 82069 ce,cf=82069,82069 end end end end else if cf<=-35892 then if cf>=-37544 then if cf<=-37544 then bi=function(a)local b=0 local c=0 for f=0,3 do local g=e(a,bh)b=v(b,w(g,8*f));bh=bh+1;end;for f=0,3 do local g local h={}local l={}local function m(n,p)l[p]=n;return l[p]end local n={}n[1]=4 n[2]=0 n[3]=0 local n=0 local n=-32172 local p=0 repeat if n<=-19288 then if n<=-32172 then g=e(a,bh)c=v(c,w(g,8*f))h[31]=l[-32172+184479]or m(52882,-32172+184479)p,n=-19288,-19288 else p,n=h[31],h[31]end else if n<=34548 then break else if n<=52882 then bh=bh+1 h[32]=l[52882+315550]or m(34548,52882+315550)n=84341 else n=h[32]end end end until n==34548 end;return c*4294967296+b;end ce,cf=53172,53172 else if cf==-36662 then bn=function(a)local b local c={}local f={}local function g(h,l)local m=u(l,l)local h=h+m f[l]=h;return h end local h={}h[1]=0 h[2]=3 h[3]=1 local h=-48792 local l=0 local m=0 repeat if h<=-17676 then if h~=-17676 then b=0 b=e(a,bh)bh=bh+1 c[35]=f[u(-48792,73837)]or g(68219,u(-48792,73837))l,h=-17676,-17676 else l,h=c[35],c[35]end else if h<=24206 then break else return b;end end until h==24206 end cd=cc[3]==0 and-10769 or-44233 cd,cf=-44233,-44233 else bs=nil cd,cf=-43074,-43074 end end else if cf<-39736 then bp=function(a)local b,c local f={}local g={}local function h(l,m)g[m]=l;return g[m]end local l={}l[1]=2 l[2]=0 l[3]=4 local l=0 local l=-17526 local m=0 repeat if l>=27721 then if l<82711 then repeat local a=e(a,bh,bh)b=b+(a>127 and a-128 or a)*c c=c*128 bh=bh+1 until(a<128)return b else break end else if l<=-17526 then b=0 c=1 f[39]=g[-17526+183507]or h(27721,-17526+183507)l=-10845 else l=f[39]end end until l==82711 end ce,cf=-34269,-34269 else bw=function(a,...)local b,c local f={}local g={}local function h(l,m)g[m]=l;return g[m]end local l={}l[1]=1 l[2]=0 l[3]=4 local l=-24622 local m=0 local n=0 repeat if l>=57423 then if l>=63135 then if l~=78603 then m,l=f[131],f[131]else break end else if l==57423 then f[129]=a[0]or 0 f[131]=g[57423+50178]or h(40465,57423+50178)m,l=63135,63135 else a[0]=b return b;end end else if l<=-25020 then if l==-38593 then m,l=f[132],f[132]else l=f[130]end else if l~=40465 then b=k('#',...)for n=1,b do a[n]=k(n,...);end;f[130]=g[-24622+50178]or h(57423,-24622+50178)l=-25020 else c=f[129]if c>b then for k=b+1,c do a[k]=nil;end;end;f[132]=g[40465+181249]or h(61765,40465+181249)m,l=-38593,-38593 end end end until l==78603 end cf=-35603 end end else if cf<=-34269 then if cf>=-35603 then if cf<=-35603 then bx=cb[134]cf=-12871 else bq=nil cf=-35720 end else bq=function(a)local b,c local f={}local g={}local function h(k,l)g[l]=k;return g[l]end local k={}k[1]=2 k[2]=1 k[3]=1 local k=0 local l=0 local l=-43863 repeat if l<=-43863 then if l==-45934 then if(b%2)==0 then return c;end;return-c-1;else b=bp(a)c=j(b/2)f[40]=g[-43863+305142]or h(-45934,-43863+305142)k,l=83880,83880 end else if l==48467 then break else k,l=f[40],f[40]end end until l==48467 end cc[3]=(cc[3]+1)%5 cf=47208 end else if cf<=-33053 then y=q and q[(function(a,b)local c local f={}local g={}local function h(k,l)g[l]=k;return g[l]end local k={}k[1]=4 k[2]=1 k[3]=1 local l=0 local l=0 local m=87895 repeat if m>=63488 then if m>=84357 then if m~=87895 then return i(c)else f[22]={}k[2]=(k[2]+1)%5 f[23]=g[87895+343172]or h(23647,87895+343172)l,m=-25751,-25751 end else l,m=f[24],f[24]end else if m>=-20957 then if m<=-20957 then break else c=f[22]for k=1,#a do local a=e(a,k)c[k]=o(d(37,99),(a-(b+k))%256)end f[24]=g[23647+212101]or h(84357,23647+212101)l,m=63488,63488 end else l,m=f[23],f[23]end end until m==-20957 end)("\205\205\219\210",106)]or function(a,b)local c,f local g={}local h={}local function k(l,m)h[m]=l;return h[m]end local l={}l[1]=1 l[2]=1 l[3]=1 local m=0 local m=-45268 local n=0 repeat if m>=-30069 then if m~=66078 then return c;else break end else if m<=-46498 then m=g[27]else c=0 f=1 while a>0 and b>0 do local n,p local u={}local v={}local function w(x,bb)v[bb]=x;return v[bb]end local x={}x[1]=1 x[2]=1 x[3]=2 local bb=0 local bb=71825 local bc=0 repeat if bb<=-17278 then if bb==-44539 then break else bc,bb=u[26],u[26]end else if bb<=-13603 then b=j(b/2)f=f*2 x[1]=(x[1]+1)%5 u[26]=v[-13603+145950]or w(-44539,-13603+145950)bc,bb=-17278,-17278 else if bb~=71825 then bb=u[25]else n=a%2 p=b%2 if n==1 and p==1 then c=c+f;end;a=j(a/2)u[25]=v[71825+145950]or w(-13603,71825+145950)bb=58548 end end end until bb==-44539 end;l[3]=(l[3]+1)%5 g[27]=h[-45268+172294]or k(-30069,-45268+172294)m=-46498 end end until m==66078 end z=q and q[(function(a,b)local c local f={}local g={}local function h(j,k)g[k]=j;return g[k]end local j={}j[1]=3 j[2]=3 j[3]=1 local j=0 local j=-10740 local k=0 repeat if j<=-18248 then if j<=-29467 then return i(c)else if j==-20778 then k,j=f[30],f[30]else c=f[28]for i=1,#a do local a=e(a,i)c[i]=o(d(37,99),(a-(b+i))%256)end f[30]=g[-18248+288983]or h(-29467,-18248+288983)k,j=-20778,-20778 end end else if j<=-12449 then k,j=f[29],f[29]else if j<=-10740 then f[28]={}f[29]=g[-10740+157912]or h(-18248,-10740+157912)k,j=-12449,-12449 else break end end end until j==27906 end)("\110\123\125\131",11)]or function(a)a=a%r return(r-1)-a end ba=(table.create or function(a)return{t({},1,a)};end)cc[2]=(cc[2]+1)%5 cf=72369 else if cf<=-26091 then s=function(a,b,c)if(b>c)then return end local d=c-b+1 do local e,f local g={}local h={}local function i(j,k)h[k]=j;return h[k]end local j={}j[1]=2 j[2]=2 j[3]=2 local k=0 local l=0 local m=-24473 repeat if m>=-24473 then if m>=51995 then if m<=55109 then if m<55109 then if f==0 and d>=6 then e=85198 f=1 end if f==0 and d>=5 then e=59253 f=1 end if f==0 and d>=4 then e=26445 f=1 end if f==0 and d>=3 then e=19530 f=1 end k=j[2]~=1 and 55109 or-47188 g[6]=h[51995+40566]or i(-47188,51995+40566)k,m=-45866,-45866 else if e==52004 then return a[b],a[b+1],a[b+2],a[b+3],a[b+4],a[b+5],a[b+6],s(a,b+7,c)end if e==85198 then return a[b],a[b+1],a[b+2],a[b+3],a[b+4],a[b+5],s(a,b+6,c)end g[8]=h[55109+171637]or i(-43731,55109+171637)k,m=61176,61176 end else if m<78524 then k,m=g[8],g[8]else if e==40930 then return a[b],s(a,b+1,c)end j[3]=(j[3]+1)%5 g[10]=h[78524+40566]or i(-13372,78524+40566)m=-24476 end end else if m<=-24473 then e=0 f=0 if f==0 and d>=8 then e=62698 f=1 end if f==0 and d>=7 then e=52004 f=1 end k=j[2]==0 and-47188 or 51995 g[5]=h[-24473+302708]or i(51995,-24473+302708)k,m=-41267,-41267 else if m<=-15081 then k,m=g[9],g[9]else break end end end else if m<=-43731 then if m<=-47188 then if f==0 and d>=2 then e=79148 f=1 end if f==0 then e=40930 f=1 end if e==62698 then return a[b],a[b+1],a[b+2],a[b+3],a[b+4],a[b+5],a[b+6],a[b+7],s(a,b+8,c)end g[7]=h[-47188+40566]or i(55109,-47188+40566)l,m=-39402,-39402 else if m~=-43731 then k,m=g[6],g[6]else if e==59253 then return a[b],a[b+1],a[b+2],a[b+3],a[b+4],s(a,b+5,c)end if e==26445 then return a[b],a[b+1],a[b+2],a[b+3],s(a,b+4,c)end if e==19530 then return a[b],a[b+1],a[b+2],s(a,b+3,c)end if e==79148 then return a[b],a[b+1],s(a,b+2,c)end g[9]=h[-43731+40566]or i(78524,-43731+40566)k,m=-15081,-15081 end end else if m>=-39402 then if m==-39402 then l,m=g[7],g[7]else m=g[10]end else k,m=g[5],g[5]end end end until m==-13372 end end cd=cc[1]~=1 and-41521 or 20324 ce,cf=20324,20324 else break end end end end end end until cf==-22699 end)(error,next,string.match,tonumber,string.gsub,string.sub,table.insert,string.char,string.byte,coroutine.yield,coroutine.wrap,string.rep,table.concat,math.floor,select,(getfenv or function()return _ENV;end),setmetatable,next,(table.unpack or unpack),(table.pack or function(...)return{...};end),math.min,(function(b)if b<=1 then return false end;if b<=3 then return true end;if b%2==0 or b%3==0 then return false end;local c=5;while c*c<=b do if b%c==0 or b%(c+2)==0 then return false end;c=c+6 end;return true end),string.len,table.remove,table.sort,(string.unpack),string.gmatch,string.find,string.reverse,tostring,math.abs,rawget,string.format);
 
    end,
 })
 
-
 local Button = Tab:CreateButton({
    Name = "Network Ownership Abuser(@im_partrick)",
    Callback = function()
-   --1. rules: it is forbidden to change the credit name, this script was created by @im_patrick you will be charged dcma for changing the credit
---2. rules: changing the code using AI and claiming it as your own is not allowed
 
 if patricknpcpanel then return end; patricknpcpanel = true
 
@@ -19037,8 +18398,6 @@ local github = "https://raw.githubusercontent.com/randomstring0/fe-source/refs/h
 local load = loadstring(game:HttpGet(github .. "/module.Luau"))()
 
 saved = loadstring(game:HttpGet(github .. "/table.luau"))()
-
-
 
 local save = saved or {}
 
@@ -19072,7 +18431,7 @@ local light = function(adornee, color)
 		tweenservice:Create(highlight, medium, {OutlineTransparency  = 0}):Play()
 		task.wait(.5)
 		tweenservice:Create(highlight, medium, {OutlineTransparency  = 1}):Play()
-	end)	
+	end)
 end
 
 local isnpc = function(ins)
@@ -19080,12 +18439,11 @@ local isnpc = function(ins)
 	local player = plrs:GetPlayerFromCharacter(ins)
 
 	if humanoid and not player then
-		return ins 
+		return ins
 	end
 
 	return nil
 end
-
 
 new:mainbutton(save["1"].title, save["1"].des, function()
 	if currentnpc then
@@ -19129,7 +18487,6 @@ new:mainbutton(save["3"].title, save["3"].des, function()
 	end
 end)
 
-
 local chr, cons
 new:maintoggle(save["4"].title, save["4"].des, function(a)
 	if a then
@@ -19140,7 +18497,7 @@ new:maintoggle(save["4"].title, save["4"].des, function(a)
 					chr = lp.Character
 					lp.Character = currentnpc
 					ws.CurrentCamera.CameraSubject = currentnpc:FindFirstChild("HumanoidRootPart")
-					-- idea from sonle
+
 					local move = 0.01
 					cons = rs.PreSimulation:Connect(function()
 						local hum = lp.Character:FindFirstChildOfClass("Humanoid")
@@ -19252,7 +18609,6 @@ follownpc = new:maintoggle(save["8"].title, save["8"].des, function(a)
 	end
 end)
 
-
 local con1
 new:extratoggle(save["9"].title, function(a)
 	if a then
@@ -19282,7 +18638,6 @@ new:extratoggle(save["9"].title, function(a)
 		end
 	end
 end)
-
 
 local con2
 new:extratoggle(save["10"].title, function(a)
@@ -19314,9 +18669,6 @@ new:extratoggle(save["10"].title, function(a)
 	end
 end)
 
-
-
-
 mouse.Button1Down:Connect(function()
 	if clicknpc and mouse.Target and mouse.Target.Parent:FindFirstChild("HumanoidRootPart") then
 		if mouse.Target.Parent:FindFirstChild("HumanoidRootPart").Anchored == false then
@@ -19342,7 +18694,6 @@ rs.RenderStepped:Connect(function()
 	end
 end)
 
-
 return g2l, require;
    end,
 })
@@ -19350,7 +18701,7 @@ return g2l, require;
 local Button = Tab:CreateButton({
    Name = "Morph Gui(Client Sided)",
    Callback = function()
-   -- Theme Colors
+
 local BLACK = Color3.fromRGB(15, 15, 15)
 local DARK_GRAY = Color3.fromRGB(35, 35, 35)
 local LIST_BG = Color3.fromRGB(25, 25, 25)
@@ -19360,25 +18711,22 @@ local LIGHT_GREEN = Color3.fromRGB(50, 180, 50)
 local BLUE = Color3.fromRGB(50, 100, 200)
 local MENU_ALPHA = 0.95
 
--- Services
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local StarterGui = game:GetService("StarterGui")
 local UserInputService = game:GetService("UserInputService")
-local HttpService = game:GetService("HttpService") -- Required for saving
+local HttpService = game:GetService("HttpService")
 local player = Players.LocalPlayer
 
--- Variables
 local creatorUserId = nil
 local creatorThumbnail = ""
 local minimized = false
 local draggingTitleBar = false
 local dragStart, startPos = nil, nil
-local savedAvatars = {} -- Storage for saved avatars
-local FILE_NAME = "KuramaMorph_Saved.json" -- File name in your Workspace folder
+local savedAvatars = {}
+local FILE_NAME = "KuramaMorph_Saved.json"
 
--- Creator Info
 local success, result = pcall(function()
     return Players:GetUserIdFromNameAsync("akuramaa_xd")
 end)
@@ -19392,12 +18740,10 @@ if success then
     end
 end
 
--- Cleanup Existing GUI
-if CoreGui:FindFirstChild("MorphAvatarByKuramaMod") then 
-    CoreGui["MorphAvatarByKuramaMod"]:Destroy() 
+if CoreGui:FindFirstChild("MorphAvatarByKuramaMod") then
+    CoreGui["MorphAvatarByKuramaMod"]:Destroy()
 end
 
--- Main GUI Setup
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "MorphAvatarByKuramaMod"
 screenGui.ResetOnSpawn = false
@@ -19414,13 +18760,12 @@ frame.BorderSizePixel = 0
 frame.Active = false
 frame.Parent = screenGui
 frame.Visible = true
-frame.ClipsDescendants = false 
+frame.ClipsDescendants = false
 
 local frameCorner = Instance.new("UICorner")
 frameCorner.CornerRadius = UDim.new(0, 8)
 frameCorner.Parent = frame
 
--- Title Bar
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 30)
 titleBar.Position = UDim2.new(0, 0, 0, 0)
@@ -19440,7 +18785,6 @@ title.TextSize = 16
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = titleBar
 
--- Username Input
 local usernameInput = Instance.new("TextBox")
 usernameInput.Size = UDim2.new(1, -20, 0, 30)
 usernameInput.Position = UDim2.new(0, 10, 0, 40)
@@ -19459,14 +18803,12 @@ local inputCorner = Instance.new("UICorner")
 inputCorner.CornerRadius = UDim.new(0, 4)
 inputCorner.Parent = usernameInput
 
--- Buttons Container
 local btnContainer = Instance.new("Frame")
 btnContainer.Size = UDim2.new(1, -20, 0, 35)
 btnContainer.Position = UDim2.new(0, 10, 0, 80)
 btnContainer.BackgroundTransparency = 1
 btnContainer.Parent = frame
 
--- Save Button
 local saveBtn = Instance.new("TextButton")
 saveBtn.Name = "SaveBtn"
 saveBtn.Size = UDim2.new(0.48, 0, 1, 0)
@@ -19482,7 +18824,6 @@ local saveCorner = Instance.new("UICorner")
 saveCorner.CornerRadius = UDim.new(0, 4)
 saveCorner.Parent = saveBtn
 
--- Saved List Toggle Button
 local savedListBtn = Instance.new("TextButton")
 savedListBtn.Name = "SavedListBtn"
 savedListBtn.Size = UDim2.new(0.48, 0, 1, 0)
@@ -19498,16 +18839,15 @@ local savedListCorner = Instance.new("UICorner")
 savedListCorner.CornerRadius = UDim.new(0, 4)
 savedListCorner.Parent = savedListBtn
 
--- Saved List Dropdown
 local savedFrame = Instance.new("ScrollingFrame")
 savedFrame.Name = "SavedAvatarsFrame"
 savedFrame.Size = UDim2.new(1, 0, 0, 150)
-savedFrame.Position = UDim2.new(0, 0, 1, 5) 
+savedFrame.Position = UDim2.new(0, 0, 1, 5)
 savedFrame.BackgroundColor3 = BLACK
 savedFrame.BackgroundTransparency = 0.1
 savedFrame.BorderSizePixel = 0
 savedFrame.ScrollBarThickness = 4
-savedFrame.Visible = false 
+savedFrame.Visible = false
 savedFrame.Parent = frame
 savedFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 savedFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
@@ -19527,7 +18867,6 @@ savedPadding.PaddingTop = UDim.new(0, 10)
 savedPadding.PaddingBottom = UDim.new(0, 10)
 savedPadding.Parent = savedFrame
 
--- Window Controls
 local miniBtn = Instance.new("TextButton")
 miniBtn.Name = "MinimizeButton"
 miniBtn.Size = UDim2.new(0, 30, 0, 30)
@@ -19551,8 +18890,6 @@ closeBtn.BackgroundTransparency = 1
 closeBtn.Parent = titleBar
 closeBtn.ZIndex = 2
 
--- === FUNCTIONS ===
-
 local function sendNotif(titleT, textT, image)
     pcall(function()
         StarterGui:SetCore("SendNotification", {
@@ -19564,9 +18901,8 @@ local function sendNotif(titleT, textT, image)
     end)
 end
 
--- FILE SAVING SYSTEM
 local function saveToFile()
-    if not writefile then return end -- Check for executor support
+    if not writefile then return end
     local success, encoded = pcall(function()
         return HttpService:JSONEncode(savedAvatars)
     end)
@@ -19577,7 +18913,7 @@ local function saveToFile()
 end
 
 local function loadFromFile()
-    if not isfile or not readfile then return end -- Check for executor support
+    if not isfile or not readfile then return end
     if isfile(FILE_NAME) then
         local success, decoded = pcall(function()
             return HttpService:JSONDecode(readfile(FILE_NAME))
@@ -19622,21 +18958,21 @@ end
 local function findPlayerByName(partialName)
     if not partialName or partialName == "" then return nil end
     local searchName = partialName:lower()
-    
+
     local localPlayer = nil
     for _, v in ipairs(Players:GetPlayers()) do
         local nameLower = v.Name:lower()
         local dNameLower = v.DisplayName:lower()
-        
+
         if nameLower == searchName or dNameLower == searchName then
             return v
         end
-        
+
         if nameLower:sub(1, #searchName) == searchName or dNameLower:sub(1, #searchName) == searchName then
             localPlayer = v
         end
     end
-    
+
     if not localPlayer then
         local success, userId = pcall(function()
             return Players:GetUserIdFromNameAsync(searchName)
@@ -19645,24 +18981,24 @@ local function findPlayerByName(partialName)
             return {UserId = userId, Name = searchName}
         end
     end
-    
+
     return localPlayer
 end
 
 local function morphToPlayer(target)
-    if not target then 
+    if not target then
         sendNotif("Morph Avatar", "No target found!", "")
-        return 
+        return
     end
-    
+
     local userId = target.UserId or (type(target) == "number" and target or target.UserId)
     local targetName = target.Name or "Unknown"
-    
+
     if userId == player.UserId then
         sendNotif("Morph Avatar", "Cannot morph to yourself!", "")
         return
     end
-    
+
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoid = character:WaitForChild("Humanoid", 10)
     if not humanoid then return end
@@ -19670,7 +19006,7 @@ local function morphToPlayer(target)
     local success, desc = pcall(function()
         return Players:GetHumanoidDescriptionFromUserId(userId)
     end)
-    
+
     if success and desc then
         local targetThumbnail = ""
         pcall(function()
@@ -19743,7 +19079,6 @@ local function refreshSavedList()
         nameLbl.TextTruncate = Enum.TextTruncate.AtEnd
         nameLbl.Parent = itemFrame
 
-        -- Equip Button
         local equipBtn = Instance.new("TextButton")
         equipBtn.Size = UDim2.new(0, 25, 0, 25)
         equipBtn.Position = UDim2.new(1, -60, 0.5, -12.5)
@@ -19752,7 +19087,7 @@ local function refreshSavedList()
         equipBtn.TextColor3 = WHITE
         equipBtn.Font = Enum.Font.GothamBold
         equipBtn.Parent = itemFrame
-        
+
         local equipCorner = Instance.new("UICorner")
         equipCorner.CornerRadius = UDim.new(0, 4)
         equipCorner.Parent = equipBtn
@@ -19761,7 +19096,6 @@ local function refreshSavedList()
             morphToPlayer({UserId = data.UserId, Name = data.Name})
         end)
 
-        -- Delete Button
         local delBtn = Instance.new("TextButton")
         delBtn.Size = UDim2.new(0, 25, 0, 25)
         delBtn.Position = UDim2.new(1, -30, 0.5, -12.5)
@@ -19777,7 +19111,7 @@ local function refreshSavedList()
 
         delBtn.MouseButton1Click:Connect(function()
             table.remove(savedAvatars, i)
-            saveToFile() -- Update file on delete
+            saveToFile()
             refreshSavedList()
         end)
     end
@@ -19785,9 +19119,9 @@ end
 
 local function saveCurrentInput()
     local text = usernameInput.Text
-    if text == "" then 
+    if text == "" then
         sendNotif("Save", "Enter a username first!", "")
-        return 
+        return
     end
 
     local target = findPlayerByName(text)
@@ -19800,7 +19134,7 @@ local function saveCurrentInput()
         end
 
         table.insert(savedAvatars, {Name = target.Name, UserId = target.UserId})
-        saveToFile() -- Update file on save
+        saveToFile()
         sendNotif("Save", "Saved " .. target.Name, "")
         if savedFrame.Visible then
             refreshSavedList()
@@ -19809,8 +19143,6 @@ local function saveCurrentInput()
         sendNotif("Save", "Player not found!", "")
     end
 end
-
--- === EVENTS ===
 
 titleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -19840,7 +19172,7 @@ miniBtn.MouseButton1Click:Connect(function()
         miniBtn.Text = "+"
         usernameInput.Visible = false
         btnContainer.Visible = false
-        savedFrame.Visible = false 
+        savedFrame.Visible = false
     else
         frame.Size = UDim2.new(0, 200, 0, 130)
         miniBtn.Text = "-"
@@ -19879,8 +19211,7 @@ savedListBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Initialize
-loadFromFile() -- Load Saved Avatars on Startup
+loadFromFile()
 sendNotif("Morph Avatar", "Permanent Save Enabled", creatorThumbnail)
    end,
 })
@@ -19888,14 +19219,6 @@ sendNotif("Morph Avatar", "Permanent Save Enabled", creatorThumbnail)
 local Button = Tab:CreateButton({
    Name = "FE Sound Spammer(Scripty)",
    Callback = function()
-   --sound thingy
-
---[[
-Made By Scripty#2063
-If You Gonna showcase this , make sure to Credit me , do not take that you are owner of the script
-This Gui is Undetectable
-RespectFilteringEnabled must be false to use it
---]]
 
 local ScreenGui = Instance.new("ScreenGui")
 local Draggable = Instance.new("Frame")
@@ -19921,8 +19244,6 @@ local IY = Instance.new("TextButton")
 local UICorner_5 = Instance.new("UICorner")
 local TextLabel_2 = Instance.new("TextLabel")
 local Wait = Instance.new("TextBox")
-
---Properties:
 
 ScreenGui.Name = ". Ǥ҉̷҉̵҉̸҉̷҉̵҉̸҉̡҉̡҉̼҉̱҉͎҉͎҉̞҉̼҉̱҉͎҉͎҉̞҉ͤ҉ͬ҉̅҉ͤ҉ͬ"
 ScreenGui.Parent = game:GetService("CoreGui")
@@ -20141,14 +19462,12 @@ Wait.TextColor3 = Color3.fromRGB(255, 255, 255)
 Wait.TextSize = 30.000
 Wait.TextWrapped = true
 
---Sound Service:
 local notification = Instance.new("Sound")
 notification.Parent = game:GetService("SoundService")
 notification.SoundId = "rbxassetid://9086208751"
 notification.Volume = 5
 notification.Name = ". Ǥ҉̷҉̵҉̸҉̷҉̵҉̸҉̡҉̡҉̼҉̱҉͎҉͎҉̞҉̼҉̱҉͎҉͎҉̞҉ͤ҉ͬ҉̅҉ͤ҉ͬ"
 
---funuction:
 Exit.MouseButton1Click:Connect(function()
 	ScreenGui:Destroy()
 end)
@@ -20159,7 +19478,7 @@ end)
 
 _1E.MouseButton1Click:Connect(function()
 	Mute = true
-	while Mute == true do 
+	while Mute == true do
 		wait()
 		for _, sound in next, workspace:GetDescendants() do
 			if sound:IsA("Sound") then
@@ -20194,16 +19513,16 @@ end)
 Stop.MouseButton1Click:Connect(function()
 	Active = false
 end)
---Credit:
+
 notification:Play()
 game:GetService("StarterGui"):SetCore("SendNotification", {
 	Title = "FEAG";
 	Text = "FEAG Has Been Loaded , Made By Scripty#2063 (gamer14_123)";
 	Icon = "";
-	Duration = 10; 
+	Duration = 10;
 	Button1 = "Yes Sir";
 })
---Check:
+
 while true do
 	wait(0.5)
 	local setting = game:GetService("SoundService").RespectFilteringEnabled
@@ -20218,59 +19537,49 @@ end
    end,
 })
 
-
 local Button = Tab:CreateButton({
    Name = "Purgatory(Wesd)",
    Callback = function()
-   -- // Purgatory Script | Velocity v5 // --
--- // Library: Kavo UI // --
--- // Open Source Version // --
 
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
 local Window = Library.CreateLib("Purgatory | Velocity v5", "Midnight")
 
--- // Services // --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 
--- // Variables // --
 local LocalPlayer = Players.LocalPlayer
 local Remotes = ReplicatedStorage:WaitForChild("OnServerEvents")
 
 local CombatRemote = Remotes:WaitForChild("CombatServer", 5)
 local DodgeRemote = Remotes:WaitForChild("DodgeServer", 5)
-local VisualRemote = Remotes:WaitForChild("PlrFxRelay", 5) 
+local VisualRemote = Remotes:WaitForChild("PlrFxRelay", 5)
 local UpgradeRemote = Remotes:WaitForChild("UpgradeSelected", 5)
 
--- // Settings // --
 local Settings = {
     AutoAttack = false,
     AttackDist = 15,
-    
+
     AutoDodge = false,
-    DodgeSpeed = 0.1, 
+    DodgeSpeed = 0.1,
     DodgeID = 5,
     RandomizeDodge = false,
-    
-    SpeedEnabled = false, 
-    WalkSpeed = 50,       
-    
-    SelectedUpgrade = "Power" -- Default
+
+    SpeedEnabled = false,
+    WalkSpeed = 50,
+
+    SelectedUpgrade = "Power"
 }
 
--- // Upgrade List // --
--- Sourced from Game Wiki & Data
 local UpgradeList = {
-    -- Basic / Common
+
     "Power",
     "Agility",
     "Vitality",
     "Force",
     "Regeneration",
-    
-    -- Advanced / Rare
+
     "Fleetfoot",
     "Perfect Dodge",
     "Shatter",
@@ -20278,8 +19587,7 @@ local UpgradeList = {
     "Maestro",
     "Health Pack",
     "Survivor",
-    
-    -- Legendary
+
     "Giantslayer",
     "Blackhole",
     "Cataclysm",
@@ -20287,15 +19595,13 @@ local UpgradeList = {
     "Juggernaut",
     "Second Wind",
     "Assassin",
-    
-    -- Divine / Special
+
     "Cleave",
     "Glass Cannon",
     "Turtle",
     "The Force in Reverse"
 }
 
--- // Tabs // --
 local CombatTab = Window:NewTab("Combat")
 local CombatSection = CombatTab:NewSection("Offense")
 local DodgeSection = CombatTab:NewSection("Auto Dodge")
@@ -20306,8 +19612,6 @@ local MoveSection = MoveTab:NewSection("Speed Logic")
 local MiscTab = Window:NewTab("Misc")
 local MiscSection = MiscTab:NewSection("Bypass Upgrades")
 
--- // Functions // --
-
 local function GetClosestEnemy()
     local Character = LocalPlayer.Character
     local Root = Character and Character:FindFirstChild("HumanoidRootPart")
@@ -20315,7 +19619,7 @@ local function GetClosestEnemy()
 
     local ClosestDist = Settings.AttackDist
     local ClosestEnemy = nil
-    
+
     local EnemiesFolder = Workspace:FindFirstChild("Enemies")
     if EnemiesFolder then
         for _, Enemy in pairs(EnemiesFolder:GetChildren()) do
@@ -20335,23 +19639,21 @@ end
 
 local function Attack(Target)
     if not CombatRemote then return end
-    
+
     local args = {
         Target.HumanoidRootPart,
         "Melee",
         {
-            ["dismantle"] = true, 
+            ["dismantle"] = true,
             ["riposte"] = false,
-            ["backstab"] = true 
+            ["backstab"] = true
         }
     }
-    
+
     pcall(function()
         CombatRemote:FireServer(unpack(args))
     end)
 end
-
--- // Combat UI // --
 
 CombatSection:NewToggle("Kill Aura (OP)", "Instantly kills enemies in range.", function(state)
     Settings.AutoAttack = state
@@ -20360,8 +19662,6 @@ end)
 CombatSection:NewSlider("Attack Range", "Range to start killing.", 50, 5, function(value)
     Settings.AttackDist = value
 end)
-
--- // Dodge UI // --
 
 DodgeSection:NewToggle("Auto Dodge", "Enable the dodge loop.", function(state)
     Settings.AutoDodge = state
@@ -20372,14 +19672,12 @@ DodgeSection:NewToggle("Randomize ID", "Cycles random IDs (1-6) automatically.",
 end)
 
 DodgeSection:NewSlider("Dodge Speed", "How fast to spam (Lower = Faster)", 20, 1, function(value)
-    Settings.DodgeSpeed = value / 20 
+    Settings.DodgeSpeed = value / 20
 end)
 
 DodgeSection:NewSlider("Manual ID", "Only used if Randomize is OFF.", 10, 1, function(value)
     Settings.DodgeID = value
 end)
-
--- // Movement UI // --
 
 MoveSection:NewToggle("Enable Speed Loop", "Forces your WalkSpeed constantly.", function(state)
     Settings.SpeedEnabled = state
@@ -20388,8 +19686,6 @@ end)
 MoveSection:NewSlider("WalkSpeed Amount", "Set your speed.", 100, 16, function(value)
     Settings.WalkSpeed = value
 end)
-
--- // Misc UI // --
 
 MiscSection:NewDropdown("Select Upgrade", "Choose from the Full Wiki List", UpgradeList, function(currentOption)
     Settings.SelectedUpgrade = currentOption
@@ -20403,7 +19699,7 @@ end)
 
 MiscSection:NewButton("Apply Upgrade", "Spam this to force the upgrade.", function()
     if UpgradeRemote then
-        -- This fires whatever is currently set in Settings.SelectedUpgrade
+
         local args = {
             Settings.SelectedUpgrade,
             {},
@@ -20415,12 +19711,9 @@ end)
 
 MiscSection:NewLabel("Current Selection: Check Console (F9) if unsure")
 
--- // Loops // --
-
--- Attack Loop
 task.spawn(function()
     while true do
-        task.wait() 
+        task.wait()
         if Settings.AutoAttack then
             local Target = GetClosestEnemy()
             if Target then
@@ -20430,7 +19723,6 @@ task.spawn(function()
     end
 end)
 
--- Dodge Loop
 task.spawn(function()
     while true do
         if Settings.AutoDodge then
@@ -20441,7 +19733,7 @@ task.spawn(function()
                 end
 
                 DodgeRemote:FireServer(currentID)
-                
+
                 if VisualRemote then
                     VisualRemote:FireServer("Dash")
                 end
@@ -20451,7 +19743,6 @@ task.spawn(function()
     end
 end)
 
--- Speed Loop
 RunService.RenderStepped:Connect(function()
     if Settings.SpeedEnabled then
         pcall(function()
@@ -20468,14 +19759,15 @@ end)
 local Button = Tab:CreateButton({
    Name = "Da Strike",
    Callback = function()
-   --// Dahood games (reuses the Rayfield Gen2 library loaded at the top of this hub)
+
 local Window = Rayfield:CreateWindow({
     Name = "Dahood Games",
-    -- Gen2 has no loading screen; this shows under the title instead
+
     Subtitle = "Open source, Safe, Free, Undetected — by Wesd",
     ShowName = "Capybara hub",
     Theme = "default",
-    -- toggle keybind defaults to K (same as before); change it in the window's Settings tab
+    SidebarLayout = true,
+
     Configuration = {
         AutoSave = true,
         AutoLoad = true,
@@ -20486,7 +19778,6 @@ local Window = Rayfield:CreateWindow({
 local Tab = Window:CreateTab({ Name = "Main", Icon = 4483362458 })
 local PriorityTab = Window:CreateTab({ Name = "Target Priority", Icon = 4483362458 })
 
--- Silent Aim Settings
 local SilentAimEnabled = false
 local PredictionEnabled = false
 local PredictionAmount = 0.15
@@ -20495,23 +19786,19 @@ local FOVCircleVisible = true
 local FOVCircleColor = Color3.fromRGB(255, 255, 255)
 local FOVCircleThickness = 1.5
 
--- Priority Settings
 local IgnoreDead = true
 local DeadHPThreshold = 0
 local IgnoreTeam = false
 local WallPriority = false
 local PriorityMode = "Closest to Crosshair"
 
--- Target Bind
 local TargetBindKey = Enum.KeyCode.T
 local LockedTarget = nil
 local TargetBindActive = false
 
--- Mouse, Camera
 local mouse = game.Players.LocalPlayer:GetMouse()
 local camera = workspace.CurrentCamera
 
--- Create FOV Circle
 local fovCircle = Drawing.new("Circle")
 fovCircle.Radius = FOVRadius
 fovCircle.Color = FOVCircleColor
@@ -20519,10 +19806,8 @@ fovCircle.Thickness = FOVCircleThickness
 fovCircle.Transparency = 1
 fovCircle.Filled = false
 
--- Highlight Instance
 local currentHighlight = nil
 
--- Update FOV Circle
 task.spawn(function()
     while task.wait() do
         fovCircle.Visible = FOVCircleVisible
@@ -20533,7 +19818,6 @@ task.spawn(function()
     end
 end)
 
--- Check if Player is Behind Wall
 local function IsBehindWall(char)
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return true end
@@ -20542,7 +19826,6 @@ local function IsBehindWall(char)
     return hitPart and hitPart:IsDescendantOf(char) == false
 end
 
--- Apply Highlight
 local function HighlightTarget(player)
     if currentHighlight then
         currentHighlight:Destroy()
@@ -20559,7 +19842,6 @@ local function HighlightTarget(player)
     end
 end
 
--- Get Target
 local function GetTarget()
     if TargetBindActive and LockedTarget and LockedTarget.Character then
         return LockedTarget
@@ -20607,7 +19889,6 @@ local function GetTarget()
     return listToUse[1].Player
 end
 
--- Keybind Handling
 game:GetService("UserInputService").InputBegan:Connect(function(input, gpe)
     if gpe then return end
     if input.KeyCode == TargetBindKey then
@@ -20624,7 +19905,6 @@ game:GetService("UserInputService").InputBegan:Connect(function(input, gpe)
     end
 end)
 
--- Silent Aim Loop
 task.spawn(function()
     while task.wait() do
         if SilentAimEnabled then
@@ -20646,7 +19926,6 @@ task.spawn(function()
     end
 end)
 
--- UI Controls
 Tab:CreateToggle({
     Name = "Enable Silent Aim",
     CurrentValue = false,
@@ -20714,10 +19993,9 @@ PriorityTab:CreateDropdown({
     Name = "Priority Mode",
     Options = {"Closest to Crosshair", "Lowest HP", "Highest HP"},
     Value = PriorityMode,
-    Callback = function(opt) PriorityMode = opt end -- Gen2 single-select passes the option string directly
+    Callback = function(opt) PriorityMode = opt end
 })
 
--- Gen2 has no Label element; a section heading shows the info line
 PriorityTab:CreateSection({ Name = "Target Bind Key: T (toggle lock on current target)" })
 
 Tab:CreateButton({
@@ -20725,7 +20003,7 @@ Tab:CreateButton({
     Callback = function()
         if currentHighlight then currentHighlight:Destroy() end
         fovCircle:Remove()
-        Window:Unload() -- Gen2: windows are destroyed with Unload() (Rayfield:Destroy() no longer exists)
+        Window:Unload()
         script:Destroy()
     end
 })
@@ -20736,14 +20014,12 @@ Tab:CreateButton({
 local Button = Tab:CreateButton({
    Name = "Inventory Viewer",
    Callback = function()
-   
---// services
+
 local ts = game:GetService("TweenService")
 local rs = game:GetService("RunService")
 local uis = game:GetService("UserInputService")
 local players = game:GetService("Players")
 
---// config
 local lp = players.LocalPlayer
 if not lp then return end
 
@@ -20759,14 +20035,12 @@ local CONFIG = {
 	}
 }
 
---// 'secret' state management
 _G.BillboardState = {
 	enabled = true,
-	uis = {}, -- { [Player]: { gui, root, main, currentState, tweens } }
+	uis = {},
 	activeScroller = nil
 }
 
---// functions
 local function getPlayerPlatform(player)
 	local platform = "Unknown"
 	if player.GameplayPaused then platform = "Mobile" end
@@ -20786,22 +20060,22 @@ local function animate(state, direction)
 	else
 		transparencyGoal, sizeGoal = 1, UDim2.fromScale(0.8, 0.8)
 	end
-	
+
 	local transparencyTween = ts:Create(state.main, TweenInfo.new(CONFIG.animTime, Enum.EasingStyle.Quint), {BackgroundTransparency = transparencyGoal})
 	local sizeTween = ts:Create(state.root, TweenInfo.new(CONFIG.animTime, Enum.EasingStyle.Quint), {Size = sizeGoal})
 
 	table.insert(state.tweens, transparencyTween)
 	table.insert(state.tweens, sizeTween)
-	
+
 	transparencyTween:Play()
 	sizeTween:Play()
-	
+
 	return sizeTween
 end
 
 local function createElements(player)
 	local state = { currentState = "hidden", tweens = {} }
-	
+
 	state.gui = Instance.new("BillboardGui")
 	state.gui.Name, state.gui.AlwaysOnTop = "PlayerInfo", true
 	state.gui.Size, state.gui.StudsOffset = UDim2.fromOffset(200, 80), Vector3.new(0, 2.2, 0)
@@ -20824,21 +20098,21 @@ local function createElements(player)
 
 	local healthBar = Instance.new("Frame", state.main)
 	healthBar.Name = "HealthBar"
-	-- FIX: Positioned at the top center
+
 	healthBar.Size = UDim2.new(0.8, 0, 0, 8)
 	healthBar.Position = UDim2.new(0.5, 0, 0, 4)
 	healthBar.AnchorPoint = Vector2.new(0.5, 0)
 	healthBar.BackgroundColor3 = Color3.fromRGB(10, 11, 13)
 	Instance.new("UICorner", healthBar).CornerRadius = UDim.new(1, 0)
-	
+
 	local healthFill = Instance.new("Frame", healthBar)
 	healthFill.Name, healthFill.Size = "Fill", UDim2.fromScale(1, 1)
 	healthFill.BackgroundColor3 = Color3.fromRGB(80, 220, 120)
 	Instance.new("UICorner", healthFill).CornerRadius = UDim.new(1, 0)
-	
+
 	local scroller = Instance.new("ScrollingFrame", state.main)
 	scroller.Name = "Backpack"
-	-- FIX: Adjusted to fit below the new healthbar position
+
 	scroller.Size = UDim2.new(1, -10, 1, -18)
 	scroller.Position = UDim2.new(0.5, 0, 1, -4)
 	scroller.AnchorPoint = Vector2.new(0.5, 1)
@@ -20850,14 +20124,14 @@ local function createElements(player)
 	local grid = Instance.new("UIGridLayout", scroller)
 	grid.CellSize, grid.CellPadding = UDim2.fromOffset(28, 28), UDim2.fromOffset(4, 4)
 	grid.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	
+
 	local tooltip = Instance.new("TextLabel", scroller)
 	tooltip.Name, tooltip.Size = "Tooltip", UDim2.new(1, 0, 0, 20)
 	tooltip.Position, tooltip.BackgroundColor3 = UDim2.new(0, 0, 1, 22), Color3.fromRGB(10, 11, 13)
 	tooltip.Font, tooltip.TextColor3, tooltip.TextSize = Enum.Font.SourceSans, Color3.new(1, 1, 1), 14
 	tooltip.Visible = false
 	Instance.new("UICorner", tooltip).CornerRadius = UDim.new(0, 4)
-	
+
 	_G.BillboardState.uis[player] = state
 	return state
 end
@@ -20866,7 +20140,7 @@ local function updateUI(player, char)
 	if not _G.BillboardState.enabled then return end
 	local state = _G.BillboardState.uis[player]
 	if not (state and state.gui) then return end
-	
+
 	local hum = char:FindFirstChildOfClass("Humanoid")
 	if hum then
 		local health = math.clamp(hum.Health / hum.MaxHealth, 0, 1)
@@ -20874,7 +20148,7 @@ local function updateUI(player, char)
 		fill.Size = UDim2.fromScale(health, 1)
 		fill.BackgroundColor3 = Color3.fromHSV(0.33 * health, 0.7, 0.8)
 	end
-	
+
 	local pData = CONFIG.platforms[getPlayerPlatform(player)]
 	local pIcon = state.main.PlatformIcon
 	pIcon.Image, pIcon.ImageColor3 = pData[1], pData[2]
@@ -20884,7 +20158,7 @@ local function updateUI(player, char)
 	for _, child in scroller:GetChildren() do
 		if child:IsA("ImageButton") then child:Destroy() end
 	end
-	
+
 	for _, tool in player.Backpack:GetChildren() do
 		if tool:IsA("Tool") then
 			local icon = Instance.new("ImageButton", scroller)
@@ -20896,22 +20170,21 @@ local function updateUI(player, char)
 	end
 end
 
---// main loop
 rs.Heartbeat:Connect(function()
 	if not _G.BillboardState.enabled then return end
 	local localChar = lp.Character
 	if not (localChar and localChar.PrimaryPart) then return end
 	local localPos = localChar.PrimaryPart.Position
-	
+
 	for _, player in players:GetPlayers() do
 		if player == lp then continue end
-		
+
 		local state = _G.BillboardState.uis[player] or createElements(player)
 		local char = player.Character
 
 		if char and char.PrimaryPart and char:FindFirstChild("Head") then
 			local dist = (localPos - char.PrimaryPart.Position).Magnitude
-			
+
 			if dist <= CONFIG.distance and state.currentState == "hidden" then
 				state.currentState = "visible"
 				state.gui.Adornee = char.Head
@@ -20932,7 +20205,6 @@ rs.Heartbeat:Connect(function()
 	end
 end)
 
---// controller & cleanup
 uis.InputChanged:Connect(function(input)
 	if not _G.BillboardState.enabled or not _G.BillboardState.activeScroller then return end
 	if input.UserInputType == Enum.UserInputType.Gamepad1 and input.KeyCode == Enum.KeyCode.Gamepad1_Thumbstick2 then
@@ -20971,16 +20243,12 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
--- Wait for LocalPlayer
 local LocalPlayer = Players.LocalPlayer
 while not LocalPlayer do
     Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
     LocalPlayer = Players.LocalPlayer
 end
 
--- ===========================
--- Config & State
--- ===========================
 local Config = {
     WindowSize = UDim2.new(0, 620, 0, 420),
     SidebarWidth = 170,
@@ -21013,9 +20281,6 @@ local State = {
     TrackedCharacters = {}
 }
 
--- ===========================
--- Helpers
--- ===========================
 local function create(instanceType, props)
     local inst = Instance.new(instanceType)
     if props then
@@ -21038,9 +20303,6 @@ local function setTextProps(lbl, text)
     lbl.BackgroundTransparency = 1
 end
 
--- ===========================
--- Visual Creation
--- ===========================
 local function createVisualForCharacter(character, player)
     if not character or character:FindFirstChild("ESPVisual") then return end
 
@@ -21048,7 +20310,6 @@ local function createVisualForCharacter(character, player)
     visu.Name = "ESPVisual"
     visu.Parent = character
 
-    -- Highlight
     local highlight = Instance.new("Highlight")
     highlight.Name = "Highlight"
     highlight.Parent = visu
@@ -21060,7 +20321,6 @@ local function createVisualForCharacter(character, player)
     highlight.FillTransparency = State.ESP.Transparency
     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
 
-    -- Billboard GUI
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "ESPBillboard"
     billboard.Size = UDim2.new(0, 200, 0, 80)
@@ -21069,7 +20329,6 @@ local function createVisualForCharacter(character, player)
     billboard.Enabled = false
     billboard.Parent = visu
 
-    -- Main frame for labels
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainFrame"
     mainFrame.Size = UDim2.new(1, 0, 1, 0)
@@ -21116,7 +20375,6 @@ local function createVisualForCharacter(character, player)
     distanceLabel.Text = "0m"
     distanceLabel.Parent = mainFrame
 
-    -- Look line system
     local lookLineFolder = Instance.new("Folder")
     lookLineFolder.Name = "LookLine"
     lookLineFolder.Parent = visu
@@ -21136,7 +20394,6 @@ local function createVisualForCharacter(character, player)
         part.Parent = lookLineFolder
     end
 
-    -- Store references
     State.TrackedCharacters[character] = {
         Visuals = visu,
         Player = player,
@@ -21151,7 +20408,6 @@ local function createVisualForCharacter(character, player)
     return visu
 end
 
--- Clean up ESP for a player
 local function cleanupESP(character)
     local data = State.TrackedCharacters[character]
     if data and data.Visuals and data.Visuals.Parent then
@@ -21160,12 +20416,9 @@ local function cleanupESP(character)
     end
 end
 
--- ===========================
--- GUI Construction
--- ===========================
 local screenGui = create("ScreenGui", {
-    Parent = LocalPlayer:WaitForChild("PlayerGui"), 
-    ResetOnSpawn = false, 
+    Parent = LocalPlayer:WaitForChild("PlayerGui"),
+    ResetOnSpawn = false,
     Name = "TeRo Wall"
 })
 
@@ -21181,10 +20434,9 @@ local main = create("Frame", {
 create("UICorner", {Parent = main, CornerRadius = UDim.new(0, 8)})
 create("UIStroke", {Parent = main, Color = Config.AccentColor, Thickness = 2, Transparency = 0.0})
 
--- Header with close button
 local header = create("Frame", {
-    Parent = main, 
-    Size = UDim2.new(1, 0, 0, 48), 
+    Parent = main,
+    Size = UDim2.new(1, 0, 0, 48),
     BackgroundTransparency = 1,
     Active = true
 })
@@ -21214,8 +20466,8 @@ closeBtn.MouseLeave:Connect(function()
 end)
 
 local title = create("TextLabel", {
-    Parent = header, 
-    Size = UDim2.new(0.6, 0, 1, 0), 
+    Parent = header,
+    Size = UDim2.new(0.6, 0, 1, 0),
     Position = UDim2.new(0.02, 0, 0, 0)
 })
 title.Text = "TeRo Wall"
@@ -21224,32 +20476,29 @@ title.TextColor3 = Config.AccentColor
 title.TextSize = 22
 title.BackgroundTransparency = 1
 
--- Sidebar
 local sidebar = create("Frame", {
-    Parent = main, 
-    Position = UDim2.new(0, 0, 0, 48), 
-    Size = UDim2.new(0, Config.SidebarWidth, 1, -48), 
+    Parent = main,
+    Position = UDim2.new(0, 0, 0, 48),
+    Size = UDim2.new(0, Config.SidebarWidth, 1, -48),
     BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 })
 create("UICorner", {Parent = sidebar, CornerRadius = UDim.new(0, 6)})
 local sidePadding = 10
 
--- Content area
 local content = create("Frame", {
-    Parent = main, 
-    Position = UDim2.new(0, Config.SidebarWidth, 0, 48), 
-    Size = UDim2.new(1, -Config.SidebarWidth, 1, -48), 
+    Parent = main,
+    Position = UDim2.new(0, Config.SidebarWidth, 0, 48),
+    Size = UDim2.new(1, -Config.SidebarWidth, 1, -48),
     BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 })
 create("UICorner", {Parent = content, CornerRadius = UDim.new(0, 6)})
 
--- Page manager
 local pages = {}
 local function newPage(name)
     local p = create("Frame", {
-        Parent = content, 
-        Size = UDim2.new(1, 0, 1, 0), 
-        BackgroundTransparency = 1, 
+        Parent = content,
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
         Name = name
     })
     p.Visible = false
@@ -21263,16 +20512,15 @@ local playersPage = newPage("Players")
 
 pages["Home"].Visible = true
 
--- Sidebar buttons
 local sidebarButtons = {}
 local btnY = 8
 
 local function makeSidebarButton(text, pageName)
     local btn = create("TextButton", {
-        Parent = sidebar, 
-        Size = UDim2.new(1, -sidePadding*2, 0, 34), 
-        Position = UDim2.new(0, sidePadding, 0, btnY), 
-        BackgroundTransparency = 1, 
+        Parent = sidebar,
+        Size = UDim2.new(1, -sidePadding*2, 0, 34),
+        Position = UDim2.new(0, sidePadding, 0, btnY),
+        BackgroundTransparency = 1,
         Text = text
     })
     btn.Font = Enum.Font.Gotham
@@ -21295,7 +20543,7 @@ local function makeSidebarButton(text, pageName)
             TweenService:Create(b, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(200,200,200)}):Play()
         end
         TweenService:Create(btn, TweenInfo.new(0.15), {TextColor3 = Color3.new(1,1,1)}):Play()
-        
+
         for name, pg in pairs(pages) do
             pg.Visible = (name == pageName)
         end
@@ -21312,10 +20560,9 @@ makeSidebarButton("Players", "Players")
 
 sidebarButtons[1].TextColor3 = Color3.new(1,1,1)
 
--- Home page
 local homeTitle = create("TextLabel", {
-    Parent = homePage, 
-    Position = UDim2.new(0, 14, 0, 6), 
+    Parent = homePage,
+    Position = UDim2.new(0, 14, 0, 6),
     Size = UDim2.new(1, -28, 0, 28)
 })
 homeTitle.Font = Enum.Font.GothamBold
@@ -21325,8 +20572,8 @@ homeTitle.Text = "Universal ESP"
 homeTitle.BackgroundTransparency = 1
 
 local homeDesc = create("TextLabel", {
-    Parent = homePage, 
-    Position = UDim2.new(0, 14, 0, 36), 
+    Parent = homePage,
+    Position = UDim2.new(0, 14, 0, 36),
     Size = UDim2.new(1, -28, 0, 50)
 })
 homeDesc.Font = Enum.Font.Gotham
@@ -21336,11 +20583,10 @@ homeDesc.Text = "TeRo Wall works in any Roblox game. Configure ESP settings, tra
 homeDesc.TextWrapped = true
 homeDesc.BackgroundTransparency = 1
 
--- ESP Settings page helpers
 local function makeLabel(parent, posY, text)
     local lbl = create("TextLabel", {
-        Parent = parent, 
-        Position = UDim2.new(0, 14, 0, posY), 
+        Parent = parent,
+        Position = UDim2.new(0, 14, 0, posY),
         Size = UDim2.new(0.5, -20, 0, 20)
     })
     setTextProps(lbl, text)
@@ -21351,9 +20597,9 @@ end
 local function makeToggle(parent, posY, labelText, initial, callback)
     makeLabel(parent, posY, labelText)
     local btn = create("TextButton", {
-        Parent = parent, 
-        Position = UDim2.new(0.5, 0, 0, posY-2), 
-        Size = UDim2.new(0.45, -14, 0, 24), 
+        Parent = parent,
+        Position = UDim2.new(0.5, 0, 0, posY-2),
+        Size = UDim2.new(0.45, -14, 0, 24),
         Text = initial and "ON" or "OFF"
     })
     btn.Font = Enum.Font.GothamBold
@@ -21373,19 +20619,19 @@ end
 local function makeSlider(parent, posY, labelText, min, max, initial, callback)
     makeLabel(parent, posY, labelText)
     local bar = create("Frame", {
-        Parent = parent, 
-        Position = UDim2.new(0.5, 0, 0, posY), 
-        Size = UDim2.new(0.45, -14, 0, 18), 
+        Parent = parent,
+        Position = UDim2.new(0.5, 0, 0, posY),
+        Size = UDim2.new(0.45, -14, 0, 18),
         BackgroundColor3 = Color3.fromRGB(40,40,40)
     })
     create("UICorner", {Parent = bar, CornerRadius = UDim.new(0, 6)})
     local fill = create("Frame", {
-        Parent = bar, 
-        Size = UDim2.new((initial-min)/(max-min), 0, 1, 0), 
+        Parent = bar,
+        Size = UDim2.new((initial-min)/(max-min), 0, 1, 0),
         BackgroundColor3 = Config.AccentColor
     })
     create("UICorner", {Parent = fill, CornerRadius = UDim.new(0, 6)})
-    
+
     local valueLabel = create("TextLabel", {
         Parent = bar,
         Size = UDim2.new(1, 0, 1, 0),
@@ -21395,7 +20641,7 @@ local function makeSlider(parent, posY, labelText, min, max, initial, callback)
         TextSize = 12,
         Font = Enum.Font.Gotham
     })
-    
+
     local dragging = false
     bar.InputBegan:Connect(function(inp)
         if inp.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -21421,66 +20667,65 @@ local function makeSlider(parent, posY, labelText, min, max, initial, callback)
     return bar
 end
 
--- Layout ESP controls
 do
     local y = 16
     makeLabel(espPage, y, "Main Settings:")
     y = y + 32
-    makeToggle(espPage, y, "Enable ESP", State.ESP.Enabled, function(v) 
-        State.ESP.Enabled = v 
+    makeToggle(espPage, y, "Enable ESP", State.ESP.Enabled, function(v)
+        State.ESP.Enabled = v
     end)
     y = y + 36
-    makeToggle(espPage, y, "Show Enemies", State.ESP.ShowEnemies, function(v) 
-        State.ESP.ShowEnemies = v 
+    makeToggle(espPage, y, "Show Enemies", State.ESP.ShowEnemies, function(v)
+        State.ESP.ShowEnemies = v
     end)
     y = y + 36
-    makeToggle(espPage, y, "Show Team", State.ESP.ShowTeam, function(v) 
-        State.ESP.ShowTeam = v 
+    makeToggle(espPage, y, "Show Team", State.ESP.ShowTeam, function(v)
+        State.ESP.ShowTeam = v
     end)
     y = y + 36
-    makeToggle(espPage, y, "Use Team Colors", State.ESP.TeamColor, function(v) 
-        State.ESP.TeamColor = v 
+    makeToggle(espPage, y, "Use Team Colors", State.ESP.TeamColor, function(v)
+        State.ESP.TeamColor = v
     end)
     y = y + 48
     makeLabel(espPage, y, "Visual Elements:")
     y = y + 32
-    makeToggle(espPage, y, "Glow Effect", State.ESP.Glow, function(v) 
-        State.ESP.Glow = v 
+    makeToggle(espPage, y, "Glow Effect", State.ESP.Glow, function(v)
+        State.ESP.Glow = v
     end)
     y = y + 36
-    makeToggle(espPage, y, "Show Names", State.ESP.Name, function(v) 
-        State.ESP.Name = v 
+    makeToggle(espPage, y, "Show Names", State.ESP.Name, function(v)
+        State.ESP.Name = v
     end)
     y = y + 36
-    makeToggle(espPage, y, "Show Health", State.ESP.Health, function(v) 
-        State.ESP.Health = v 
+    makeToggle(espPage, y, "Show Health", State.ESP.Health, function(v)
+        State.ESP.Health = v
     end)
     y = y + 36
-    makeToggle(espPage, y, "Show Look Line", State.ESP.ShowLookLine, function(v) 
-        State.ESP.ShowLookLine = v 
+    makeToggle(espPage, y, "Show Look Line", State.ESP.ShowLookLine, function(v)
+        State.ESP.ShowLookLine = v
     end)
     y = y + 48
-    makeSlider(espPage, y, "Max Range (studs)", 50, 2000, State.ESP.Range, function(v) 
-        State.ESP.Range = math.floor(v) 
+    makeSlider(espPage, y, "Max Range (studs)", 50, 2000, State.ESP.Range, function(v)
+        State.ESP.Range = math.floor(v)
     end)
     y = y + 36
-    makeSlider(espPage, y, "Transparency", 0, 1, State.ESP.Transparency, function(v) 
-        State.ESP.Transparency = v 
+    makeSlider(espPage, y, "Transparency", 0, 1, State.ESP.Transparency, function(v)
+        State.ESP.Transparency = v
     end)
     y = y + 36
-    makeSlider(espPage, y, "Look Line Length", 5, 30, State.ESP.LookLineLength, function(v) 
+    makeSlider(espPage, y, "Look Line Length", 5, 30, State.ESP.LookLineLength, function(v)
         State.ESP.LookLineLength = math.floor(v)
         Config.LookLineLength = State.ESP.LookLineLength
-        -- Update existing look lines by recreating them
+
         for character, data in pairs(State.TrackedCharacters) do
             if data.LookLineFolder then
-                -- Clear existing look line parts
+
                 for _, part in ipairs(data.LookLineFolder:GetChildren()) do
                     if part:IsA("BasePart") then
                         part:Destroy()
                     end
                 end
-                -- Create new look line parts with updated length
+
                 for i = 1, Config.LookLineLength do
                     local part = Instance.new("Part")
                     part.Name = "LookLinePart" .. i
@@ -21501,9 +20746,9 @@ do
     y = y + 48
     makeLabel(espPage, y, "ESP Color:")
     local presetColors = {
-        Color3.fromRGB(255,170,60), 
-        Color3.fromRGB(80,150,255), 
-        Color3.fromRGB(200,80,255), 
+        Color3.fromRGB(255,170,60),
+        Color3.fromRGB(80,150,255),
+        Color3.fromRGB(200,80,255),
         Color3.fromRGB(120, 240, 120),
         Color3.fromRGB(255, 80, 80),
         Color3.fromRGB(255, 255, 80)
@@ -21511,10 +20756,10 @@ do
     local x = 120
     for i, c in ipairs(presetColors) do
         local sw = create("TextButton", {
-            Parent = espPage, 
-            Position = UDim2.new(0, x, 0, y-6), 
-            Size = UDim2.new(0, 28, 0, 28), 
-            BackgroundColor3 = c, 
+            Parent = espPage,
+            Position = UDim2.new(0, x, 0, y-6),
+            Size = UDim2.new(0, 28, 0, 28),
+            BackgroundColor3 = c,
             Text = ""
         })
         create("UICorner", {Parent = sw, CornerRadius = UDim.new(1, 0)})
@@ -21526,11 +20771,10 @@ do
     end
 end
 
--- Players page
 do
     local title = create("TextLabel", {
-        Parent = playersPage, 
-        Position = UDim2.new(0, 12, 0, 8), 
+        Parent = playersPage,
+        Position = UDim2.new(0, 12, 0, 8),
         Size = UDim2.new(1, -24, 0, 26)
     })
     title.Font = Enum.Font.GothamBold
@@ -21540,17 +20784,17 @@ do
     title.BackgroundTransparency = 1
 
     local scroll = create("ScrollingFrame", {
-        Parent = playersPage, 
-        Position = UDim2.new(0, 12, 0, 44), 
-        Size = UDim2.new(1, -24, 1, -56), 
-        CanvasSize = UDim2.new(0,0,0,0), 
+        Parent = playersPage,
+        Position = UDim2.new(0, 12, 0, 44),
+        Size = UDim2.new(1, -24, 1, -56),
+        CanvasSize = UDim2.new(0,0,0,0),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
         ScrollBarThickness = 6
     })
     local uiList = create("UIListLayout", {Parent = scroll, Padding = UDim.new(0,6)})
     uiList.SortOrder = Enum.SortOrder.LayoutOrder
-    
+
     local function refreshPlayersList()
         for _, child in ipairs(scroll:GetChildren()) do
             if child:IsA("Frame") then child:Destroy() end
@@ -21559,25 +20803,25 @@ do
         for _, player in ipairs(Players:GetPlayers()) do
             if player ~= LocalPlayer then
                 local entry = create("Frame", {
-                    Parent = scroll, 
-                    Size = UDim2.new(1, 0, 0, 36), 
+                    Parent = scroll,
+                    Size = UDim2.new(1, 0, 0, 36),
                     BackgroundColor3 = Color3.fromRGB(40,40,40)
                 })
                 create("UICorner", {Parent = entry, CornerRadius = UDim.new(0,6)})
                 entry.LayoutOrder = y
-                
+
                 local name = create("TextLabel", {
-                    Parent = entry, 
-                    Position = UDim2.new(0,8,0,0), 
+                    Parent = entry,
+                    Position = UDim2.new(0,8,0,0),
                     Size = UDim2.new(0.6, -12, 1, 0)
                 })
                 setTextProps(name, player.Name)
                 name.Font = Enum.Font.Gotham
                 name.TextSize = 14
-                
+
                 local toggle = create("TextButton", {
-                    Parent = entry, 
-                    Size = UDim2.new(0.28, -12, 0, 26), 
+                    Parent = entry,
+                    Size = UDim2.new(0.28, -12, 0, 26),
                     Position = UDim2.new(1, -12 - (0.28*entry.AbsoluteSize.X), 0, 5)
                 })
                 toggle.AnchorPoint = Vector2.new(1,0)
@@ -21585,24 +20829,24 @@ do
                 toggle.TextSize = 13
                 toggle.BackgroundColor3 = Color3.fromRGB(60,60,60)
                 create("UICorner", {Parent = toggle, CornerRadius = UDim.new(0,6)})
-                
+
                 local enabled = State.TrackedPlayers[player] ~= false
                 toggle.Text = enabled and "ENABLED" or "DISABLED"
                 toggle.TextColor3 = enabled and Config.AccentColor or Color3.fromRGB(200,200,200)
-                
+
                 toggle.MouseButton1Click:Connect(function()
                     enabled = not enabled
                     State.TrackedPlayers[player] = enabled
                     toggle.Text = enabled and "ENABLED" or "DISABLED"
                     toggle.TextColor3 = enabled and Config.AccentColor or Color3.fromRGB(200,200,200)
-                    
+
                     if enabled and player.Character then
                         createVisualForCharacter(player.Character, player)
                     elseif not enabled and player.Character then
                         cleanupESP(player.Character)
                     end
                 end)
-                
+
                 y = y + 1
             end
         end
@@ -21614,22 +20858,21 @@ do
     Players.PlayerRemoving:Connect(refreshPlayersList)
 end
 
--- Draggable logic
 do
     local dragging = false
     local dragStart, startPos
-    
+
     local function update(input)
         local delta = input.Position - dragStart
         main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
-    
+
     header.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
             startPos = main.Position
-            
+
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     dragging = false
@@ -21637,7 +20880,7 @@ do
             end)
         end
     end)
-    
+
     header.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
             update(input)
@@ -21645,7 +20888,6 @@ do
     end)
 end
 
--- Opening animation
 main.Position = UDim2.new(0.5, -Config.WindowSize.X.Offset/2, 1.2, 0)
 main.BackgroundTransparency = 1
 TweenService:Create(main, TweenInfo.new(0.55, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
@@ -21653,9 +20895,6 @@ TweenService:Create(main, TweenInfo.new(0.55, Enum.EasingStyle.Quart, Enum.Easin
     BackgroundTransparency = 0
 }):Play()
 
--- ===========================
--- ESP Logic
--- ===========================
 local function updateLookLine(character, lookLineFolder)
     if not character or not lookLineFolder or not State.ESP.ShowLookLine then
         for _, part in ipairs(lookLineFolder:GetChildren()) do
@@ -21668,48 +20907,44 @@ local function updateLookLine(character, lookLineFolder)
 
     local head = character:FindFirstChild("Head")
     local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not head or not humanoid then 
-        -- Hide all parts if no head or humanoid
+    if not head or not humanoid then
+
         for _, part in ipairs(lookLineFolder:GetChildren()) do
             if part:IsA("BasePart") then
                 part.Transparency = 1
             end
         end
-        return 
+        return
     end
 
     local lookVector
     local rootPart = character:FindFirstChild("HumanoidRootPart")
-    
-    -- Determine look direction based on movement state
+
     if humanoid.MoveDirection.Magnitude > 0.1 then
-        -- Player is moving, use movement direction
+
         lookVector = humanoid.MoveDirection.Unit
     elseif rootPart then
-        -- Player is stationary, use where they're looking
+
         lookVector = rootPart.CFrame.LookVector
     else
-        -- Fallback to head look direction
+
         lookVector = head.CFrame.LookVector
     end
 
-    -- Create the look line with diminishing opacity
     for i, part in ipairs(lookLineFolder:GetChildren()) do
         if part:IsA("BasePart") and part.Name:match("LookLinePart") then
             local partIndex = tonumber(part.Name:match("LookLinePart(%d+)"))
             if partIndex then
                 local distance = partIndex * Config.LookLineDistance
                 local position = head.Position + (lookVector * distance)
-                
+
                 part.Position = position
                 part.Color = State.ESP.Color
-                
-                -- Calculate transparency based on distance (closer = more opaque)
+
                 local transparencyFactor = (partIndex - 1) / (State.ESP.LookLineLength - 1)
-                part.Transparency = 0.3 + (transparencyFactor * 0.7) -- Range from 0.3 to 1.0
-                
-                -- Make parts smaller as they get further away
-                local sizeFactor = 1 - (transparencyFactor * 0.5) -- Range from 1.0 to 0.5
+                part.Transparency = 0.3 + (transparencyFactor * 0.7)
+
+                local sizeFactor = 1 - (transparencyFactor * 0.5)
                 part.Size = Vector3.new(0.15 * sizeFactor, 0.15 * sizeFactor, 0.15 * sizeFactor)
             end
         end
@@ -21720,16 +20955,15 @@ local function updateVisual(character)
     if not character then return end
     local data = State.TrackedCharacters[character]
     if not data then return end
-    
+
     local player = data.Player
     if not player then return end
-    
-    -- Player-specific toggle check
+
     local playerEnabled = State.TrackedPlayers[player]
     if playerEnabled == false then
         data.Highlight.Enabled = false
         data.Billboard.Enabled = false
-        -- Hide look line
+
         if data.LookLineFolder then
             for _, part in ipairs(data.LookLineFolder:GetChildren()) do
                 if part:IsA("BasePart") then
@@ -21740,11 +20974,10 @@ local function updateVisual(character)
         return
     end
 
-    -- Global ESP toggle check
     if not State.ESP.Enabled then
         data.Highlight.Enabled = false
         data.Billboard.Enabled = false
-        -- Hide look line
+
         if data.LookLineFolder then
             for _, part in ipairs(data.LookLineFolder:GetChildren()) do
                 if part:IsA("BasePart") then
@@ -21755,17 +20988,16 @@ local function updateVisual(character)
         return
     end
 
-    -- Team checks
     local isEnemy = true
     if player.Team and LocalPlayer.Team then
         isEnemy = player.Team ~= LocalPlayer.Team
     end
-    
+
     local shouldShow = (isEnemy and State.ESP.ShowEnemies) or (not isEnemy and State.ESP.ShowTeam)
     if not shouldShow then
         data.Highlight.Enabled = false
         data.Billboard.Enabled = false
-        -- Hide look line
+
         if data.LookLineFolder then
             for _, part in ipairs(data.LookLineFolder:GetChildren()) do
                 if part:IsA("BasePart") then
@@ -21776,16 +21008,14 @@ local function updateVisual(character)
         return
     end
 
-    -- Find primary part
     local primaryPart = character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Head")
     if not primaryPart then return end
 
-    -- Distance check
     local lpChar = LocalPlayer.Character
     local lpRoot = lpChar and (lpChar:FindFirstChild("HumanoidRootPart") or lpChar:FindFirstChild("Head"))
     local distance = 0
     local distOk = true
-    
+
     if lpRoot then
         distance = (primaryPart.Position - lpRoot.Position).Magnitude
         distOk = distance <= State.ESP.Range
@@ -21794,7 +21024,7 @@ local function updateVisual(character)
     if not distOk then
         data.Highlight.Enabled = false
         data.Billboard.Enabled = false
-        -- Hide look line
+
         if data.LookLineFolder then
             for _, part in ipairs(data.LookLineFolder:GetChildren()) do
                 if part:IsA("BasePart") then
@@ -21805,29 +21035,24 @@ local function updateVisual(character)
         return
     end
 
-    -- Get current color
     local currentColor = State.ESP.Color
     if State.ESP.TeamColor and player.Team and player.Team.TeamColor then
         currentColor = player.Team.TeamColor.Color
     end
 
-    -- Update highlight
     data.Highlight.Enabled = State.ESP.Glow
     data.Highlight.OutlineColor = currentColor
     data.Highlight.FillColor = currentColor
     data.Highlight.FillTransparency = State.ESP.Transparency
     data.Highlight.Adornee = character
 
-    -- Update billboard
     data.Billboard.Enabled = State.ESP.Name or State.ESP.Health or State.ESP.Distance
     data.Billboard.Adornee = primaryPart
 
-    -- Update labels
     data.NameLabel.Visible = State.ESP.Name
     data.NameLabel.TextColor3 = currentColor
     data.NameLabel.Text = player.Name or "Unknown"
 
-    -- Update health
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     if humanoid then
         data.HealthLabel.Visible = State.ESP.Health
@@ -21839,27 +21064,22 @@ local function updateVisual(character)
         data.HealthLabel.Visible = false
     end
 
-    -- Update distance
     data.DistanceLabel.Visible = State.ESP.Distance
     data.DistanceLabel.Text = math.floor(distance) .. "m"
-    
-    -- Update look line
+
     if data.LookLineFolder then
         updateLookLine(character, data.LookLineFolder)
     end
 end
 
--- Character handling
 local function onCharacterAdded(character, player)
     if player == LocalPlayer then return end
-    
-    -- Wait for the character to fully load
+
     local humanoid = character:WaitForChild("Humanoid", 5)
     if not humanoid then return end
-    
-    -- Small delay to ensure character is fully loaded
+
     wait(0.1)
-    
+
     createVisualForCharacter(character, player)
     State.TrackedPlayers[player] = State.TrackedPlayers[player] or true
 end
@@ -21868,41 +21088,38 @@ local function onCharacterRemoving(character)
     cleanupESP(character)
 end
 
--- Initialize for existing players
 for _, player in ipairs(Players:GetPlayers()) do
     if player ~= LocalPlayer then
         State.TrackedPlayers[player] = true
-        
+
         if player.Character then
             coroutine.wrap(onCharacterAdded)(player.Character, player)
         end
-        
+
         player.CharacterAdded:Connect(function(char)
             onCharacterAdded(char, player)
         end)
-        
+
         player.CharacterRemoving:Connect(onCharacterRemoving)
     end
 end
 
--- Handle new players
 Players.PlayerAdded:Connect(function(player)
     if player == LocalPlayer then return end
-    
+
     State.TrackedPlayers[player] = true
-    
+
     player.CharacterAdded:Connect(function(char)
         onCharacterAdded(char, player)
     end)
-    
+
     player.CharacterRemoving:Connect(onCharacterRemoving)
-    
+
     if player.Character then
         coroutine.wrap(onCharacterAdded)(player.Character, player)
     end
 end)
 
--- Handle players leaving
 Players.PlayerRemoving:Connect(function(player)
     State.TrackedPlayers[player] = nil
     if player.Character then
@@ -21910,7 +21127,6 @@ Players.PlayerRemoving:Connect(function(player)
     end
 end)
 
--- Main update loop with error handling
 local updateConnection
 updateConnection = RunService.Heartbeat:Connect(function()
     local success, error = pcall(function()
@@ -21922,16 +21138,15 @@ updateConnection = RunService.Heartbeat:Connect(function()
             end
         end
     end)
-    
+
     if not success then
         warn("ESP Update Error: " .. tostring(error))
     end
 end)
 
--- Keyboard shortcuts
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
-    
+
     if input.KeyCode == Enum.KeyCode.Insert then
         Config.Visible = not Config.Visible
         main.Visible = Config.Visible
@@ -21953,7 +21168,6 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Cleanup on script end
 game:GetService("Players").PlayerRemoving:Connect(function(player)
     if player == LocalPlayer then
         if updateConnection then
@@ -21965,18 +21179,15 @@ game:GetService("Players").PlayerRemoving:Connect(function(player)
     end
 end)
 
--- Auto-reconnect if LocalPlayer changes
 Players:GetPropertyChangedSignal("LocalPlayer"):Connect(function()
     LocalPlayer = Players.LocalPlayer
     if not LocalPlayer then return end
-    
-    -- Re-parent the GUI
+
     if screenGui then
         screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
     end
 end)
 
--- Create notification
 local function createNotification(title, message)
     local notif = create("Frame", {
         Parent = screenGui,
@@ -21987,7 +21198,7 @@ local function createNotification(title, message)
     })
     create("UICorner", {Parent = notif, CornerRadius = UDim.new(0, 8)})
     create("UIStroke", {Parent = notif, Color = Config.AccentColor, Thickness = 2})
-    
+
     local titleLabel = create("TextLabel", {
         Parent = notif,
         Size = UDim2.new(1, -16, 0, 25),
@@ -21999,7 +21210,7 @@ local function createNotification(title, message)
         Font = Enum.Font.GothamBold,
         TextXAlignment = Enum.TextXAlignment.Left
     })
-    
+
     local messageLabel = create("TextLabel", {
         Parent = notif,
         Size = UDim2.new(1, -16, 0, 40),
@@ -22012,24 +21223,21 @@ local function createNotification(title, message)
         TextXAlignment = Enum.TextXAlignment.Left,
         TextWrapped = true
     })
-    
-    -- Slide in animation
+
     notif.Position = UDim2.new(1, 20, 0, 20)
     TweenService:Create(notif, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
         Position = UDim2.new(1, -320, 0, 20)
     }):Play()
-    
-    -- Auto remove after 5 seconds
+
     wait(5)
     TweenService:Create(notif, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
         Position = UDim2.new(1, 20, 0, 20)
     }):Play()
-    
+
     wait(0.3)
     notif:Destroy()
 end
 
--- Show startup notification
 coroutine.wrap(function()
     wait(1)
     createNotification("ESP Loaded", "Universal ESP is ready! Use INSERT to toggle GUI or F1-F4 for quick controls.")
@@ -22049,7 +21257,7 @@ print("F5 - Toggle Look Line")
 local Button = Tab:CreateButton({
    Name = "Orca Hub(richie0866)",
    Callback = function()
-   
+
 loadstring(
   game:HttpGetAsync("https://raw.githubusercontent.com/richie0866/orca/master/public/latest.lua")
 )()
@@ -22068,9 +21276,6 @@ local Button = Tab:CreateButton({
    Name = "Placeholder Game Script(wesd)",
    Callback = function()
 
--- Roblox placeholder game script
--- Optimized for Velocity / UNC 94%
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -22081,21 +21286,18 @@ local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
--- // UI Library Configuration
 local Theme = {
     Main = Color3.fromRGB(15, 15, 15),
     Secondary = Color3.fromRGB(20, 20, 20),
-    Accent = Color3.fromRGB(124, 92, 252), -- Purple/Blue hybrid (DomainX style)
+    Accent = Color3.fromRGB(124, 92, 252),
     Text = Color3.fromRGB(255, 255, 255),
     DarkText = Color3.fromRGB(160, 160, 160)
 }
 
--- // Clean up existing
 if CoreGui:FindFirstChild("PlaceholderHub") then
     CoreGui.PlaceholderHub:Destroy()
 end
 
--- // Main UI Construction
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "PlaceholderHub"
 ScreenGui.Parent = CoreGui
@@ -22112,7 +21314,6 @@ local MainStroke = Instance.new("UIStroke", MainFrame)
 MainStroke.Color = Theme.Accent
 MainStroke.Thickness = 1.2
 
--- // Sidebar
 local Sidebar = Instance.new("Frame")
 Sidebar.Size = UDim2.new(0, 140, 1, 0)
 Sidebar.BackgroundColor3 = Theme.Secondary
@@ -22130,7 +21331,6 @@ Title.Font = Enum.Font.GothamBold
 Title.TextSize = 16
 Title.Parent = Sidebar
 
--- // Content Area
 local Content = Instance.new("ScrollingFrame")
 Content.Size = UDim2.new(1, -150, 1, -20)
 Content.Position = UDim2.new(0, 150, 0, 10)
@@ -22144,7 +21344,6 @@ local Layout = Instance.new("UIListLayout", Content)
 Layout.SortOrder = Enum.SortOrder.LayoutOrder
 Layout.Padding = UDim.new(0, 6)
 
--- // Dragging Logic (Human-style implementation)
 local function makeDraggable(frame, handle)
     local dragging, dragInput, dragStart, startPos
     handle.InputBegan:Connect(function(input)
@@ -22168,7 +21367,6 @@ local function makeDraggable(frame, handle)
 end
 makeDraggable(MainFrame, Sidebar)
 
--- // UI Components
 local function AddToggle(name, desc, callback)
     local ToggleBase = Instance.new("Frame")
     ToggleBase.Size = UDim2.new(1, -10, 0, 45)
@@ -22224,19 +21422,16 @@ local function AddToggle(name, desc, callback)
         enabled = not enabled
         local targetPos = enabled and UDim2.new(0, 16, 0.5, -6) or UDim2.new(0, 2, 0.5, -6)
         local targetCol = enabled and Theme.Accent or Color3.fromRGB(40, 40, 40)
-        
+
         TweenService:Create(Dot, TweenInfo.new(0.2), {Position = targetPos}):Play()
         TweenService:Create(Indicator, TweenInfo.new(0.2), {BackgroundColor3 = targetCol}):Play()
-        
+
         callback(enabled)
     end)
-    
+
     Content.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 20)
 end
 
--- // Game Logic Implementation
-
--- 1. Coin Magnet
 local magnetLoop
 AddToggle("Coin Magnet", "Instantly collects all coins on the map.", function(state)
     if state then
@@ -22257,16 +21452,15 @@ AddToggle("Coin Magnet", "Instantly collects all coins on the map.", function(st
     end
 end)
 
--- 2. Super Roll
 AddToggle("Super Roll", "Gives a massive velocity boost when rolling.", function(state)
     _G.SuperRoll = state
     local remote = ReplicatedStorage:FindFirstChild("Platformer") and ReplicatedStorage.Platformer.Remotes:FindFirstChild("SetAction")
-    
+
     if state then
         task.spawn(function()
             while _G.SuperRoll do
                 local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                if hrp and UserInputService:IsKeyDown(Enum.KeyCode.Q) then -- Q is usually roll
+                if hrp and UserInputService:IsKeyDown(Enum.KeyCode.Q) then
                     remote:FireServer("Roll")
                     hrp.AssemblyLinearVelocity = hrp.CFrame.LookVector * 180
                     task.wait(0.5)
@@ -22277,7 +21471,6 @@ AddToggle("Super Roll", "Gives a massive velocity boost when rolling.", function
     end
 end)
 
--- 3. LongJump Flight
 local flightLoop
 AddToggle("LongJump Flight", "Spams LongJump remotes to glide infinitely.", function(state)
     if state then
@@ -22294,7 +21487,6 @@ AddToggle("LongJump Flight", "Spams LongJump remotes to glide infinitely.", func
     end
 end)
 
--- 4. Stun Immunity
 local stunConnection
 AddToggle("Stun Immunity", "Prevents the landing stun animation.", function(state)
     if state then
@@ -22309,7 +21501,6 @@ AddToggle("Stun Immunity", "Prevents the landing stun animation.", function(stat
     end
 end)
 
--- 5. Visual ESP
 local highlights = {}
 AddToggle("Platform Visuals", "Highlights moving platforms and the goal.", function(state)
     if state then
@@ -22327,7 +21518,6 @@ AddToggle("Platform Visuals", "Highlights moving platforms and the goal.", funct
     end
 end)
 
--- // Final UI Polish
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 20, 0, 20)
 CloseBtn.Position = UDim2.new(1, -25, 0, 10)
@@ -22344,20 +21534,9 @@ print("Placeholder Hub Loaded.")
    end,
 })
 
-
 local Button = Tab:CreateButton({
    Name = "Owl Hub(CriShoux)",
    Callback = function()
-
---[[
-Created by Google Chrome and CriShoux
-Redistributed by WeAreDevs: https://wearedevs.net/scripts
-
-Description: One of the most popular script hubs. 30+ games.
-
-Instruction: Execute this script and wait for an interface to appear on your game screen.
-
-]]
 
 return(function(B,e,o,n,a,C,l)local d=select;local o=table.insert;local S=unpack or table.unpack;local f=string.char;local c=string.sub;local Q=setmetatable;local D=table.concat;local F=string.byte;local E=getfenv or function()return _ENV end;local Y=l;local t={}for e=a,255 do t[e]=f(e)end;local function i(A)local l,o,X=e,e,{}local I=C;local e=n;local function S()local l=Y(c(A,e,e),36)e=e+n;local n=Y(c(A,e,e+l-n),36)e=e+l;return n end;l=f(S())X[n]=l;while e<#A do local e=S()if t[e]then o=t[e]else o=l..c(l,n,1)end;t[I]=l..c(o,n,1)X[#X+n],l,I=o,o,I+n end;return D(X)end;local Y=i('24124L24124124527624126U26O27026S24124B27925Y26S26D25E26S26B26F26W26Q27E24A27926126D26D26927L27N27P27E24927926027326A26D26O27327Q24124227927326S26E24124627925J26S26Q26D27226B24J24124727925U27227128O24I27727925F28L26D24124827925E26Q26B26S26S27325Y26C26W27F28327026O26U26S26526O26R26S27124124427925Z26B27C27R29H29J26S25V26C27V27227329427925H26S26H26D29M29O29Q27827626729W24124D27H29B27M26O26D26S25Y25G26025X28R27925D26O29927329328I27628U29929D29F27S27625S28926X28O25D27226W2B024027927923524U24123L27925V26O26Q26Y26U26B27226C27326T28U28W26B24I2BI2BJ24122P2BM23R2BP2BR2BT2BV2BX26T25H29V2852692AY29B26Q26G24124E2BP28O26T27M25E26W26J26S25D26W26H29P2C42C52762BO2B327126W26926A25X26S26A27Q2BY28826D26A2432BI2822762BE26A26W26D26W2A429R27925G25X26W27028Q29S27626029I29K24125727926X27V26924R25A25A26E2EE25B2BV26R28W26H25B26Q27227025A26O26A26A27J25A24U26W26T24S24L24K24I24H24I24G24P24M24P24G2412B82412E229Z2C028X24021Z25R22Z26423Q23T2152BM29527629726O27126S25H26G26927E2AF24125W27326C2702DT2FQ2D728A2FA25E2G726S25U29B2AP26B2D227924L25T2GH27626N25T2E52E72E92EB2ED2EF2EH2EJ2EL2EN2EP2ER2ET2EV2EX24L24I2F524H24M24L2H72752AK27625V2CR27M2FE2C224021R25824T25A23O23U21624U24021I24T21723K23R23O22C2HR26923H22026A181B22J2HR2C51H25S2GO2FZ2CU2CW2GL24126D2GK2D325K2GO2B224125J26W2DO2EI26S24324124025W23I25425T23426J2BL24021S23C26G24M23R23P21X2BM23K29Y29K2CG28826A2CJ2AZ2CM28Z27625Z2A42932CP2FQ2BW26B27Q25E2JH26526W26U2E82JM2412A82AA2412C927625G27326W26F27M26A2FS24X25S2DX26R27226D24X25324X25W25E25D29G2762K426D2HH28Y2DL2K32A927K2CV26S2GL1H25V2IJ2BJ23526C2L72BJ24O2GO2E62762E827W2GS2EE26E2EG2722EI2722EK2EM2EO2EQ2ES26D2EU2EW2EY2F02F224G24O2M124J2401T22V26H24W23W23Z21B2I82C523P2LB2761X2LA2GP2LG2GR2EC2LK2LM2LO2LQ2GY2LT2H12LX24L24N24P2F724K2MW24O28Y28C2JN2DP2AJ27T2E927I26D25S26A26G28924125Z2GQ27W26A2GS29V2LL26U2DP26X26C26R26C2ES2JU2JP2GE2GX2EO25U26B26W25E2BC26C26H25A26626E2712612NR25A29I28627M25A27B27D2JY28625B26Z26A2DS27G27626325E2662672DB2EM2CS2G52412CJ26W26B26A2412KY28N2862O127326U28H2AW2712BR26S26026T24125S2NI2D92NL26O2NN2NP2NR2NT27M2EM2B02NX2LR25A2O02O22O42O62O82OA2OC2OE2GF25A2DD2O12692DH25A2AV2FQ2982D82932E02412JI2PO2A52672PL2NK2EC2NM25B2NO26D2NQ2NS2NU2PU2AP2B02NY2PY2O12O32BW2Q22O92OB26R2OD2EQ2Q72Q92QH26A25A2K92KB2KD2FS25B27126C26O2A62KT26E29A2732IE2L32D325R2GO2JR2G02EQ2BG26U2DW29928M2DR2A52N42412662A22F927925W2S22PA25E26D26G2FT2K225C2RO26T24023Y1K23E25C21523Z21W2MD2BJ25H2IC27926E26O2DP2GL22926R2GO2HC2K32RS29B27Y27O28A2D524125G2NU2842692A22TF2802KS2FB2732TN26D25V26S27B2A52IN28U27328E28M2N72E12TT2A225U26X28829K2PI28S2B32992AO27E2FP2TC2RT28426V27224026824S24B21Y21E26922K2BM2IN26V2BV27025F25Y25V2GL24X26Q2MG24122925I2V81H25U2V82352722GO2OQ2TS2TU2G12CS2PI2JD2762642BW2ES2A12A327324G25U2G726Y24025425P1U22B22S2552392HR22K22L2WB2WB23H24U2UJ28B2762UE2412KW2PC2762UZ2EN26125E25J2IG2C72GL25T2VH2TR2KU2WL2FZ2T42N62BJ23N27923N25N2411R2AU2IV2792KM2X92XB2762IU2X52XF2BI2SA2XJ2XA2IU2FZ2XN25X28C2SA24526R2XK2BN2XC24127E2XA2QJ27925B2XF2WJ27624X2762XA28I2782782XR2822XM2YA25X2952SA2792XA28S2952IU2D52Y22DT28S2XR29S2Y72YI29S2BI2BI24523V2XX28S2Z12NH2XA2XH2XZ23X2XF2762D22402IN24124C2DU2TL2U726D2FV2FX2K22G12G32U52412VR2PS2VU28N2VW2P52AW2722DO2DQ2DS2KY2862AY26D2DN2WM2WK2UA2PA26S2PI2U02A42U326D2ZE2YL24F2ZJ27M2TM2TO2872AP2ZP2G22G42SA2VM2C52VJ24125I2ZC2C52Y931122ZD2412XR2BI2IU2Y82YI2Z02XC31142XA311D28C2UE2Z82A6311D2452Z72XB2952C425L31152BJ2C9311K2GH2ZB311W27924023P2XD2GO311G312031172YI2IU311A241311F25X3129311E31282412IU311I311C24123M2XC2XP311O276312M311R2XX2GH2E631252BJ312C2D22FZ312T2D33125312A312Y2XC2YE312K2QJ31352WI312B312K2BI28I24725K2XF2SA311927625C311T27925P313N27628I312528C2C4311Y2XB2GH311A2ZI2K82ZK2TU2ZN2FY2SF310U2ZH2792ZU2ES2VR2KC27D2B02OZ25H2BW26Q26X2BJ240310M2Y824T2XX31162XR312E311B2XF312E2BI312C312E312J2XX2AK313K311N31123152312B253314Q2XC2X7314V312H2XD31582XO315D314X315F312D315D27824728Q31252ZI3153312P31482C4311V2XG2BJ313W31162792AF2KY2DN2DP2S82OZ2DV2DX28Q2SA28E28G310528726B310831012XZ241311S2QJ2FR2SM2WJ26626V26V2LU316I313H31202512BJ2Y125X2GL2472633112278311M315S3174277315S24Y2XZ316Y311D2WI28C312528231753112317H31783112317A2C4317C315D27623N25R315C3134312G312I3127313I2K2312C2XT2DT31812WH2YU2YI2YD2XD318728Z29S312C318828I312C2QJ2GH2YN2WH2C52YS2YW313C2XF29S318Q2BJ2XA318829S2YV31802YY2DT282318G2YT317Y318J2FZ312C28S28S31902YI31972PC312C2IN318I25X2YG313225X28I28I31992XF319K2ZZ2YM25X319B2ZG315G28S2YQ313D317Q315Y316I317Q31402TJ31422A23144310T2ZR31A2314A26S314C26S314E2932FZ25D2PE2CN31202FA24X314P312W315A317W3189317U312F31AS3150312528I315R311231AX317L311K27G317O31592Y825Q31312AF24H2XX2IU313V3112313Y27631A22TK310O2ZL31A62FZ2ZQ2G431A92VS31AB272314D2GE2K231AH26O31AJ2ZD2VJ24X3124316Z3126314S317Q318O315G31BC31C7315K317X311J31C3311Q315L315S31CF2Y031B5312B31B731252Z127631BA31332ZA31BE3120312M2792IN2IP2IR2FT31292BI2WJ2AX2AZ2932UJ25H2TD2RU2L231662DW2DY318K241316B2IG315Z2BJ2RY31A72G42S02SG2DO2PA2S529231652SA2SC2932FA31DP2S32SJ2SL3145313L2SP2SR2ST2SV2SX2SZ2A72T22762X2310J2D32BL310A2DB2P827231BY27625J2BJ23Q313Q31BA31CT312A31CT31CP2YI311631EU311K312A31ES311Z2YL311K2SA312C2BJ27831F7279318V312G2WJ314Y315D28I2XR28C2KY2XR2782UJ318W31FK319A2RQ318S315K319V31932XS2TR318428C27S31FY2N731FL31FX318A2782ZI318D28Z310M318W2S0319Q2762YZ31FS2Z9314U311K31GE31FV2IU31FE31AQ31FH2YI31FJ2X6318A2TI31FO31GS2Y62XY318L31FT315D31FI31G4317Z31FZ31CA31822AK31G331C031G5314831G827831GA318Y31GC31EX2DT2BI2XR2762VP31FV31HK319I2Z9319F27631F631HI27631F931HV2DT31C531GN31AS31GP317Z31FP2XF27831I52YS31I8319R319P31FS31GM31H131GQ31H32XA318231G031IG28C31H8318A31HA31I628Z31G731HB31HF318P2CO31HQ31HJ31GG31C631FA31GK31I031AR31C82PC31H231IA31I731GW31I931JA31IB2KY319Q31IE2XI31IG31IP31II2WH31IK31H431G231IO31J425X318831IS31IQ31HE31FV29S31HH311231GF31HL24131HN311831IW3160311231C931GD318X311T31CV31HI31K831HI310K31F82PD31BX2K231EE2W12W32W52W72BM2BJ314N276316Y2D324X28231GJ31A031F031AP31K731JC2XL31IX31KE31EV31CA314L31IZ31C931K1312A31K42YL31KD313631HY31BD311Z2792B831CX2IQ26W2IS31D12QE24131D431BU31D731D92RV31DC316831DF31DH2D331DJ27931DL31BM314731DO2SH2S42P231DT2DS31DV2SD31DY31MA31E12SM2FZ2SO26O2SQ2SS2SU2SW2SY2IG2T131KK2T531EF2C531EH2VJ28W31MN2P82S32K22OI27E2IN27U27W2NA31EI2DC26D2BV31EM24125O31EP31ER31KF31C631L731F2313X31NM31L031EW31CT31F42XB31HU311T31HX311T31FC315C31I131J531I331JK31J831FR31GV317R31FQ2WG31FD31IF317Z31JJ31FW31H531G131IN31IQ31OF31JS31CA318831IU2YS31JY311K31GF31K9317V31NZ31GL31LS31FF2IU31O431FW31O631GU318Y31IA28S2TI31JF2AV31JH31OE31JQ31IJ31H62WH31OJ318T31IH31JR31IR31ON31G931JW31K531IZ31K031HI31K3312K2XJ31LA31KZ31NV31JQ31KH31J131HZ31OC31GI31CB31J631IG31O631IA29S31P631IC31P931FU31H231OF31PE31OI31FV27831OL31PL31HD24131OP25X31JX31IX31OT31LG31Q42BJ31O0319U31JQ312E31P131GR31O931IQ31Q931IC2XR3198319I31JG31FV28C31QG31JL31PF31IM31QJ31PJ31OM31QN31QP31QR31GZ31GK31HP311231PT2XX31GC2KR31L031RP311K31KC31K4312231Q4311D23O31FS28C3130312K31LF311T31EZ31NP31HS2OZ31Q12K731LG31SC2GH26V311A23N2BO31LK31L827931PB315G31S831L031SQ31C33195319X31QX31H031Q4312E31SY28C2IN31G131SY31J931Q4318U31FS31QT31R731FR319Q29S314T31FQ2D22XR28I310Z31FQ31TG319N316I2YF2TR319Q28I31TN2XA317K31R32XA2952FA319Q28231TU2YJ31TP2YI27G2TB319Q2YP31NQ25X31B331JC27S31A2319Q27G31U327S31TI2YI2AK31TL2XF27S31U3315631TX25X2ZI31UO2XA2AK31U3315Q31JC310M31U82YI2ZI312E312C31KS31GC2XA31P831FS310M2BO319W31IV310M31QP310M2D231V731QO31OD31VA31K2319I31VD315D2YR31QQ2XY310M31VL27631V925X31VB319Q31VR31VF318J31VH31GY318J2BO2Y32XA310M31LD2YI2CP31RY2YI2BO31KC31W22XY31W431IB2X531KS2XF310M2YH2XF2CP31S331UT2BO31WV31FV2JD31WY31WK2JD31WM28S3122310M31NO28S2C931S331X824131EQ23T24131XC23S2412Z32XR310M2ZB31Q431W631SY31WF31JC2BO31XF31UT2JD31WG2XF2X531XU31VC312731X424123U31VM31XC23W24123Z31Y131WS2XA2CP311431FV2BO31YF2XR2JD31YF31VP31WB31VP2YQ2BI318J23Y31VM31XL24124Z31JQ31W624W31CA31W6317A31VT28S31YZ31WP31YN2XQ31WE24125031XS31ZA31JC2JD315831UT2X531ZG31Y12X531Y3316W31VW2YI31V831FS31W131ZP31WL31W7319J31VM31VR31TO2BO2Y731YN31WD31WT312L31ZC31WJ31ZT31VE31ZV31GP31Z625X31WR31JC31WU31ZC31WY31YJ24131X131ZT31X3320A24131X631XG2YI28I31XA320R31TO31XE31FV31XM31YX31VM31XQ320531WW24131Y0320J31XX2XA31XZ31VQ31Y2320O31Y531X7320S24131Y825231Z027931VZ31ZS31WQ31ZU31VT28231W6321Q2XY3201320D31C62XR31XR321431Y031WK3209321T31WO31YB320F320K320H31ZE322831GZ310M320N321T320Q31NO282320U31WK31YC25X2CP25431ZC2LF31WZ241256321B322E2YI28225531Y6322W31XD3215320Y24131XN321K310M3212321831W0323231XV323B31FV2X5259321B31ZL31ZV282321E3233323531VL323731FV2CP321631WH2412Y5323C323S31XY2412QD322C321C321T258322Z2XF28231BA2F824X31CM321W31VY2B92XF321N31YN32232YI295321S324J2XY31JE32023227323931WI321B324I2XF2953225322K3227320I323T32502XF31X0322U31VS324M322G324M320U31NO295320X31YU323N31ZT323P321Y321331YG323D320J28Q31ZH323D31WK323I31VT295323L325E3210325H31Z9323X31VO323V322R325Z25X2X5324031ZK3256324V2413244321F326931Y831YA324Y31UT2CP28Y3214326J322R326L31X2326831TY24131YS326C326Q275312M31YU31YW31XO31VM31YZ323O24131Z2324M31Z531Y131Z8320431ZB3214327A322R31ZJ2XR31ZI323H326P31U431ZN321K324D319Q324G321W324U2XA27G324L2XF27G2BO2WG31YN322L320G321432522XA32543241322V327U320P3245327R2K6322831NO27G325D31ZT325F321O325X32043282323A32633284323E325P31ZT325R31U6326A31YT31ZT326Y323624124K328Y24N31ZV27G3290326T31UC24124M24124P3226326H322B325K320I322O3283329E326O31WM27G24O3289329724R24124Q327L31PP324F31M3321O327Q25X27S327T2XA27S3200329C323Q329E2XR31WX322A320L321O328632A23288329627S325A2YI27S328F321O328H31YN328J31YD325L323T314P323W31JC2X524S327H31WM27S326B320V32AE324832B2329Z321H24124V32A5325I31KQ325K32BC320J32BC329K31ZV27S326S3233328X32723271325G327332BI241327631WK327832AQ327C32A831ZD323C327E2YI327G3241328S31UP241327K31VX329U31VO31M3324H327I2AK32A125X2AK2BO31U0324P329D3263324S3241329Y31IN320C320E329D328L32A9323C32AB31YN32AD32CH32AF32B52AK32AI2XF2AK32AL31YN32AN321W32AP322M32AR329V2GO323C3239321A32C432CE31Y4328V32AM325W31Q2320432CN32BZ326232AV32DT325Q32DL32B131NO2AK321I329T2JR2BM32CB324T327I2ZI32CG2ZI32CJ31Y1320332AQ32CV325J322232E8312732CS31DF325I320I31YA31VO328L328O32BH31VT2ZI32582XF2ZI32D52XA2ZI32D8321W32DA31XP32A632DS2PK32DH2X625V323Y3221328R32EJ325U328G32DP321232DS32BX2YI2JD32632X5327C32DX2YQ329S32F0328U31X731Y832FU31Y832FB326X32DP32BO328I2WK31ZV2ZI32BT31ZT2ZG31Z92S032BY31VK323T2BO2AU327F2G02BJ2JD31VO323I24X27S329I2JN31FS312M31W1329I312M31SU2X525Y319I312M31HN319Q323I31222AF311K1P24031HK2X82XA31EQ2612BJ31NI2XA31XF32CY25X31EQ312E2XR31XF32HE31UT31XI32GE2XF31XI31XI26031FS31XF312E31CD31EQ32H82BI31XF315432H732H931FV31EQ31722Y8315J31XF2C926227631YZ32AQ325D32HB32HK241265279313G2XF31Y0317D313M31B22BJ31CQ32IL31C92XE32HC328B31VD32FT3297329931EQ24727G321924126F32I7312O311232JB31D2317F32DD1S32I72Z6311232JJ31RW32DD264315E323Y31VR24X31EO32J92X52QO2XR312232DA3122312231SY31S332632C926631JC320X31UT31XF32K831GZ312232HY31FV31S332BM2YI31S331S32KR312C32KL241313M2XR2C932KJ2XF2C92C925F31CA32KW24125E32I82K3319I2X531EQ314X32C22PC32JY2YI32K031JQ32K232DQ2XA32K531JC2C925G32K932DE32HH2TJ319I32KF31VN25X32KI31JQ32KP32KN32KK322832KR2YI32KT31JQ32L032KY312C32L032L22XR31EQ25H32L5323132JO2X531EO31UT312M3207323Y32IY32L932JT32L932JX31FV32LD31Q432LF32K432LN25X2C932AT32L3326331XF311132KE323231SU32LU31Q432LW31CA32KP32M032KV31YV32M3328B32M532M1328B32M82YI32MA32MC32L731CA2X528I32LB2XF32MR31CA32MT32KH32MV2C9326332KA31FV31XF32FD32NS32N432NW32KU32LH322832LX2XF32NA31FV32M231Q432M432KZ32NI32L332MB31GZ32L631L132J932MG31FV312M32OK31FS323I2BI31NO28I32B431NO27S31BA2Z3322H320R31XK32L932HS32JW32LS3122311S32OL328831SU312R31JQ32MI31H12RP32O8316U32GS322831SU32NT312C32NV319Q31S331EQ31Q431XF27S2X8312C32O224125M28R313H2XA2Z3311H313L311231X132IT2XB32PU32Q8311K2Y7313S25X31XF32Q6315732IQ2SE313P324A32QM31XF32Q232IP32Q5315H2XZ32QB27631SF2PC32LO32QK32IZ32QI320532QO324B32Q032QS32Q425X2Z3313U2JM32QX328B27932RF32QA31122Y732RF32QD31ZD32R131PX31S032LE312731NI319Q2C931A232M9241317T31Q431EQ31EQ31SY31XF31B732HQ32ND31Q432HU24132NG32HT24131XI32M832IK2Z332BM2IU32QU2Z332OA32SL32KQ31FS31EQ2Z331SA32IR31FV31XI31T42YI32SA26P31FV2Z32RP31UT31Y52XW31UT2ZB26Q319I31XI2ZB32FS32QM31YS31XI2DT2XA32LR2IU32KO32RT32SQ314832KB32RZ31JQ32Q031SY31XI32S632T132S831CA2Z32Z332SC32SO32NJ2XF31Y532SJ32U432DM32SN25X31Y531Y5313M319Q31XF31Y531SA32TG32ON32RB310A312C32TZ24132T02XR31Y52PI32T724132US31FV31Y832UV319Q2Z331Y832TD2XA31XI31YS2Z331YM32LT32SE315D32R332RW24132PY324B32L032R932QM31772C432RF32RR32R032MW3232315I32NC2ZI27E32QP2XA32VG32Q332QM31GF32VK32Q92BJ32QH32NY311E315J32VC26V31CL32NC2C932VH32LO2Z52G532RF31U032RF31JE32RF2ZG32RF31WP32RF2Y331ZB32VV32VP31FS32VM32NU32TM32RV31O732NK32TQ32S1323132S427A31JC31XI32O725X32SA32U132X832V932SG2XF32SI2XD32JQ32SO32U932UN32UD32WZ32SS32HX312631NO31XF275314K319Q32TJ32N932WW32WZ31FN2YI31XF32S031CA32TS32SV32X4317R329932QU32X732UN32XA32UN32U32XA32U531JQ32UB31LT31CA32YI32XL32QM32UG31FS32UI32OV32SY27432EH32O831XI2XI32IK2C932IN2WI32RA31EQ31B0311A32VL2BJ32RI32IV32NC32IY32W62A632W832VU32VO32WB32VX32LO317K2UE32WG32Z7317J32ZN311K32WL311232WN311231GC32WO32W232NC31XF2C4323G32TI2D33301324C315X31L7');local I=(bit or bit32)and(bit or bit32).bxor or function(e,o)local l,n=n,a while e>a and o>a do local X,I=e%2,o%2 if X~=I then n=n+l end e,o,l=(e-X)/2,(o-I)/2,l*2 end if e<o then e=o end while e>a do local o=e%2 if o>a then n=n+l end e,l=(e-o)/2,l*2 end return n end local function o(o,e,l)if l then local e=(o/2^(e-n))%2^((l-n)-(e-n)+n);return e-e%n;else local e=2^(e-n);return(o%(e+e)>=e)and n or a;end;end;local e=n;local function X()local X,n,l,o=F(Y,e,e+3);X=I(X,145)n=I(n,145)l=I(l,145)o=I(o,145)e=e+4;return(o*16777216)+(l*B)+(n*C)+X;end;local function A()local l,n=F(Y,e,e+2);l=I(l,145)n=I(n,145)e=e+2;return(n*C)+l;end;local function C()local l=I(F(Y,e,e),145);e=e+n;return l;end;local function K(...)return{...},d('#',...)end local function D()local l={};local f={};local i={};local d={[4]=nil,[n]=i,[3]=l,[8]=f,[7]=nil,};local l={}local S={}for B=n,C()==a and A()*2 or X()do local l=C();while true do if(l==a)then local o,A,X='',X();if(A==a)then l=o;break;end;X=c(Y,e,e+A-n);e=e+A;for e=n,#X do o=o..t[I(F(c(X,e,e)),145)]end l=o break;end if(l==2)then l=(C()~=a);break;end if(l==n)then local X,e=X(),X();local I,X,e,o=n,(o(e,n,20)*(2^32))+X,o(e,21,31),((-n)^o(e,32));if e==a then if X==a then l=o*a break;else e=n;I=a;end;elseif(e==2047)then l=(o*((X==a and n or a)/a))break;end;l=(o*(2^(e-1023)))*(I+(X/(2^52)));break;end l=nil break;end S[B]=l;end;for e=n,X()do i[e-n]=D();end;d[7]=C();for t=n,X()do local e=C();if(o(e,n,n)==a)then local l=o(e,2,3);local Y,c,C=A(),A(),A();local I=o(e,4,6);local e={[4]=c,[n]=C,[6]=Y,[2]=nil,};if(l==a)then e[4],e[2]=A(),A()end if(l==3)then e[4],e[2]=X()-B,A()end if(l==2)then e[4]=X()-B end if(l==n)then e[4]=X()end if(o(I,n,n)==n)then e[n]=S[e[n]]end if(o(I,3,3)==n)then e[2]=S[e[2]]end if(o(I,2,2)==n)then e[4]=S[e[4]]end f[t]=e;end end;return d;end;local function i(e,c,I)local l=e[7];local X=e[8];local B=a;local o=e[4];local e=e[n];return function(...)local F=d('#',...)-n;local C={};local d=K local o={};local A={...};local Y=l;local X=X;local D=e;local l=n;local f={};local t=-n;for e=a,F do if(e>=Y)then f[e-Y]=A[e+n];else o[e]=A[e+n];end;end;local e;local A;local Y=F-Y+n while true do e=X[l];A=e[6];if B>a then o[e[n]]=e[4];end if A<=50 then if A<=24 then if A<=11 then if A<=5 then if A<=2 then if A<=a then o[e[n]]=e[4];elseif A==n then local c;local A;o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];A=e[n];c=o[e[4]];o[A+n]=c;o[A]=c[e[2]];l=l+n;e=X[l];o[e[n]]=(e[4]~=a);l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];A=e[n];c=o[e[4]];o[A+n]=c;o[A]=c[e[2]];l=l+n;e=X[l];o[e[n]]=(e[4]~=a);l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];else local A;o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]={};l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))end;elseif A<=3 then if not o[e[n]]then l=l+n;else l=e[4];end;elseif A>4 then local a;local A;A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];else local A;local I;I=e[n]o[I](o[I+n])l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];I=e[n];A=o[e[4]];o[I+n]=A;o[I]=A[e[2]];l=l+n;e=X[l];I=e[n]o[I](o[I+n])l=l+n;e=X[l];do return end;end;elseif A<=8 then if A<=6 then local A;o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]={};l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];elseif A==7 then local l=e[n]o[l](S(o,l+n,e[4]))else local S;local A;A=e[n];S=o[e[4]];o[A+n]=S;o[A]=S[e[2]];l=l+n;e=X[l];A=e[n]o[A](o[A+n])l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](o[A+n])l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];A=e[n];S=o[e[4]];o[A+n]=S;o[A]=S[e[2]];l=l+n;e=X[l];A=e[n]o[A](o[A+n])l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](o[A+n])l=l+n;e=X[l];l=e[4];end;elseif A<=9 then o[e[n]]={};elseif A==10 then local I=e[n];local A=e[2];local X=I+2 local I={o[I](o[I+n],o[X])};for e=n,A do o[X+e]=I[e];end;local I=I[n]if I then o[X]=I l=e[4];else l=l+n;end;else local c;local t;local C;local A;A=e[n];C=o[e[4]];o[A+n]=C;o[A]=C[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];A=e[n]t={o[A](o[A+n])};c=a;for e=A,e[2]do c=c+n;o[e]=t[c];end l=l+n;e=X[l];l=e[4];end;elseif A<=17 then if A<=14 then if A<=12 then I[e[4]]=o[e[n]];elseif A>13 then o[e[n]][e[4]]=o[e[2]];else local X=e[n];local I=o[X]local A=o[X+2];if(A>a)then if(I>o[X+n])then l=e[4];else o[X+3]=I;end elseif(I<o[X+n])then l=e[4];else o[X+3]=I;end end;elseif A<=15 then o[e[n]]=o[e[4]]-o[e[2]];elseif A>16 then local l=e[n]o[l]=o[l](S(o,l+n,e[4]))else local c;local A;o[e[n]]=I[e[4]];l=l+n;e=X[l];A=e[n];c=o[e[4]];o[A+n]=c;o[A]=c[e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](o[A+n])l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](o[A+n])l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](o[A+n])l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](o[A+n])l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](o[A+n])l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](o[A+n])l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](o[A+n])l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](o[A+n])l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](o[A+n])l=l+n;e=X[l];A=e[n];c=o[e[4]];o[A+n]=c;o[A]=c[e[2]];l=l+n;e=X[l];o[e[n]]=(e[4]~=a);l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];A=e[n];c=o[e[4]];o[A+n]=c;o[A]=c[e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];A=e[n];c=o[e[4]];o[A+n]=c;o[A]=c[e[2]];l=l+n;e=X[l];o[e[n]]=(e[4]~=a);l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];end;elseif A<=20 then if A<=18 then o[e[n]]=o[e[4]]/e[2];elseif A==19 then o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];if(o[e[n]]==o[e[2]])then l=l+n;else l=e[4];end;else l=e[4];end;elseif A<=22 then if A==21 then if(o[e[n]]==o[e[2]])then l=l+n;else l=e[4];end;else c[e[4]]=o[e[n]];end;elseif A==23 then local a;local A;o[e[n]]=c[e[4]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](o[A+n])l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];else o[e[n]]=o[e[4]];end;elseif A<=37 then if A<=30 then if A<=27 then if A<=25 then local F;local c;local Y;local t;local B;local f;local A;A=e[n]o[A](S(o,A+n,e[4]))l=l+n;e=X[l];A=e[n];f={};for e=n,#C do B=C[e];for e=a,#B do t=B[e];Y=t[n];c=t[2];if Y==o and c>=A then f[c]=Y[c];t[n]=f;end;end;end;l=l+n;e=X[l];A=e[n];F=o[e[4]];o[A+n]=F;o[A]=F[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];elseif A==26 then local X=e[n];local A=o[X+2];local I=o[X]+A;o[X]=I;if(A>a)then if(I<=o[X+n])then l=e[4];o[X+3]=I;end elseif(I>=o[X+n])then l=e[4];o[X+3]=I;end else for e=e[n],e[4]do o[e]=nil;end;end;elseif A<=28 then do return end;elseif A>29 then local A;o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];else local S;local A;o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];for e=e[n],e[4]do o[e]=nil;end;l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];A=e[n];S=o[e[4]];o[A+n]=S;o[A]=S[e[2]];l=l+n;e=X[l];o[e[n]]=e[4];end;elseif A<=33 then if A<=31 then local l=e[n]local X,e=d(o[l](S(o,l+n,e[4])))t=e+l-n local e=a;for l=l,t do e=e+n;o[l]=X[e];end;elseif A==32 then if not o[e[n]]then l=l+n;else l=e[4];end;else local X=e[4];local l=o[X]for e=X+n,e[2]do l=l..o[e];end;o[e[n]]=l;end;elseif A<=35 then if A>34 then o[e[n]][e[4]]=e[2];else o[e[n]]();end;elseif A>36 then local F;local c;local Y;local t;local f;local B;local A;A=e[n]o[A](S(o,A+n,e[4]))l=l+n;e=X[l];A=e[n];B={};for e=n,#C do f=C[e];for e=a,#f do t=f[e];Y=t[n];c=t[2];if Y==o and c>=A then B[c]=Y[c];t[n]=B;end;end;end;l=l+n;e=X[l];A=e[n];F=o[e[4]];o[A+n]=F;o[A]=F[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];else local l=e[n]local I={o[l](o[l+n])};local X=a;for e=l,e[2]do X=X+n;o[e]=I[X];end end;elseif A<=43 then if A<=40 then if A<=38 then o[e[n]]=o[e[4]][e[2]];elseif A==39 then o[e[n]]=o[e[4]][e[2]];else local l=e[n]local X,e=d(o[l](S(o,l+n,e[4])))t=e+l-n local e=a;for l=l,t do e=e+n;o[l]=X[e];end;end;elseif A<=41 then local c;local A;o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];A=e[n];c=o[e[4]];o[A+n]=c;o[A]=c[e[2]];l=l+n;e=X[l];o[e[n]]=(e[4]~=a);l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];A=e[n];c=o[e[4]];o[A+n]=c;o[A]=c[e[2]];l=l+n;e=X[l];o[e[n]]=(e[4]~=a);l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];A=e[n];c=o[e[4]];o[A+n]=c;o[A]=c[e[2]];elseif A>42 then o[e[n]][e[4]]=e[2];else local A;local S;c[e[4]]=o[e[n]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];c[e[4]]=o[e[n]];l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];I[e[4]]=o[e[n]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];S=e[n];A=o[e[4]];o[S+n]=A;o[S]=A[e[2]];end;elseif A<=46 then if A<=44 then local A=e[n];local X={};for e=n,#C do local e=C[e];for l=a,#e do local l=e[l];local I=l[n];local e=l[2];if I==o and e>=A then X[e]=I[e];l[n]=X;end;end;end;elseif A==45 then local e=e[n]o[e]=o[e](o[e+n])else local A;o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]]/e[2];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]();end;elseif A<=48 then if A>47 then local e=e[n]o[e](o[e+n])else local e=e[n]o[e]=o[e](o[e+n])end;elseif A>49 then if(o[e[n]]==o[e[2]])then l=l+n;else l=e[4];end;else local a=D[e[4]];local S;local A={};S=Q({},{__index=function(l,e)local e=A[e];return e[n][e[2]];end,__newindex=function(o,e,l)local e=A[e]e[n][e[2]]=l;end;});for I=n,e[2]do l=l+n;local e=X[l];if e[6]==81 then A[I-n]={o,e[4]};else A[I-n]={c,e[4]};end;C[#C+n]=A;end;o[e[n]]=i(a,S,I);end;elseif A<=75 then if A<=62 then if A<=56 then if A<=53 then if A<=51 then local l=e[n];local X=o[e[4]];o[l+n]=X;o[l]=X[e[2]];elseif A>52 then local A=e[n];local I={};for e=n,#C do local e=C[e];for l=a,#e do local l=e[l];local X=l[n];local e=l[2];if X==o and e>=A then I[e]=X[e];l[n]=I;end;end;end;else c[e[4]]=o[e[n]];end;elseif A<=54 then o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];if(o[e[n]]~=o[e[2]])then l=l+n;else l=e[4];end;elseif A==55 then local A;o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]={};l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))else if(o[e[n]]~=o[e[2]])then l=l+n;else l=e[4];end;end;elseif A<=59 then if A<=57 then for e=e[n],e[4]do o[e]=nil;end;elseif A==58 then o[e[n]]=o[e[4]]/e[2];else o[e[n]][e[4]]=o[e[2]];end;elseif A<=60 then o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];if(o[e[n]]~=o[e[2]])then l=l+n;else l=e[4];end;elseif A==61 then local X=e[n]local I={o[X](o[X+n])};local l=a;for e=X,e[2]do l=l+n;o[e]=I[l];end else o[e[n]]=e[4];end;elseif A<=68 then if A<=65 then if A<=63 then local I;o[e[n]]=(e[4]~=a);l=l+n;e=X[l];I=e[n]o[I]=o[I](S(o,I+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];I=e[n]o[I]=o[I](S(o,I+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];elseif A>64 then local c;local A;o[e[n]]=(e[4]~=a);l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];A=e[n];c=o[e[4]];o[A+n]=c;o[A]=c[e[2]];l=l+n;e=X[l];o[e[n]]=(e[4]~=a);l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];else o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];if(o[e[n]]==o[e[2]])then l=l+n;else l=e[4];end;end;elseif A<=66 then local A;o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))elseif A>67 then local e=e[n]o[e]=o[e](S(o,e+n,t))else local X=e[n];local A=e[2];local I=X+2 local X={o[X](o[X+n],o[I])};for e=n,A do o[I+e]=X[e];end;local X=X[n]if X then o[I]=X l=e[4];else l=l+n;end;end;elseif A<=71 then if A<=69 then o[e[n]]=I[e[4]];elseif A>70 then local l=e[n]o[l]=o[l](S(o,l+n,e[4]))else l=e[4];end;elseif A<=73 then if A>72 then o[e[n]]=(e[4]~=a);else local a;local A;o[e[n]]=c[e[4]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](o[A+n])l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];end;elseif A>74 then local e=e[n]o[e](o[e+n])else if(o[e[n]]~=o[e[2]])then l=l+n;else l=e[4];end;end;elseif A<=88 then if A<=81 then if A<=78 then if A<=76 then o[e[n]]=o[e[4]]+o[e[2]];elseif A>77 then o[e[n]]=o[e[4]]+o[e[2]];else local a;local A;o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]={};l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];end;elseif A<=79 then do return end;elseif A==80 then local Y;local B,F;local C;local A;A=e[n]o[A](o[A+n])l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];A=e[n];C=o[e[4]];o[A+n]=C;o[A]=C[e[2]];l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];A=e[n]B,F=d(o[A](S(o,A+n,e[4])))t=F+A-n Y=a;for e=A,t do Y=Y+n;o[e]=B[Y];end;l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,t))l=l+n;e=X[l];o[e[n]]();l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];A=e[n];C=o[e[4]];o[A+n]=C;o[A]=C[e[2]];l=l+n;e=X[l];A=e[n]o[A](o[A+n])l=l+n;e=X[l];do return end;else o[e[n]]=o[e[4]];end;elseif A<=84 then if A<=82 then local X=e[4];local l=o[X]for e=X+n,e[2]do l=l..o[e];end;o[e[n]]=l;elseif A==83 then o[e[n]]();else local X=e[n];local A=o[X+2];local I=o[X]+A;o[X]=I;if(A>a)then if(I<=o[X+n])then l=e[4];o[X+3]=I;end elseif(I>=o[X+n])then l=e[4];o[X+3]=I;end end;elseif A<=86 then if A>85 then local a;local A;A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](S(o,A+n,e[4]))l=l+n;e=X[l];A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](o[A+n])l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](S(o,A+n,e[4]))l=l+n;e=X[l];A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A](o[A+n])l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]][e[4]]=e[2];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];l=l+n;e=X[l];o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];else o[e[n]]=o[e[4]]-o[e[2]];end;elseif A==87 then o[e[n]]=c[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];if(o[e[n]]==o[e[2]])then l=l+n;else l=e[4];end;else o[e[n]]=(e[4]~=a);end;elseif A<=94 then if A<=91 then if A<=89 then local a=D[e[4]];local S;local A={};S=Q({},{__index=function(l,e)local e=A[e];return e[n][e[2]];end,__newindex=function(o,e,l)local e=A[e]e[n][e[2]]=l;end;});for I=n,e[2]do l=l+n;local e=X[l];if e[6]==81 then A[I-n]={o,e[4]};else A[I-n]={c,e[4]};end;C[#C+n]=A;end;o[e[n]]=i(a,S,I);elseif A>90 then local l=e[n]o[l](S(o,l+n,e[4]))else o[e[n]]=I[e[4]];end;elseif A<=92 then o[e[n]]=c[e[4]];elseif A==93 then local A;o[e[n]]=o[e[4]];l=l+n;e=X[l];A=e[n]o[A]=o[A](o[A+n])l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];A=e[n]o[A]=o[A](o[A+n])l=l+n;e=X[l];if(o[e[n]]==o[e[2]])then l=l+n;else l=e[4];end;else local A;o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]]-o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]]+o[e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=c[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]]-o[e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];o[e[n]]=o[e[4]]+o[e[2]];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]][e[4]]=o[e[2]];end;elseif A<=97 then if A<=95 then local X=e[n];local l=o[e[4]];o[X+n]=l;o[X]=l[e[2]];elseif A==96 then o[e[n]]={};else local a;local A;o[e[n]]=e[4];l=l+n;e=X[l];A=e[n]o[A]=o[A](S(o,A+n,e[4]))l=l+n;e=X[l];o[e[n]]=I[e[4]];l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];for e=e[n],e[4]do o[e]=nil;end;l=l+n;e=X[l];o[e[n]]=o[e[4]][e[2]];l=l+n;e=X[l];A=e[n];a=o[e[4]];o[A+n]=a;o[A]=a[e[2]];end;elseif A<=99 then if A==98 then local X=e[n];local I=o[X]local A=o[X+2];if(A>a)then if(I>o[X+n])then l=e[4];else o[X+3]=I;end elseif(I<o[X+n])then l=e[4];else o[X+3]=I;end else local e=e[n]o[e]=o[e](S(o,e+n,t))end;elseif A>100 then o[e[n]]=c[e[4]];else I[e[4]]=o[e[n]];end;l=l+n;end;end;end;return S({i(D(),{},E())()})or nil;end)(65536,"",{},1,0,256,tonumber)
 
@@ -22641,15 +21820,14 @@ local LocalPlayer = Players.LocalPlayer
 local Events = ReplicatedStorage:WaitForChild("Events")
 local Remote = Events:WaitForChild("_lPJIlII")
 
--- Settings with better defaults
 local SETTINGS = {
     FIRE_RATES = {
-        "1e-20",  -- Ultra Fast
-        "1e-10",  -- Very Fast  
-        "1e-6",   -- Fast
-        "1e-3",   -- Medium
-        "0.001",  -- Slow
-        "0.01"    -- Very Slow
+        "1e-20",
+        "1e-10",
+        "1e-6",
+        "1e-3",
+        "0.001",
+        "0.01"
     },
     CURRENT_FIRE_RATE = 1,
     PROJECTILE_SPEED = 300,
@@ -22660,7 +21838,6 @@ local SETTINGS = {
     SHOCKWAVE_SHAPE = "circle"
 }
 
--- === STATE MANAGEMENT ===
 local State = {
     isSpamming = false,
     isSpamShockwave = false,
@@ -22675,7 +21852,6 @@ local State = {
     spellbookProjectiles = {}
 }
 
--- === UI ELEMENTS ===
 local UI = {
     Window = nil,
     Title = nil,
@@ -22690,10 +21866,6 @@ local UI = {
     FireRateSelector = nil,
     AntiLagToggle = nil
 }
-
--- =======================================================================================
--- CORE FUNCTIONS
--- =======================================================================================
 
 local function getNearestTarget(range)
     local char = LocalPlayer.Character
@@ -22730,10 +21902,6 @@ local function hitscan(origin, dir, ignore)
     return r and r.Position
 end
 
--- =======================================================================================
--- ANTI-LAG FUNCTIONS
--- =======================================================================================
-
 local function storeSpellbookProjectiles()
     State.spellbookProjectiles = {}
     for _, obj in ipairs(Workspace:GetDescendants()) do
@@ -22755,7 +21923,7 @@ end
 
 local function toggleAntiLag(enable)
     State.antiLagEnabled = enable
-    
+
     if enable then
         storeSpellbookProjectiles()
     else
@@ -22763,13 +21931,9 @@ local function toggleAntiLag(enable)
     end
 end
 
--- =======================================================================================
--- SHOCKWAVE PATTERNS
--- =======================================================================================
-
 local function getShockwavePositions(shape, origin, radius, density)
     local positions = {}
-    
+
     if shape == "circle" then
         for i = 1, density do
             local angle = (i - 1) * (360 / density)
@@ -22778,52 +21942,52 @@ local function getShockwavePositions(shape, origin, radius, density)
             local z = origin.Z + math.sin(rad) * radius
             table.insert(positions, Vector3.new(x, origin.Y, z))
         end
-        
+
     elseif shape == "square" then
         local sidePoints = math.floor(density / 4)
-        -- Top side
+
         for i = 1, sidePoints do
             local x = origin.X - radius + (i / sidePoints) * radius * 2
             table.insert(positions, Vector3.new(x, origin.Y, origin.Z - radius))
         end
-        -- Right side
+
         for i = 1, sidePoints do
             local z = origin.Z - radius + (i / sidePoints) * radius * 2
             table.insert(positions, Vector3.new(origin.X + radius, origin.Y, z))
         end
-        -- Bottom side
+
         for i = 1, sidePoints do
             local x = origin.X + radius - (i / sidePoints) * radius * 2
             table.insert(positions, Vector3.new(x, origin.Y, origin.Z + radius))
         end
-        -- Left side
+
         for i = 1, sidePoints do
             local z = origin.Z + radius - (i / sidePoints) * radius * 2
             table.insert(positions, Vector3.new(origin.X - radius, origin.Y, z))
         end
-        
+
     elseif shape == "triangle" then
         local pointsPerSide = math.floor(density / 3)
-        -- Bottom side
+
         for i = 1, pointsPerSide do
             local x = origin.X - radius + (i / pointsPerSide) * radius * 2
             table.insert(positions, Vector3.new(x, origin.Y, origin.Z - radius))
         end
-        -- Right side
+
         for i = 1, pointsPerSide do
             local ratio = i / pointsPerSide
             local x = origin.X + radius * (1 - ratio)
             local z = origin.Z - radius + ratio * radius * 2
             table.insert(positions, Vector3.new(x, origin.Y, z))
         end
-        -- Left side
+
         for i = 1, pointsPerSide do
             local ratio = i / pointsPerSide
             local x = origin.X - radius * (1 - ratio)
             local z = origin.Z - radius + ratio * radius * 2
             table.insert(positions, Vector3.new(x, origin.Y, z))
         end
-        
+
     elseif shape == "star" then
         local points = math.floor(density / 2)
         for i = 1, points do
@@ -22831,18 +21995,16 @@ local function getShockwavePositions(shape, origin, radius, density)
             local angle2 = (i - 0.5) * (360 / points)
             local rad1 = math.rad(angle1)
             local rad2 = math.rad(angle2)
-            
-            -- Outer points
+
             local x1 = origin.X + math.cos(rad1) * radius
             local z1 = origin.Z + math.sin(rad1) * radius
             table.insert(positions, Vector3.new(x1, origin.Y, z1))
-            
-            -- Inner points
+
             local x2 = origin.X + math.cos(rad2) * (radius * 0.5)
             local z2 = origin.Z + math.sin(rad2) * (radius * 0.5)
             table.insert(positions, Vector3.new(x2, origin.Y, z2))
         end
-        
+
     elseif shape == "spiral" then
         for i = 1, density do
             local angle = (i - 1) * (360 / density) * 3
@@ -22852,7 +22014,7 @@ local function getShockwavePositions(shape, origin, radius, density)
             local z = origin.Z + math.sin(rad) * spiralRadius
             table.insert(positions, Vector3.new(x, origin.Y, z))
         end
-        
+
     elseif shape == "random" then
         for i = 1, density do
             local angle = math.random() * 360
@@ -22862,13 +22024,9 @@ local function getShockwavePositions(shape, origin, radius, density)
             table.insert(positions, Vector3.new(x, origin.Y, z))
         end
     end
-    
+
     return positions
 end
-
--- =======================================================================================
--- ATTACK FUNCTIONS
--- =======================================================================================
 
 local function doShockwaveBurst()
     State.isShockwaveBurst = true
@@ -22877,18 +22035,16 @@ local function doShockwaveBurst()
 
     local origin = hrp.Position
     local positions = getShockwavePositions(SETTINGS.SHOCKWAVE_SHAPE, origin, SETTINGS.SHOCKWAVE_RADIUS, SETTINGS.SHOCKWAVE_DENSITY)
-    
-    -- Fire all shots in a single loop at max speed
+
     for _, finalPoint in ipairs(positions) do
         Remote:FireServer({
-            AttackInfo = { AttackIndex = 0, ComboIndex = 0 }, 
+            AttackInfo = { AttackIndex = 0, ComboIndex = 0 },
             WorldTargetPoint = finalPoint
         })
-        
+
         State.stats.shotsFired += 1
     end
-    
-    -- Visual feedback
+
     UI.Indicators.Shockwave.Visible = true
     task.delay(0.5, function() UI.Indicators.Shockwave.Visible = false end)
 end
@@ -22907,10 +22063,10 @@ local function doAutoAim()
     end
 
     Remote:FireServer({
-        AttackInfo = { AttackIndex = 0, ComboIndex = 0 }, 
+        AttackInfo = { AttackIndex = 0, ComboIndex = 0 },
         WorldTargetPoint = finalPoint
     })
-    
+
     State.stats.shotsFired += 1
     State.stats.targetsHit += 1
 end
@@ -22921,31 +22077,25 @@ local function doSpamShockwave()
 
     local origin = hrp.Position
     local positions = getShockwavePositions(SETTINGS.SHOCKWAVE_SHAPE, origin, SETTINGS.SHOCKWAVE_RADIUS, SETTINGS.SHOCKWAVE_DENSITY)
-    
-    -- Fire all positions at once for true spam effect
+
     for _, finalPoint in ipairs(positions) do
         Remote:FireServer({
-            AttackInfo = { AttackIndex = 0, ComboIndex = 0 }, 
+            AttackInfo = { AttackIndex = 0, ComboIndex = 0 },
             WorldTargetPoint = finalPoint
         })
-        
+
         State.stats.shotsFired += 1
     end
 end
 
--- =======================================================================================
--- UI CREATION - COMPLETELY REDESIGNED
--- =======================================================================================
-
 local function createUI()
-    -- Main Window
+
     UI.Window = Instance.new("ScreenGui")
     UI.Window.Name = "SpamAbuseGUI"
     UI.Window.Parent = CoreGui
     UI.Window.ResetOnSpawn = false
     UI.Window.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-    -- Window Frame with modern design
     local WindowFrame = Instance.new("Frame")
     WindowFrame.Size = UDim2.new(0, 450, 0, 550)
     WindowFrame.Position = UDim2.new(0.5, -225, 0.5, -275)
@@ -22955,14 +22105,12 @@ local function createUI()
     WindowFrame.Draggable = true
     WindowFrame.Parent = UI.Window
 
-    -- Title Bar with gradient effect
     local TitleBar = Instance.new("Frame")
     TitleBar.Size = UDim2.new(1, 0, 0, 45)
     TitleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
     TitleBar.BorderSizePixel = 0
     TitleBar.Parent = WindowFrame
 
-    -- Title with glow effect
     UI.Title = Instance.new("TextLabel")
     UI.Title.Size = UDim2.new(1, -50, 1, 0)
     UI.Title.BackgroundTransparency = 1
@@ -22975,7 +22123,6 @@ local function createUI()
     UI.Title.TextXAlignment = Enum.TextXAlignment.Left
     UI.Title.Parent = TitleBar
 
-    -- Close Button with hover effect
     UI.CloseButton = Instance.new("TextButton")
     UI.CloseButton.Size = UDim2.new(0, 45, 0, 45)
     UI.CloseButton.Position = UDim2.new(1, -45, 0, 0)
@@ -22989,7 +22136,6 @@ local function createUI()
     UI.CloseButton.MouseEnter:Connect(function() UI.CloseButton.BackgroundColor3 = Color3.fromRGB(80, 0, 0) end)
     UI.CloseButton.MouseLeave:Connect(function() UI.CloseButton.BackgroundColor3 = Color3.fromRGB(60, 0, 0) end)
 
-    -- Status Panel with modern design
     UI.StatusPanel = Instance.new("Frame")
     UI.StatusPanel.Size = UDim2.new(1, -15, 0, 90)
     UI.StatusPanel.Position = UDim2.new(0, 7.5, 0, 55)
@@ -22997,7 +22143,6 @@ local function createUI()
     UI.StatusPanel.BorderSizePixel = 0
     UI.StatusPanel.Parent = WindowFrame
 
-    -- Status Indicators with better design
     UI.Indicators = {
         Spam = Instance.new("Frame"),
         Shockwave = Instance.new("Frame"),
@@ -23019,7 +22164,6 @@ local function createUI()
     UI.Indicators.Burst.Name = "BurstIndicator"
     UI.Indicators.AntiLag.Name = "AntiLagIndicator"
 
-    -- Stats Panel with modern design
     UI.StatsPanel = Instance.new("Frame")
     UI.StatsPanel.Size = UDim2.new(1, -15, 0, 110)
     UI.StatsPanel.Position = UDim2.new(0, 7.5, 0, 150)
@@ -23027,7 +22171,6 @@ local function createUI()
     UI.StatsPanel.BorderSizePixel = 0
     UI.StatsPanel.Parent = WindowFrame
 
-    -- Stats Labels with better styling
     local statsLabels = {
         "Shots Fired: " .. State.stats.shotsFired,
         "Targets Hit: " .. State.stats.targetsHit,
@@ -23047,7 +22190,6 @@ local function createUI()
         statLabel.Parent = UI.StatsPanel
     end
 
-    -- Buttons Panel with modern design
     local ButtonsPanel = Instance.new("Frame")
     ButtonsPanel.Size = UDim2.new(1, -15, 0, 200)
     ButtonsPanel.Position = UDim2.new(0, 7.5, 0, 270)
@@ -23055,7 +22197,6 @@ local function createUI()
     ButtonsPanel.BorderSizePixel = 0
     ButtonsPanel.Parent = WindowFrame
 
-    -- Shockwave Burst Button with hover effects
     UI.Buttons.Shockwave = Instance.new("TextButton")
     UI.Buttons.Shockwave.Name = "ShockwaveButton"
     UI.Buttons.Shockwave.Size = UDim2.new(1, -15, 0, 50)
@@ -23070,7 +22211,6 @@ local function createUI()
     UI.Buttons.Shockwave.MouseEnter:Connect(function() UI.Buttons.Shockwave.BackgroundColor3 = Color3.fromRGB(180, 0, 0) end)
     UI.Buttons.Shockwave.MouseLeave:Connect(function() UI.Buttons.Shockwave.BackgroundColor3 = Color3.fromRGB(160, 0, 0) end)
 
-    -- Spam Shooting Toggle with better state management
     UI.Toggles.Spam = Instance.new("TextButton")
     UI.Toggles.Spam.Name = "SpamToggle"
     UI.Toggles.Spam.Size = UDim2.new(1, -15, 0, 50)
@@ -23087,13 +22227,12 @@ local function createUI()
         updateUI()
     end)
     UI.Toggles.Spam.MouseEnter:Connect(function() UI.Toggles.Spam.BackgroundColor3 = Color3.fromRGB(70, 70, 70) end)
-    UI.Toggles.Spam.MouseLeave:Connect(function() 
+    UI.Toggles.Spam.MouseLeave:Connect(function()
         if not State.isSpamming then
             UI.Toggles.Spam.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
         end
     end)
 
-    -- Spam Shockwave Toggle with better state management
     UI.Toggles.Shockwave = Instance.new("TextButton")
     UI.Toggles.Shockwave.Name = "SpamShockwaveToggle"
     UI.Toggles.Shockwave.Size = UDim2.new(1, -15, 0, 50)
@@ -23110,13 +22249,12 @@ local function createUI()
         updateUI()
     end)
     UI.Toggles.Shockwave.MouseEnter:Connect(function() UI.Toggles.Shockwave.BackgroundColor3 = Color3.fromRGB(70, 70, 70) end)
-    UI.Toggles.Shockwave.MouseLeave:Connect(function() 
+    UI.Toggles.Shockwave.MouseLeave:Connect(function()
         if not State.isSpamShockwave then
             UI.Toggles.Shockwave.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
         end
     end)
 
-    -- Shape Selector with better design
     UI.ShapeSelector = Instance.new("Frame")
     UI.ShapeSelector.Size = UDim2.new(1, -15, 0, 50)
     UI.ShapeSelector.Position = UDim2.new(0, 7.5, 0, 175)
@@ -23155,7 +22293,6 @@ local function createUI()
     shapeDropdown.MouseEnter:Connect(function() shapeDropdown.BackgroundColor3 = Color3.fromRGB(50, 50, 55) end)
     shapeDropdown.MouseLeave:Connect(function() shapeDropdown.BackgroundColor3 = Color3.fromRGB(40, 40, 45) end)
 
-    -- Fire Rate Selector with better design
     UI.FireRateSelector = Instance.new("Frame")
     UI.FireRateSelector.Size = UDim2.new(1, -15, 0, 50)
     UI.FireRateSelector.Position = UDim2.new(0, 7.5, 0, 230)
@@ -23190,7 +22327,6 @@ local function createUI()
     fireRateDropdown.MouseEnter:Connect(function() fireRateDropdown.BackgroundColor3 = Color3.fromRGB(50, 50, 55) end)
     fireRateDropdown.MouseLeave:Connect(function() fireRateDropdown.BackgroundColor3 = Color3.fromRGB(40, 40, 45) end)
 
-    -- Anti-Lag Toggle with better design
     UI.AntiLagToggle = Instance.new("TextButton")
     UI.AntiLagToggle.Name = "AntiLagToggle"
     UI.AntiLagToggle.Size = UDim2.new(1, -15, 0, 50)
@@ -23207,13 +22343,12 @@ local function createUI()
         updateUI()
     end)
     UI.AntiLagToggle.MouseEnter:Connect(function() UI.AntiLagToggle.BackgroundColor3 = Color3.fromRGB(70, 70, 70) end)
-    UI.AntiLagToggle.MouseLeave:Connect(function() 
+    UI.AntiLagToggle.MouseLeave:Connect(function()
         if not State.antiLagEnabled then
             UI.AntiLagToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
         end
     end)
 
-    -- Settings Panel with better design
     UI.SettingsPanel = Instance.new("Frame")
     UI.SettingsPanel.Size = UDim2.new(1, -15, 0, 100)
     UI.SettingsPanel.Position = UDim2.new(0, 7.5, 0, 340)
@@ -23221,7 +22356,6 @@ local function createUI()
     UI.SettingsPanel.BorderSizePixel = 0
     UI.SettingsPanel.Parent = WindowFrame
 
-    -- Settings Labels with better styling
     local settingsLabels = {
         "Projectile Speed: " .. SETTINGS.PROJECTILE_SPEED,
         "Auto Aim Range: " .. SETTINGS.AUTO_AIM_RANGE,
@@ -23243,7 +22377,7 @@ local function createUI()
 end
 
 local function updateUI()
-    -- Update toggle buttons with smooth color transitions
+
     if State.isSpamming then
         UI.Toggles.Spam.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
         UI.Toggles.Spam.Text = "SPAM SHOOTING: ON"
@@ -23277,47 +22411,37 @@ local function updateUI()
         UI.Indicators.AntiLag.Visible = false
     end
 
-    -- Update stats
     local statsLabels = UI.StatsPanel:GetChildren()
     if statsLabels[1] then statsLabels[1].Text = "Shots Fired: " .. State.stats.shotsFired end
     if statsLabels[2] then statsLabels[2].Text = "Targets Hit: " .. State.stats.targetsHit end
     if statsLabels[3] then statsLabels[3].Text = "Session Time: " .. string.format("%.1f", State.stats.sessionTime) .. "s" end
 end
 
--- =======================================================================================
--- MAIN LOOP WITH BETTER PERFORMANCE
--- =======================================================================================
-
 local function mainLoop()
     RunService.RenderStepped:Connect(function(dt)
         State.stats.sessionTime += dt
-        
+
         if State.isShockwaveBurst then
             State.isShockwaveBurst = false
             return
         end
 
         if not State.isSpamming and not State.isSpamShockwave then return end
-        
-        -- Apply fire rate with better timing
+
         local fireRate = tonumber(SETTINGS.FIRE_RATES[SETTINGS.CURRENT_FIRE_RATE])
         if fireRate and fireRate > 0 then
             if dt < fireRate then return end
         end
-        
+
         if State.isSpamShockwave then
             doSpamShockwave()
         elseif State.isSpamming then
             doAutoAim()
         end
-        
+
         updateUI()
     end)
 end
-
--- =======================================================================================
--- INITIALIZATION
--- =======================================================================================
 
 createUI()
 mainLoop()
