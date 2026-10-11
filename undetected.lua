@@ -1,4 +1,1956 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/gen2-preview'))()
+local Rayfield = (function()
+	local Players = game:GetService("Players")
+	local UIS = game:GetService("UserInputService")
+	local player = Players.LocalPlayer
+
+	local C = {
+		face = Color3.fromRGB(192, 192, 192),
+		white = Color3.fromRGB(255, 255, 255),
+		light = Color3.fromRGB(223, 223, 223),
+		shadow = Color3.fromRGB(128, 128, 128),
+		black = Color3.fromRGB(0, 0, 0),
+		navy = Color3.fromRGB(0, 0, 128),
+		navy2 = Color3.fromRGB(16, 132, 208),
+		inactive2 = Color3.fromRGB(181, 181, 181),
+		track = Color3.fromRGB(224, 224, 224),
+	}
+	local FONT = Enum.Font.Arial
+	local BOLD = Enum.Font.ArialBold
+	local TS = 13
+
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "Win32Classic"
+	gui.ResetOnSpawn = false
+	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	gui.Parent = player:WaitForChild("PlayerGui")
+
+	local function new(class, props, parent)
+		local inst = Instance.new(class)
+		for k, v in pairs(props) do
+			inst[k] = v
+		end
+		inst.Parent = parent
+		return inst
+	end
+
+	local function px(parent, pos, size, color)
+		return new("Frame", { Position = pos, Size = size, BackgroundColor3 = color, BorderSizePixel = 0 }, parent)
+	end
+
+	local function edge(p, tl, br, i)
+		px(p, UDim2.fromOffset(i, i), UDim2.new(1, -2 * i, 0, 1), tl)
+		px(p, UDim2.fromOffset(i, i), UDim2.new(0, 1, 1, -2 * i), tl)
+		px(p, UDim2.new(0, i, 1, -i - 1), UDim2.new(1, -2 * i, 0, 1), br)
+		px(p, UDim2.new(1, -i - 1, 0, i), UDim2.new(0, 1, 1, -2 * i), br)
+	end
+
+	local function rect(p, ox, oy, color)
+		px(p, UDim2.fromOffset(ox, oy), UDim2.new(1, -1, 0, 1), color)
+		px(p, UDim2.fromOffset(ox, oy), UDim2.new(0, 1, 1, -1), color)
+		px(p, UDim2.new(0, ox, 1, oy - 2), UDim2.new(1, -1, 0, 1), color)
+		px(p, UDim2.new(1, ox - 2, 0, oy), UDim2.new(0, 1, 1, -1), color)
+	end
+
+	local function bevel(h, kind)
+		for _, ch in ipairs(h:GetChildren()) do
+			ch:Destroy()
+		end
+		local W, K, G, L, F = C.white, C.black, C.shadow, C.light, C.face
+		if kind == "raised" then
+			edge(h, W, K, 0)
+			edge(h, L, G, 1)
+		elseif kind == "sunken" then
+			edge(h, G, W, 0)
+			edge(h, K, L, 1)
+		elseif kind == "pressed" then
+			edge(h, K, K, 0)
+			edge(h, G, F, 1)
+		elseif kind == "default" then
+			edge(h, K, K, 0)
+			edge(h, W, K, 1)
+			edge(h, L, G, 2)
+		elseif kind == "defaultPressed" then
+			edge(h, K, K, 0)
+			edge(h, G, G, 1)
+		elseif kind == "flatUp" then
+			edge(h, W, G, 0)
+		elseif kind == "flatDown" then
+			edge(h, G, W, 0)
+		elseif kind == "window" then
+			edge(h, L, K, 0)
+			edge(h, W, G, 1)
+			edge(h, F, F, 2)
+		end
+	end
+
+	local function holder(parent)
+		return new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, BorderSizePixel = 0 }, parent)
+	end
+
+	local function Label(parent, text, x, y, w, h, extra)
+		local props = {
+			Text = text,
+			Position = UDim2.fromOffset(x, y),
+			Size = UDim2.fromOffset(w or 100, h or 15),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			Font = FONT,
+			TextSize = TS,
+			TextColor3 = C.black,
+			TextXAlignment = Enum.TextXAlignment.Left,
+		}
+		if extra then
+			for k, v in pairs(extra) do
+				props[k] = v
+			end
+		end
+		return new("TextLabel", props, parent)
+	end
+
+	local function VScroll(parent, scroll, x, y, h)
+		local bar = new("Frame", {
+			Position = UDim2.fromOffset(x, y),
+			Size = UDim2.fromOffset(16, h),
+			BackgroundColor3 = C.track,
+			BorderSizePixel = 0,
+		}, parent)
+		local trackH = h - 32
+
+		local function arrow(py, up)
+			local b = new("TextButton", {
+				Text = "",
+				Position = UDim2.fromOffset(0, py),
+				Size = UDim2.fromOffset(16, 16),
+				BackgroundColor3 = C.face,
+				BorderSizePixel = 0,
+				AutoButtonColor = false,
+			}, bar)
+			local bv = holder(b)
+			bevel(bv, "raised")
+			for k = 0, 3 do
+				local w = up and (1 + 2 * k) or (7 - 2 * k)
+				local ax = up and (7 - k) or (4 + k)
+				px(b, UDim2.fromOffset(ax, 5 + k), UDim2.fromOffset(w, 1), C.black)
+			end
+			b.MouseButton1Down:Connect(function()
+				bevel(bv, "pressed")
+			end)
+			b.MouseButton1Up:Connect(function()
+				bevel(bv, "raised")
+			end)
+			b.MouseLeave:Connect(function()
+				bevel(bv, "raised")
+			end)
+			b.Activated:Connect(function()
+				scroll.CanvasPosition = Vector2.new(0, math.max(0, scroll.CanvasPosition.Y + (up and -16 or 16)))
+			end)
+		end
+		arrow(0, true)
+		arrow(h - 16, false)
+
+		local thumb = new("Frame", {
+			Position = UDim2.fromOffset(0, 16),
+			Size = UDim2.fromOffset(16, 32),
+			BackgroundColor3 = C.face,
+			BorderSizePixel = 0,
+			Visible = false,
+		}, bar)
+		bevel(holder(thumb), "raised")
+
+		local function update()
+			local view, total = scroll.AbsoluteWindowSize.Y, scroll.AbsoluteCanvasSize.Y
+			if view <= 0 or total <= view + 0.5 then
+				thumb.Visible = false
+				return
+			end
+			thumb.Visible = true
+			local th = math.max(16, math.floor(trackH * view / total))
+			local frac = math.clamp(scroll.CanvasPosition.Y / (total - view), 0, 1)
+			thumb.Size = UDim2.fromOffset(16, th)
+			thumb.Position = UDim2.fromOffset(0, 16 + math.floor((trackH - th) * frac))
+		end
+		scroll:GetPropertyChangedSignal("CanvasPosition"):Connect(update)
+		scroll:GetPropertyChangedSignal("AbsoluteCanvasSize"):Connect(update)
+		scroll:GetPropertyChangedSignal("AbsoluteWindowSize"):Connect(update)
+		task.defer(update)
+
+		bar.InputBegan:Connect(function(input)
+			if input.UserInputType ~= Enum.UserInputType.MouseButton1 or not thumb.Visible then
+				return
+			end
+			local ry = input.Position.Y - bar.AbsolutePosition.Y
+			if ry < 16 or ry > h - 16 then
+				return
+			end
+			local ty = thumb.AbsolutePosition.Y - bar.AbsolutePosition.Y
+			local view = scroll.AbsoluteWindowSize.Y
+			if ry < ty then
+				scroll.CanvasPosition = Vector2.new(0, math.max(0, scroll.CanvasPosition.Y - view))
+			elseif ry > ty + thumb.AbsoluteSize.Y then
+				scroll.CanvasPosition = Vector2.new(0, scroll.CanvasPosition.Y + view)
+			end
+		end)
+
+		local dragging, startY, startCanvas = false, 0, 0
+		thumb.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				dragging, startY, startCanvas = true, input.Position.Y, scroll.CanvasPosition.Y
+			end
+		end)
+		local c1 = UIS.InputChanged:Connect(function(input)
+			if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+				local view, total = scroll.AbsoluteWindowSize.Y, scroll.AbsoluteCanvasSize.Y
+				local range = trackH - thumb.AbsoluteSize.Y
+				if range > 0 then
+					scroll.CanvasPosition = Vector2.new(0, startCanvas + (input.Position.Y - startY) / range * (total - view))
+				end
+			end
+		end)
+		local c2 = UIS.InputEnded:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				dragging = false
+			end
+		end)
+		bar.Destroying:Connect(function()
+			c1:Disconnect()
+			c2:Disconnect()
+		end)
+		return update
+	end
+
+	local function makeScroll(parent, x, y, w, h)
+		return new("ScrollingFrame", {
+			Position = UDim2.fromOffset(x, y),
+			Size = UDim2.fromOffset(w, h),
+			CanvasSize = UDim2.new(),
+			AutomaticCanvasSize = Enum.AutomaticSize.Y,
+			ScrollBarThickness = 0,
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			ClipsDescendants = true,
+		}, parent)
+	end
+
+	local function setEnabled(b, on)
+		b.Active = on
+		local txt, sh = b:FindFirstChild("Txt"), b:FindFirstChild("Shad")
+		if txt then
+			txt.TextColor3 = on and C.black or C.shadow
+		end
+		if sh then
+			sh.Visible = not on
+		end
+	end
+
+	local function Button(parent, text, x, y, w, h, onClick, isDefault, extraTxt)
+		local b = new("TextButton", {
+			Text = "",
+			Position = UDim2.fromOffset(x, y),
+			Size = UDim2.fromOffset(w or 75, h or 23),
+			BackgroundColor3 = C.face,
+			BorderSizePixel = 0,
+			AutoButtonColor = false,
+		}, parent)
+		local bv = holder(b)
+		local align = (extraTxt and extraTxt.TextXAlignment) or Enum.TextXAlignment.Center
+		local padLeft = (align == Enum.TextXAlignment.Left) and 8 or 0
+		local sh = Label(b, text, 0, 0, 0, 0, {
+			Name = "Shad",
+			Size = UDim2.new(1, -padLeft * 2, 1, 0),
+			Position = UDim2.fromOffset(padLeft + 1, 1),
+			TextXAlignment = align,
+			TextTruncate = Enum.TextTruncate.AtEnd,
+			TextColor3 = C.white,
+			Visible = false,
+			ZIndex = 1,
+		})
+		local txt = Label(b, text, 0, 0, 0, 0, {
+			Name = "Txt",
+			Size = UDim2.new(1, -padLeft * 2, 1, 0),
+			Position = UDim2.fromOffset(padLeft, 0),
+			TextXAlignment = align,
+			TextTruncate = Enum.TextTruncate.AtEnd,
+			ZIndex = 2,
+		})
+		local function draw(pressed)
+			if isDefault then
+				bevel(bv, pressed and "defaultPressed" or "default")
+			else
+				bevel(bv, pressed and "pressed" or "raised")
+			end
+			txt.Position = pressed and UDim2.fromOffset(padLeft + 1, 1) or UDim2.fromOffset(padLeft, 0)
+		end
+		draw(false)
+		b.MouseButton1Down:Connect(function()
+			if b.Active then
+				draw(true)
+			end
+		end)
+		b.MouseButton1Up:Connect(function()
+			draw(false)
+		end)
+		b.MouseLeave:Connect(function()
+			draw(false)
+		end)
+		if onClick then
+			b.Activated:Connect(function()
+				if b.Active then
+					onClick()
+				end
+			end)
+		end
+		return b
+	end
+
+	local function ToolButton(parent, text, x, w, onClick)
+		local b = new("TextButton", {
+			Text = text,
+			Position = UDim2.fromOffset(x, 3),
+			Size = UDim2.fromOffset(w, 22),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			AutoButtonColor = false,
+			Font = FONT,
+			TextSize = TS,
+			TextColor3 = C.black,
+		}, parent)
+		local bv = holder(b)
+		b.MouseEnter:Connect(function()
+			bevel(bv, "flatUp")
+		end)
+		b.MouseLeave:Connect(function()
+			bevel(bv, "none")
+		end)
+		b.MouseButton1Down:Connect(function()
+			bevel(bv, "flatDown")
+		end)
+		b.MouseButton1Up:Connect(function()
+			bevel(bv, "flatUp")
+		end)
+		b.Activated:Connect(onClick)
+		return b
+	end
+
+	local function Edit(parent, text, x, y, w, h, readOnly)
+		local box = new("Frame", {
+			Position = UDim2.fromOffset(x, y),
+			Size = UDim2.fromOffset(w, h or 21),
+			BackgroundColor3 = readOnly and C.face or C.white,
+			BorderSizePixel = 0,
+		}, parent)
+		local tb = new("TextBox", {
+			Text = text,
+			Position = UDim2.fromOffset(3, 2),
+			Size = UDim2.new(1, -6, 1, -4),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			Font = FONT,
+			TextSize = TS,
+			TextColor3 = C.black,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextTruncate = Enum.TextTruncate.AtEnd,
+			ClearTextOnFocus = false,
+			TextEditable = not readOnly,
+		}, box)
+		bevel(holder(box), "sunken")
+		return tb
+	end
+
+	local function Check(parent, text, x, y, checked, onChange, width)
+		local bw = width or 220
+		local h = new("TextButton", {
+			Text = "",
+			Position = UDim2.fromOffset(x, y),
+			Size = UDim2.fromOffset(bw, 16),
+			BackgroundTransparency = 1,
+			AutoButtonColor = false,
+		}, parent)
+		local box = new("Frame", {
+			Position = UDim2.fromOffset(0, 1),
+			Size = UDim2.fromOffset(13, 13),
+			BackgroundColor3 = C.white,
+			BorderSizePixel = 0,
+		}, h)
+		bevel(holder(box), "sunken")
+		local tick = new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Visible = checked or false }, box)
+		new("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromOffset(4.5, 7.5),
+			Size = UDim2.fromOffset(2, 4),
+			Rotation = -45,
+			BackgroundColor3 = C.black,
+			BorderSizePixel = 0,
+		}, tick)
+		new("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromOffset(7.5, 6),
+			Size = UDim2.fromOffset(2, 7),
+			Rotation = 45,
+			BackgroundColor3 = C.black,
+			BorderSizePixel = 0,
+		}, tick)
+		local lbl = Label(h, text, 20, 0, bw - 20, 15, { TextTruncate = Enum.TextTruncate.AtEnd })
+		local api = { Checked = checked or false, Button = h, Label = lbl }
+		function api:Set(v, silent)
+			self.Checked = not not v
+			tick.Visible = self.Checked
+			if not silent and onChange then
+				onChange(self.Checked)
+			end
+		end
+		h.Activated:Connect(function()
+			api:Set(not api.Checked, false)
+		end)
+		return api
+	end
+
+	local function Radio(parent, options, x, y, step, selected, onChange)
+		local api = { Value = options[selected] }
+		local dots = {}
+		for i, opt in ipairs(options) do
+			local h = new("TextButton", {
+				Text = "",
+				Position = UDim2.fromOffset(x + (i - 1) * step, y),
+				Size = UDim2.fromOffset(step - 4, 16),
+				BackgroundTransparency = 1,
+				AutoButtonColor = false,
+			}, parent)
+			local circle = new("Frame", {
+				Position = UDim2.fromOffset(0, 2),
+				Size = UDim2.fromOffset(12, 12),
+				BackgroundColor3 = C.white,
+				BorderSizePixel = 0,
+			}, h)
+			new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, circle)
+			new("UIStroke", { Color = C.shadow, Thickness = 1, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, circle)
+			local dot = new("Frame", {
+				Position = UDim2.fromOffset(4, 4),
+				Size = UDim2.fromOffset(4, 4),
+				BackgroundColor3 = C.black,
+				BorderSizePixel = 0,
+				Visible = i == selected,
+			}, circle)
+			new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, dot)
+			dots[i] = dot
+			Label(h, opt, 18, 1, step - 22, 14, { TextTruncate = Enum.TextTruncate.AtEnd })
+			h.Activated:Connect(function()
+				api.Value = opt
+				for j, d in ipairs(dots) do
+					d.Visible = j == i
+				end
+				if onChange then
+					onChange(opt)
+				end
+			end)
+		end
+		return api
+	end
+
+	local function Slider(parent, text, x, y, w, minVal, maxVal, inc, currentVal, suffix, onChange)
+		local root = new("Frame", {
+			Position = UDim2.fromOffset(x, y),
+			Size = UDim2.fromOffset(w, 36),
+			BackgroundTransparency = 1,
+		}, parent)
+		Label(root, text, 0, 0, w - 78, 15, { TextTruncate = Enum.TextTruncate.AtEnd })
+		local valBox = Edit(root, "", w - 72, 0, 72, 18, true)
+
+		local trackX = 20
+		local trackW = w - 40
+		local track = new("Frame", {
+			Position = UDim2.fromOffset(trackX, 23),
+			Size = UDim2.fromOffset(trackW, 6),
+			BackgroundColor3 = C.track,
+			BorderSizePixel = 0,
+		}, root)
+		bevel(holder(track), "sunken")
+
+		local thumb = new("TextButton", {
+			Text = "",
+			Position = UDim2.fromOffset(trackX, 18),
+			Size = UDim2.fromOffset(10, 16),
+			BackgroundColor3 = C.face,
+			BorderSizePixel = 0,
+			AutoButtonColor = false,
+		}, root)
+		local tbv = holder(thumb)
+		bevel(tbv, "raised")
+
+		local step = (inc and inc > 0) and inc or 1
+		local val = math.clamp(currentVal or minVal, minVal, maxVal)
+		local api = { Value = val }
+
+		local function formatVal(v)
+			if step < 1 then
+				return string.format("%.2f", v) .. (suffix and (" " .. suffix) or "")
+			else
+				return tostring(math.floor(v + 0.5)) .. (suffix and (" " .. suffix) or "")
+			end
+		end
+
+		local function updateVisual(v, fire)
+			local snapped = minVal + math.floor(((v - minVal) / step) + 0.5) * step
+			snapped = math.clamp(snapped, minVal, maxVal)
+			api.Value = snapped
+			valBox.Text = formatVal(snapped)
+			local frac = (maxVal > minVal) and ((snapped - minVal) / (maxVal - minVal)) or 0
+			local tx = trackX + math.floor(frac * (trackW - 10))
+			thumb.Position = UDim2.fromOffset(tx, 18)
+			if fire and onChange then
+				onChange(snapped)
+			end
+		end
+
+		Button(root, "-", 0, 18, 16, 16, function()
+			updateVisual(api.Value - step, true)
+		end)
+		Button(root, "+", w - 16, 18, 16, 16, function()
+			updateVisual(api.Value + step, true)
+		end)
+
+		local dragging = false
+		local function setFromMouse(mx)
+			local rel = math.clamp(mx - track.AbsolutePosition.X, 0, trackW)
+			local frac = (trackW > 0) and (rel / trackW) or 0
+			updateVisual(minVal + frac * (maxVal - minVal), true)
+		end
+
+		thumb.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				dragging = true
+				bevel(tbv, "pressed")
+			end
+		end)
+		track.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				dragging = true
+				setFromMouse(input.Position.X)
+			end
+		end)
+		local c1 = UIS.InputChanged:Connect(function(input)
+			if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+				setFromMouse(input.Position.X)
+			end
+		end)
+		local c2 = UIS.InputEnded:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				dragging = false
+				bevel(tbv, "raised")
+			end
+		end)
+		root.Destroying:Connect(function()
+			c1:Disconnect()
+			c2:Disconnect()
+		end)
+
+		updateVisual(val, false)
+		return api
+	end
+
+	local function Dropdown(parent, text, x, y, w, options, currentVal, onChange)
+		local root = new("Frame", {
+			Position = UDim2.fromOffset(x, y),
+			Size = UDim2.fromOffset(w, 38),
+			BackgroundTransparency = 1,
+			ZIndex = 10,
+		}, parent)
+		Label(root, text, 0, 0, w, 15, { TextTruncate = Enum.TextTruncate.AtEnd })
+
+		local box = new("Frame", {
+			Position = UDim2.fromOffset(0, 16),
+			Size = UDim2.fromOffset(w, 21),
+			BackgroundColor3 = C.white,
+			BorderSizePixel = 0,
+		}, root)
+		bevel(holder(box), "sunken")
+
+		local selected = currentVal or options[1] or ""
+		local valLbl = Label(box, tostring(selected), 4, 2, w - 24, 17, { TextTruncate = Enum.TextTruncate.AtEnd })
+
+		local arrowBtn = new("TextButton", {
+			Text = "",
+			Position = UDim2.fromOffset(w - 18, 2),
+			Size = UDim2.fromOffset(16, 17),
+			BackgroundColor3 = C.face,
+			BorderSizePixel = 0,
+			AutoButtonColor = false,
+		}, box)
+		local abv = holder(arrowBtn)
+		bevel(abv, "raised")
+		for k = 0, 3 do
+			px(arrowBtn, UDim2.fromOffset(4 + k, 6 + k), UDim2.fromOffset(7 - 2 * k, 1), C.black)
+		end
+
+		local popH = #options * 18 + 4
+		local pop = new("Frame", {
+			Visible = false,
+			Position = UDim2.fromOffset(0, 37),
+			Size = UDim2.fromOffset(w, popH),
+			BackgroundColor3 = C.white,
+			BorderSizePixel = 0,
+			ZIndex = 50,
+		}, root)
+		bevel(holder(pop), "sunken")
+
+		local api = { Value = selected }
+		for i, opt in ipairs(options) do
+			local itemBtn = new("TextButton", {
+				Text = tostring(opt),
+				Position = UDim2.fromOffset(2, 2 + (i - 1) * 18),
+				Size = UDim2.new(1, -4, 0, 18),
+				BackgroundColor3 = C.navy,
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				AutoButtonColor = false,
+				Font = FONT,
+				TextSize = TS,
+				TextColor3 = C.black,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				ZIndex = 51,
+			}, pop)
+			new("UIPadding", { PaddingLeft = UDim.new(0, 4) }, itemBtn)
+			itemBtn.MouseEnter:Connect(function()
+				itemBtn.BackgroundTransparency = 0
+				itemBtn.TextColor3 = C.white
+			end)
+			itemBtn.MouseLeave:Connect(function()
+				itemBtn.BackgroundTransparency = 1
+				itemBtn.TextColor3 = C.black
+			end)
+			itemBtn.Activated:Connect(function()
+				api.Value = opt
+				valLbl.Text = tostring(opt)
+				pop.Visible = false
+				if onChange then
+					onChange(opt)
+				end
+			end)
+		end
+
+		local function togglePop()
+			pop.Visible = not pop.Visible
+		end
+		arrowBtn.MouseButton1Down:Connect(function()
+			bevel(abv, "pressed")
+		end)
+		arrowBtn.MouseButton1Up:Connect(function()
+			bevel(abv, "raised")
+		end)
+		arrowBtn.MouseLeave:Connect(function()
+			bevel(abv, "raised")
+		end)
+		arrowBtn.Activated:Connect(togglePop)
+
+		return api
+	end
+
+	local function Group(parent, text, x, y, w, h)
+		local g = new("Frame", {
+			Position = UDim2.fromOffset(x, y),
+			Size = UDim2.fromOffset(w, h),
+			BackgroundTransparency = 1,
+		}, parent)
+		rect(g, 0, 0, C.shadow)
+		rect(g, 1, 1, C.white)
+		local l = Label(g, text, 8, -7, 0, 14, { AutomaticSize = Enum.AutomaticSize.X, BackgroundTransparency = 0, BackgroundColor3 = C.face })
+		new("UIPadding", { PaddingLeft = UDim.new(0, 3), PaddingRight = UDim.new(0, 3) }, l)
+		return g
+	end
+
+	local function EtchedH(parent, x, y, w)
+		px(parent, UDim2.fromOffset(x, y), UDim2.fromOffset(w, 1), C.shadow)
+		px(parent, UDim2.fromOffset(x, y + 1), UDim2.fromOffset(w, 1), C.white)
+	end
+
+	local function EtchedV(parent, x, y, h)
+		px(parent, UDim2.fromOffset(x, y), UDim2.fromOffset(1, h), C.shadow)
+		px(parent, UDim2.fromOffset(x + 1, y), UDim2.fromOffset(1, h), C.white)
+	end
+
+	local function ListView(parent, x, y, w, h, columns)
+		local root = new("Frame", {
+			Position = UDim2.fromOffset(x, y),
+			Size = UDim2.fromOffset(w, h),
+			BackgroundColor3 = C.white,
+			BorderSizePixel = 0,
+		}, parent)
+		local innerW = w - 4
+		local header = new("Frame", {
+			Position = UDim2.fromOffset(2, 2),
+			Size = UDim2.fromOffset(innerW, 17),
+			BackgroundTransparency = 1,
+		}, root)
+		local cx = 0
+		local function headerCell(cxx, cw, text)
+			local hb = new("TextButton", {
+				Text = "",
+				Position = UDim2.fromOffset(cxx, 0),
+				Size = UDim2.fromOffset(cw, 17),
+				BackgroundColor3 = C.face,
+				BorderSizePixel = 0,
+				AutoButtonColor = false,
+			}, header)
+			bevel(holder(hb), "raised")
+			if text then
+				Label(hb, text, 6, 1, cw - 8, 15, { TextTruncate = Enum.TextTruncate.AtEnd })
+			end
+		end
+		for _, col in ipairs(columns) do
+			headerCell(cx, col[2], col[1])
+			cx += col[2]
+		end
+		if cx < innerW then
+			headerCell(cx, innerW - cx, nil)
+		end
+
+		local scroll = makeScroll(root, 2, 19, innerW - 16, h - 21)
+		VScroll(root, scroll, innerW - 14, 19, h - 21)
+		bevel(holder(root), "sunken")
+
+		local lv = { Rows = {}, Selected = nil, OnSelect = nil, OnDoubleClick = nil }
+		local lastClickIdx, lastClickTime = nil, 0
+
+		local function paint(i)
+			local r = lv.Rows[i]
+			if not r then
+				return
+			end
+			local sel = lv.Selected == i
+			r.btn.BackgroundTransparency = sel and 0 or 1
+			for _, l in ipairs(r.labels) do
+				l.TextColor3 = sel and C.white or C.black
+			end
+		end
+		function lv:Clear()
+			for _, r in ipairs(self.Rows) do
+				r.btn:Destroy()
+			end
+			self.Rows, self.Selected = {}, nil
+		end
+		function lv:Select(i, silent)
+			local old = self.Selected
+			self.Selected = i
+			if old then
+				paint(old)
+			end
+			paint(i)
+			if self.OnSelect and self.Rows[i] then
+				self.OnSelect(self.Rows[i].values, self.Rows[i].meta, i, silent)
+			end
+		end
+		function lv:Add(values, meta)
+			local i = #self.Rows + 1
+			local btn = new("TextButton", {
+				Text = "",
+				Position = UDim2.fromOffset(0, (i - 1) * 16),
+				Size = UDim2.new(1, 0, 0, 16),
+				BackgroundTransparency = 1,
+				BackgroundColor3 = C.navy,
+				BorderSizePixel = 0,
+				AutoButtonColor = false,
+			}, scroll)
+			local labels, rx = {}, 0
+			for ci, col in ipairs(columns) do
+				table.insert(labels, Label(btn, values[ci] or "", rx + 3, 0, col[2] - 6, 16, { TextTruncate = Enum.TextTruncate.AtEnd }))
+				rx += col[2]
+			end
+			btn.Activated:Connect(function()
+				local now = os.clock()
+				self:Select(i)
+				if lastClickIdx == i and (now - lastClickTime) < 0.38 then
+					lastClickIdx = nil
+					if self.OnDoubleClick and self.Rows[i] then
+						self.OnDoubleClick(self.Rows[i].values, self.Rows[i].meta, i)
+					end
+				else
+					lastClickIdx = i
+					lastClickTime = now
+				end
+			end)
+			self.Rows[i] = { btn = btn, labels = labels, values = values, meta = meta }
+		end
+		return lv
+	end
+
+	local function Tree(parent, x, y, w, h, nodes, onSelect)
+		local root = new("Frame", {
+			Position = UDim2.fromOffset(x, y),
+			Size = UDim2.fromOffset(w, h),
+			BackgroundColor3 = C.white,
+			BorderSizePixel = 0,
+		}, parent)
+		local scroll = makeScroll(root, 2, 2, w - 20, h - 4)
+		VScroll(root, scroll, w - 18, 2, h - 4)
+		bevel(holder(root), "sunken")
+
+		local selected
+		local lastNode, lastNodeTime = nil, 0
+		local render
+		render = function()
+			for _, ch in ipairs(scroll:GetChildren()) do
+				ch:Destroy()
+			end
+			local row = 0
+			local function walk(list, depth)
+				for _, n in ipairs(list) do
+					local ry = row * 16
+					local kids = n.children and #n.children > 0
+					if kids then
+						local ex = new("TextButton", {
+							Text = "",
+							Position = UDim2.fromOffset(depth * 16 + 3, ry + 3),
+							Size = UDim2.fromOffset(9, 9),
+							BackgroundColor3 = C.white,
+							BorderSizePixel = 0,
+							AutoButtonColor = false,
+						}, scroll)
+						edge(ex, C.shadow, C.shadow, 0)
+						px(ex, UDim2.fromOffset(2, 4), UDim2.fromOffset(5, 1), C.black)
+						if not n.expanded then
+							px(ex, UDim2.fromOffset(4, 2), UDim2.fromOffset(1, 5), C.black)
+						end
+						ex.Activated:Connect(function()
+							n.expanded = not n.expanded
+							render()
+						end)
+					end
+					local sel = selected == n
+					local lbl = new("TextButton", {
+						Text = n.text,
+						Position = UDim2.fromOffset(depth * 16 + 20, ry + 1),
+						Size = UDim2.fromOffset(0, 14),
+						AutomaticSize = Enum.AutomaticSize.X,
+						BackgroundColor3 = C.navy,
+						BackgroundTransparency = sel and 0 or 1,
+						BorderSizePixel = 0,
+						AutoButtonColor = false,
+						Font = FONT,
+						TextSize = TS,
+						TextColor3 = sel and C.white or C.black,
+					}, scroll)
+					new("UIPadding", { PaddingLeft = UDim.new(0, 2), PaddingRight = UDim.new(0, 2) }, lbl)
+					lbl.Activated:Connect(function()
+						local now = os.clock()
+						local isDouble = (lastNode == n) and ((now - lastNodeTime) < 0.38)
+						if isDouble then
+							lastNode = nil
+						else
+							lastNode = n
+							lastNodeTime = now
+						end
+						selected = n
+						render()
+						if onSelect then
+							onSelect(n, isDouble)
+						end
+					end)
+					row += 1
+					if kids and n.expanded then
+						walk(n.children, depth + 1)
+					end
+				end
+			end
+			walk(nodes, 0)
+		end
+		render()
+		return { Render = render }
+	end
+
+	local function TabControl(parent, x, y, w, h, names, onSelect)
+		local root = new("Frame", {
+			Position = UDim2.fromOffset(x, y),
+			Size = UDim2.fromOffset(w, h),
+			BackgroundTransparency = 1,
+		}, parent)
+		local panel = new("Frame", {
+			Position = UDim2.fromOffset(0, 21),
+			Size = UDim2.fromOffset(w, h - 21),
+			BackgroundColor3 = C.face,
+			BorderSizePixel = 0,
+			ZIndex = 1,
+		}, root)
+		bevel(holder(panel), "raised")
+
+		local tabs, pages = {}, {}
+		local tx = 2
+		local api = { Pages = pages, ActiveIndex = 1 }
+
+		local totalDefault = 2
+		for _, name in ipairs(names) do
+			totalDefault += (#name * 7 + 22)
+		end
+		local charW, padW = 7, 22
+		if totalDefault > w - 4 then
+			charW, padW = 6, 14
+		end
+
+		local function style(i, selected)
+			local t = tabs[i]
+			if not t then
+				return
+			end
+			if selected then
+				t.btn.Position = UDim2.fromOffset(t.x - 2, 0)
+				t.btn.Size = UDim2.fromOffset(t.w + 4, 23)
+				t.btn.ZIndex = 3
+			else
+				t.btn.Position = UDim2.fromOffset(t.x, 2)
+				t.btn.Size = UDim2.fromOffset(t.w, 19)
+				t.btn.ZIndex = 2
+			end
+			local bv = t.bv
+			for _, ch in ipairs(bv:GetChildren()) do
+				ch:Destroy()
+			end
+			px(bv, UDim2.fromOffset(1, 0), UDim2.new(1, -3, 0, 1), C.white)
+			px(bv, UDim2.fromOffset(0, 1), UDim2.new(0, 1, 1, -1), C.white)
+			px(bv, UDim2.new(1, -2, 0, 1), UDim2.new(0, 1, 1, -1), C.shadow)
+			px(bv, UDim2.new(1, -1, 0, 2), UDim2.new(0, 1, 1, -2), C.black)
+		end
+
+		function api.Select(i)
+			if not tabs[i] then
+				return
+			end
+			api.ActiveIndex = i
+			for j = 1, #tabs do
+				style(j, j == i)
+				pages[j].Visible = j == i
+			end
+			if onSelect then
+				onSelect(i)
+			end
+		end
+
+		for i, name in ipairs(names) do
+			local tw = #name * charW + padW
+			local btn = new("TextButton", {
+				Text = "",
+				BackgroundColor3 = C.face,
+				BorderSizePixel = 0,
+				AutoButtonColor = false,
+			}, root)
+			local bv = holder(btn)
+			Label(btn, name, 0, 2, 0, 0, { Size = UDim2.new(1, 0, 1, -4), TextXAlignment = Enum.TextXAlignment.Center, ZIndex = 5 })
+			tabs[i] = { btn = btn, bv = bv, x = tx, w = tw }
+			pages[i] = new("Frame", {
+				Position = UDim2.fromOffset(2, 23),
+				Size = UDim2.fromOffset(w - 4, h - 27),
+				BackgroundTransparency = 1,
+				Visible = false,
+				ZIndex = 1,
+			}, root)
+			btn.Activated:Connect(function()
+				api.Select(i)
+			end)
+			tx += tw
+		end
+		if #tabs > 0 then
+			api.Select(1)
+		end
+		return api
+	end
+
+	local function MenuBar(parent, menus, winWidth)
+		local bar = new("Frame", {
+			Size = UDim2.new(1, 0, 0, 22),
+			BackgroundColor3 = C.face,
+			BorderSizePixel = 0,
+			ZIndex = 20,
+		}, parent)
+		EtchedH(bar, 0, 20, winWidth)
+		local heads = {}
+		local function closeAll()
+			for _, hd in ipairs(heads) do
+				hd.pop.Visible = false
+				hd.btn.BackgroundTransparency = 1
+				hd.btn.TextColor3 = C.black
+			end
+		end
+		local function anyOpen()
+			for _, hd in ipairs(heads) do
+				if hd.pop.Visible then
+					return true
+				end
+			end
+			return false
+		end
+
+		local x = 2
+		for _, menu in ipairs(menus) do
+			local name, items = menu[1], menu[2]
+			local w = #name * 7 + 14
+			local btn = new("TextButton", {
+				Text = name,
+				Position = UDim2.fromOffset(x, 1),
+				Size = UDim2.fromOffset(w, 18),
+				BackgroundTransparency = 1,
+				BackgroundColor3 = C.navy,
+				BorderSizePixel = 0,
+				AutoButtonColor = false,
+				Font = FONT,
+				TextSize = TS,
+				TextColor3 = C.black,
+			}, bar)
+
+			local maxLen, ph = 0, 6
+			for _, it in ipairs(items) do
+				if it == "-" then
+					ph += 9
+				else
+					ph += 18
+					maxLen = math.max(maxLen, #it[1] + (it[3] and (#it[3] + 8) or 0))
+				end
+			end
+			local pw = math.max(120, maxLen * 7 + 44)
+			local pop = new("Frame", {
+				Visible = false,
+				Position = UDim2.fromOffset(0, 19),
+				Size = UDim2.fromOffset(pw, ph),
+				BackgroundColor3 = C.face,
+				BorderSizePixel = 0,
+			}, btn)
+			bevel(holder(pop), "raised")
+
+			local py = 3
+			for _, it in ipairs(items) do
+				if it == "-" then
+					EtchedH(pop, 3, py + 3, pw - 6)
+					py += 9
+				else
+					local r = new("TextButton", {
+						Text = it[1],
+						Position = UDim2.fromOffset(3, py),
+						Size = UDim2.new(1, -6, 0, 18),
+						BackgroundTransparency = 1,
+						BackgroundColor3 = C.navy,
+						BorderSizePixel = 0,
+						AutoButtonColor = false,
+						Font = FONT,
+						TextSize = TS,
+						TextColor3 = C.black,
+						TextXAlignment = Enum.TextXAlignment.Left,
+					}, pop)
+					new("UIPadding", { PaddingLeft = UDim.new(0, 20) }, r)
+					local sc
+					if it[3] then
+						sc = Label(r, it[3], 0, 0, pw - 6 - 28, 18, { TextXAlignment = Enum.TextXAlignment.Right })
+					end
+					r.MouseEnter:Connect(function()
+						r.BackgroundTransparency = 0
+						r.TextColor3 = C.white
+						if sc then
+							sc.TextColor3 = C.white
+						end
+					end)
+					r.MouseLeave:Connect(function()
+						r.BackgroundTransparency = 1
+						r.TextColor3 = C.black
+						if sc then
+							sc.TextColor3 = C.black
+						end
+					end)
+					r.Activated:Connect(function()
+						closeAll()
+						it[2]()
+					end)
+					py += 18
+				end
+			end
+
+			local function open()
+				closeAll()
+				pop.Visible = true
+				btn.BackgroundTransparency = 0
+				btn.TextColor3 = C.white
+			end
+			btn.Activated:Connect(function()
+				if pop.Visible then
+					closeAll()
+				else
+					open()
+				end
+			end)
+			btn.MouseEnter:Connect(function()
+				if anyOpen() and not pop.Visible then
+					open()
+				end
+			end)
+			table.insert(heads, { btn = btn, pop = pop })
+			x += w
+		end
+		return bar
+	end
+
+	local function StatusBar(parent, width)
+		local bar = new("Frame", {
+			Position = UDim2.new(0, 0, 1, -22),
+			Size = UDim2.new(1, 0, 0, 22),
+			BackgroundTransparency = 1,
+		}, parent)
+		local left = new("Frame", {
+			Position = UDim2.fromOffset(2, 2),
+			Size = UDim2.fromOffset(width - 140, 18),
+			BackgroundTransparency = 1,
+		}, bar)
+		bevel(holder(left), "flatDown")
+		local right = new("Frame", {
+			Position = UDim2.fromOffset(width - 134, 2),
+			Size = UDim2.fromOffset(132, 18),
+			BackgroundTransparency = 1,
+		}, bar)
+		bevel(holder(right), "flatDown")
+		local l = Label(left, "Ready", 4, 1, width - 150, 16, { TextTruncate = Enum.TextTruncate.AtEnd })
+		local r = Label(right, "", 4, 1, 124, 16, { TextTruncate = Enum.TextTruncate.AtEnd })
+		return l, r
+	end
+
+	local topZ = 1
+	local registry = {}
+	local windowCount = 0
+
+	local function activate(win)
+		for _, r in ipairs(registry) do
+			if r.win.Parent then
+				local on = r.win == win
+				r.grad.Color = on and ColorSequence.new(C.navy, C.navy2) or ColorSequence.new(C.shadow, C.inactive2)
+				r.title.TextColor3 = on and C.white or C.face
+			end
+		end
+	end
+
+	local function makeWindow(title, W, H, pos, opts)
+		opts = opts or {}
+		local win = new("Frame", {
+			Name = title,
+			Size = UDim2.fromOffset(W, H),
+			Position = pos,
+			BackgroundColor3 = C.face,
+			BorderSizePixel = 0,
+		}, gui)
+		bevel(holder(win), "window")
+
+		local Wt = W - 6
+		local bar = new("Frame", {
+			Position = UDim2.fromOffset(3, 3),
+			Size = UDim2.fromOffset(Wt, 18),
+			BackgroundColor3 = C.white,
+			BorderSizePixel = 0,
+		}, win)
+		local grad = new("UIGradient", { Color = ColorSequence.new(C.navy, C.navy2) }, bar)
+
+		local icon = new("Frame", { Position = UDim2.fromOffset(2, 1), Size = UDim2.fromOffset(16, 16), BackgroundTransparency = 1 }, bar)
+		px(icon, UDim2.fromOffset(2, 2), UDim2.fromOffset(12, 12), C.face)
+		px(icon, UDim2.fromOffset(3, 3), UDim2.fromOffset(10, 3), C.navy)
+		px(icon, UDim2.fromOffset(3, 7), UDim2.fromOffset(10, 6), C.white)
+		local titleLbl = Label(bar, title, 21, 0, Wt - 90, 18, { Font = BOLD, TextColor3 = C.white, TextTruncate = Enum.TextTruncate.AtEnd })
+		table.insert(registry, { win = win, grad = grad, title = titleLbl })
+
+		local content = new("Frame", {
+			Position = UDim2.fromOffset(3, 22),
+			Size = UDim2.fromOffset(W - 6, H - 25),
+			BackgroundTransparency = 1,
+		}, win)
+
+		local function capButton(x, enabled, drawGlyph, onClick)
+			local b = new("TextButton", {
+				Text = "",
+				Position = UDim2.fromOffset(x, 2),
+				Size = UDim2.fromOffset(16, 14),
+				BackgroundColor3 = C.face,
+				BorderSizePixel = 0,
+				AutoButtonColor = false,
+			}, bar)
+			local bv = holder(b)
+			bevel(bv, "raised")
+			drawGlyph(b, enabled and C.black or C.shadow)
+			b.MouseButton1Down:Connect(function()
+				bevel(bv, "pressed")
+			end)
+			b.MouseButton1Up:Connect(function()
+				bevel(bv, "raised")
+			end)
+			b.MouseLeave:Connect(function()
+				bevel(bv, "raised")
+			end)
+			if enabled then
+				b.Activated:Connect(onClick)
+			end
+		end
+
+		capButton(Wt - 18, true, function(b, col)
+			for _, rot in ipairs({ 45, -45 }) do
+				new("Frame", {
+					AnchorPoint = Vector2.new(0.5, 0.5),
+					Position = UDim2.fromOffset(8, 7),
+					Size = UDim2.fromOffset(2, 10),
+					Rotation = rot,
+					BackgroundColor3 = col,
+					BorderSizePixel = 0,
+				}, b)
+			end
+		end, function()
+			win:Destroy()
+		end)
+
+		if not opts.dialog then
+			local rolled = false
+			capButton(Wt - 52, true, function(b, col)
+				px(b, UDim2.fromOffset(4, 9), UDim2.fromOffset(6, 2), col)
+			end, function()
+				rolled = not rolled
+				content.Visible = not rolled
+				win.Size = UDim2.fromOffset(W, rolled and 24 or H)
+			end)
+			capButton(Wt - 36, false, function(b, col)
+				px(b, UDim2.fromOffset(3, 2), UDim2.fromOffset(9, 2), col)
+				px(b, UDim2.fromOffset(3, 2), UDim2.fromOffset(1, 8), col)
+				px(b, UDim2.fromOffset(11, 2), UDim2.fromOffset(1, 8), col)
+				px(b, UDim2.fromOffset(3, 9), UDim2.fromOffset(9, 1), col)
+			end)
+		end
+
+		win.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				if win.ZIndex < 900 then
+					topZ += 1
+					win.ZIndex = topZ
+				end
+				activate(win)
+			end
+		end)
+
+		local dragging, dragStart, startPos = false, nil, nil
+		bar.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				dragging, dragStart, startPos = true, input.Position, win.Position
+			end
+		end)
+		local c1 = UIS.InputChanged:Connect(function(input)
+			if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+				local d = input.Position - dragStart
+				win.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+			end
+		end)
+		local c2 = UIS.InputEnded:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				dragging = false
+			end
+		end)
+		win.Destroying:Connect(function()
+			c1:Disconnect()
+			c2:Disconnect()
+		end)
+
+		activate(win)
+		return win, content
+	end
+
+	local Lib = {}
+
+	function Lib:CreateWindow(winOpts)
+		winOpts = winOpts or {}
+		windowCount += 1
+		local winName = winOpts.Name or "Win32 Hub"
+		local winSub = winOpts.Subtitle
+		local fullTitle = (winSub and winSub ~= "") and (winName .. " - " .. winSub) or winName
+
+		local W, H = 640, 450
+		local offset = (windowCount - 1) * 26
+		local win, c = makeWindow(fullTitle, W, H, UDim2.fromOffset(60 + offset, 50 + offset))
+		local statusLeft, statusRight = StatusBar(c, W - 6)
+
+		local dynamicRoot = new("Frame", {
+			Size = UDim2.new(1, 0, 1, -22),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+		}, c)
+
+		local tabsData = {}
+		local logEntries = {}
+		local logLv = nil
+		local windowObj = {
+			settings = {
+				toggleKeybind = Enum.KeyCode.P,
+			},
+		}
+
+		local keyConn = UIS.InputBegan:Connect(function(input, gpe)
+			if gpe then
+				return
+			end
+			local kb = windowObj.settings and windowObj.settings.toggleKeybind
+			if kb and input.KeyCode == kb and win and win.Parent then
+				win.Visible = not win.Visible
+			end
+		end)
+		win.Destroying:Connect(function()
+			keyConn:Disconnect()
+		end)
+
+		local function setStatus(t)
+			statusLeft.Text = tostring(t or "Ready")
+		end
+
+		local function addLog(action, who, details)
+			local entry = { os.date("%H:%M:%S"), tostring(action), tostring(who), tostring(details or "") }
+			table.insert(logEntries, entry)
+			if logLv then
+				logLv:Add(entry)
+			end
+		end
+
+		local rebuildScheduled = false
+		local buildUI
+
+		local function scheduleRebuild()
+			if rebuildScheduled then
+				return
+			end
+			rebuildScheduled = true
+			task.defer(function()
+				rebuildScheduled = false
+				if win and win.Parent then
+					buildUI()
+				end
+			end)
+		end
+
+		buildUI = function()
+			for _, ch in ipairs(dynamicRoot:GetChildren()) do
+				ch:Destroy()
+			end
+
+			local hasComplexControls = false
+			for _, td in ipairs(tabsData) do
+				for _, it in ipairs(td.items) do
+					if it.kind == "Slider" or it.kind == "Dropdown" then
+						hasComplexControls = true
+						break
+					end
+				end
+			end
+
+			local viewMode = hasComplexControls and "controls" or "list"
+			local showAllInList = false
+			local selectedItem = nil
+			local tabViews = {}
+			local tabsCtrl = nil
+			local filterBox = nil
+
+			local function itemStateText(it)
+				if it.kind == "Button" then
+					return "Script"
+				elseif it.kind == "Toggle" then
+					return it.value and "ON" or "OFF"
+				elseif it.kind == "Slider" then
+					return tostring(it.value) .. (it.suffix or "")
+				elseif it.kind == "Dropdown" then
+					return tostring(it.value or "")
+				end
+				return it.kind
+			end
+
+			local refresh
+
+			local function executeItem(it, verb)
+				if not it then
+					return
+				end
+				if it.kind == "Button" then
+					addLog("Execute", it.name, it.tabName .. " (" .. it.section .. ")")
+					setStatus("Executed: " .. it.name)
+					if it.callback then
+						task.spawn(it.callback)
+					end
+				elseif it.kind == "Toggle" then
+					if verb == "SetCheck" then
+						-- value already updated by caller
+					else
+						it.value = not it.value
+					end
+					if it.ctrlCheck then
+						it.ctrlCheck:Set(it.value, true)
+					end
+					addLog("Toggle", it.name, it.value and "Enabled (ON)" or "Disabled (OFF)")
+					setStatus(it.name .. ": " .. (it.value and "ON" or "OFF"))
+					if it.callback then
+						task.spawn(it.callback, it.value)
+					end
+					refresh(true)
+				elseif it.kind == "Slider" or it.kind == "Dropdown" then
+					viewMode = "controls"
+					refresh(true)
+					setStatus("Switched to Controls view for: " .. it.name)
+				end
+			end
+
+			local function toggleViewMode()
+				viewMode = (viewMode == "list") and "controls" or "list"
+				refresh(true)
+				setStatus("View mode: " .. (viewMode == "list" and "List View" or "Controls View"))
+			end
+
+			local tabMenuEntries = {}
+			for ti, td in ipairs(tabsData) do
+				table.insert(tabMenuEntries, {
+					td.name,
+					function()
+						if tabsCtrl then
+							tabsCtrl.Select(ti)
+						end
+					end,
+				})
+			end
+			table.insert(tabMenuEntries, "-")
+			table.insert(tabMenuEntries, {
+				"Log",
+				function()
+					if tabsCtrl then
+						tabsCtrl.Select(#tabsData + 1)
+					end
+				end,
+			})
+
+			MenuBar(dynamicRoot, {
+				{ "File", {
+					{ "Execute Selected", function() executeItem(selectedItem, "Execute") end, "Enter" },
+					{ "Refresh", function() refresh(false) end, "F5" },
+					"-",
+					{ "Toggle Window", function() win.Visible = not win.Visible end, "P" },
+					{ "Exit", function() win:Destroy() end, "Alt+F4" },
+				} },
+				{ "View", {
+					{ "Switch List / Controls View", toggleViewMode },
+					{ "Toggle Show All Scripts", function()
+						showAllInList = not showAllInList
+						refresh(false)
+					end },
+					"-",
+					{ "Action Log", function()
+						if tabsCtrl then
+							tabsCtrl.Select(#tabsData + 1)
+						end
+					end },
+				} },
+				{ "Tabs", tabMenuEntries },
+				{ "Help", {
+					{ "About " .. winName, function()
+						setStatus(fullTitle .. " - classic Win32 look, built in Luau")
+					end },
+				} },
+			}, W - 6)
+
+			local toolbar = new("Frame", {
+				Position = UDim2.fromOffset(0, 22),
+				Size = UDim2.new(1, 0, 0, 30),
+				BackgroundTransparency = 1,
+			}, dynamicRoot)
+			ToolButton(toolbar, "Refresh", 4, 54, function()
+				refresh(false)
+			end)
+			EtchedV(toolbar, 62, 4, 20)
+			ToolButton(toolbar, "Execute", 68, 56, function()
+				executeItem(selectedItem, "Execute")
+			end)
+			ToolButton(toolbar, "Toggle", 126, 48, function()
+				executeItem(selectedItem, "Toggle")
+			end)
+			ToolButton(toolbar, "Controls", 176, 58, toggleViewMode)
+			ToolButton(toolbar, "Logs", 236, 42, function()
+				if tabsCtrl then
+					tabsCtrl.Select(#tabsData + 1)
+				end
+			end)
+			Label(toolbar, "Filter:", 446, 7, 40, 15)
+			filterBox = Edit(toolbar, "", 484, 4, 144, 21)
+			EtchedH(toolbar, 0, 28, W - 6)
+
+			local treeTabChildren = {}
+			for ti, td in ipairs(tabsData) do
+				local itemNodes = {}
+				for _, it in ipairs(td.items) do
+					table.insert(itemNodes, {
+						text = it.name,
+						tabIndex = ti,
+						item = it,
+					})
+				end
+				table.insert(treeTabChildren, {
+					text = td.name,
+					expanded = (ti == 1),
+					tabIndex = ti,
+					children = itemNodes,
+				})
+			end
+
+			local treeNodes = {
+				{
+					text = winName,
+					expanded = true,
+					children = treeTabChildren,
+				},
+				{
+					text = "All Scripts",
+					isAll = true,
+				},
+				{
+					text = "Logs",
+					isLog = true,
+				},
+			}
+
+			local tabNames = {}
+			for _, td in ipairs(tabsData) do
+				table.insert(tabNames, td.name)
+			end
+			table.insert(tabNames, "Log")
+
+			tabsCtrl = TabControl(dynamicRoot, 162, 58, 466, 338, tabNames, function(activeIdx)
+				if refresh then
+					refresh(true)
+				end
+			end)
+
+			for ti, td in ipairs(tabsData) do
+				local page = tabsCtrl.Pages[ti]
+
+				-- 1. ListView + Selected Group mode (matches Admin Panel example layout)
+				local listFrame = new("Frame", {
+					Size = UDim2.fromScale(1, 1),
+					BackgroundTransparency = 1,
+					Visible = (viewMode == "list"),
+				}, page)
+
+				local lv = ListView(listFrame, 4, 4, 454, 196, {
+					{ "Name", 216 },
+					{ "Section", 136 },
+					{ "Type / State", 66 },
+				})
+
+				local g = Group(listFrame, "Selected item", 4, 214, 454, 98)
+				Label(g, "Name:", 10, 22, 40, 15)
+				local nameEdit = Edit(g, "", 54, 18, 190, 21, true)
+				Label(g, "Type:", 252, 22, 34, 15)
+				local typeEdit = Edit(g, "", 288, 18, 74, 21, true)
+				Label(g, "Section:", 10, 48, 46, 15)
+				local secEdit = Edit(g, "", 58, 44, 304, 21, true)
+
+				local stateCheck
+				stateCheck = Check(g, "Toggle State (for Toggle items)", 10, 74, false, function(checked)
+					if selectedItem and selectedItem.kind == "Toggle" then
+						selectedItem.value = checked
+						executeItem(selectedItem, "SetCheck")
+					end
+				end, 260)
+
+				local execBtn = Button(g, "Execute...", 370, 14, 75, 23, function()
+					executeItem(selectedItem, "Execute")
+				end, true)
+				local togBtn = Button(g, "Toggle...", 370, 40, 75, 23, function()
+					executeItem(selectedItem, "Toggle")
+				end)
+				local modeBtn = Button(g, "Controls...", 370, 66, 75, 23, toggleViewMode)
+
+				local function setSelection(it)
+					selectedItem = it
+					nameEdit.Text = it and it.name or ""
+					typeEdit.Text = it and itemStateText(it) or ""
+					secEdit.Text = it and (it.section or td.name) or ""
+					if it and it.kind == "Toggle" then
+						stateCheck:Set(it.value, true)
+					else
+						stateCheck:Set(false, true)
+					end
+					setEnabled(execBtn, it ~= nil)
+					setEnabled(togBtn, it ~= nil and it.kind == "Toggle")
+				end
+				setSelection(nil)
+
+				lv.OnSelect = function(values, meta, _, silent)
+					setSelection(meta)
+					if meta and not silent then
+						setStatus("Selected: " .. meta.name)
+					end
+				end
+				lv.OnDoubleClick = function(values, meta)
+					if meta then
+						executeItem(meta, "Execute")
+					end
+				end
+
+				-- 2. Classic Win32 Controls mode (scrollable GroupBoxes + Buttons/Checks/Sliders/Dropdowns)
+				local controlsFrame = new("Frame", {
+					Position = UDim2.fromOffset(4, 4),
+					Size = UDim2.fromOffset(454, 308),
+					BackgroundColor3 = C.face,
+					BorderSizePixel = 0,
+					Visible = (viewMode == "controls"),
+				}, page)
+				local ctrlScroll = makeScroll(controlsFrame, 3, 3, 431, 302)
+				VScroll(controlsFrame, ctrlScroll, 436, 2, 304)
+				bevel(holder(controlsFrame), "sunken")
+
+				local function renderControls(filterText)
+					for _, ch in ipairs(ctrlScroll:GetChildren()) do
+						ch:Destroy()
+					end
+					local sections = {}
+					local secMap = {}
+					for _, it in ipairs(td.items) do
+						local match = (filterText == "")
+							or string.find(string.lower(it.name), filterText, 1, true)
+							or string.find(string.lower(it.section or ""), filterText, 1, true)
+						if match then
+							local sName = it.section or td.name
+							if not secMap[sName] then
+								secMap[sName] = { name = sName, list = {} }
+								table.insert(sections, secMap[sName])
+							end
+							table.insert(secMap[sName].list, it)
+						end
+					end
+
+					for _, secName in ipairs(td.emptySections) do
+						if not secMap[secName] and (filterText == "" or string.find(string.lower(secName), filterText, 1, true)) then
+							table.insert(sections, { name = secName, list = {} })
+						end
+					end
+
+					local cy = 8
+					for _, sec in ipairs(sections) do
+						local gh = 22
+						for _, it in ipairs(sec.list) do
+							if it.kind == "Button" then
+								gh += 27
+							elseif it.kind == "Toggle" then
+								gh += 22
+							elseif it.kind == "Slider" then
+								gh += 42
+							elseif it.kind == "Dropdown" then
+								gh += 44
+							end
+						end
+						if #sec.list == 0 then
+							gh = 28
+						end
+						local grp = Group(ctrlScroll, sec.name, 6, cy, 418, gh)
+						local iy = 14
+						if #sec.list == 0 then
+							Label(grp, sec.name, 10, 8, 398, 15, { TextTruncate = Enum.TextTruncate.AtEnd })
+						end
+						for _, it in ipairs(sec.list) do
+							if it.kind == "Button" then
+								Button(grp, it.name, 10, iy, 322, 23, function()
+									setSelection(it)
+									executeItem(it, "Execute")
+								end, false, { TextXAlignment = Enum.TextXAlignment.Left })
+								Button(grp, "Run", 336, iy, 72, 23, function()
+									setSelection(it)
+									executeItem(it, "Execute")
+								end, true)
+								iy += 27
+							elseif it.kind == "Toggle" then
+								it.ctrlCheck = Check(grp, it.name, 10, iy + 2, it.value, function(val)
+									it.value = val
+									setSelection(it)
+									executeItem(it, "SetCheck")
+								end, 398)
+								iy += 22
+							elseif it.kind == "Slider" then
+								Slider(grp, it.name, 10, iy, 398, it.min, it.max, it.inc, it.value, it.suffix, function(val)
+									it.value = val
+									addLog("Slider", it.name, tostring(val) .. (it.suffix or ""))
+									setStatus(it.name .. ": " .. tostring(val) .. (it.suffix or ""))
+									if it.callback then
+										task.spawn(it.callback, val)
+									end
+								end)
+								iy += 42
+							elseif it.kind == "Dropdown" then
+								Dropdown(grp, it.name, 10, iy, 398, it.options, it.value, function(opt)
+									it.value = opt
+									addLog("Dropdown", it.name, tostring(opt))
+									setStatus(it.name .. ": " .. tostring(opt))
+									if it.callback then
+										task.spawn(it.callback, opt)
+									end
+								end)
+								iy += 44
+							end
+						end
+						cy += gh + 10
+					end
+					-- Bottom spacer
+					new("Frame", {
+						Position = UDim2.fromOffset(0, cy),
+						Size = UDim2.fromOffset(1, 6),
+						BackgroundTransparency = 1,
+					}, ctrlScroll)
+				end
+
+				tabViews[ti] = {
+					listFrame = listFrame,
+					controlsFrame = controlsFrame,
+					lv = lv,
+					setSelection = setSelection,
+					renderControls = renderControls,
+				}
+			end
+
+			local pLog = tabsCtrl.Pages[#tabsData + 1]
+			logLv = ListView(pLog, 4, 4, 454, 308, {
+				{ "Time", 66 },
+				{ "Action", 68 },
+				{ "Item", 150 },
+				{ "Details", 138 },
+			})
+			for _, entry in ipairs(logEntries) do
+				logLv:Add(entry)
+			end
+
+			refresh = function(preserveSelection)
+				local f = filterBox and string.lower(filterBox.Text) or ""
+				local activeIdx = tabsCtrl and tabsCtrl.ActiveIndex or 1
+
+				for ti, td in ipairs(tabsData) do
+					local tv = tabViews[ti]
+					if tv then
+						tv.listFrame.Visible = (viewMode == "list")
+						tv.controlsFrame.Visible = (viewMode == "controls")
+
+						local prevSel = (preserveSelection and ti == activeIdx) and selectedItem or nil
+						tv.lv:Clear()
+						local sourceItems = {}
+						if showAllInList then
+							for _, anyTab in ipairs(tabsData) do
+								for _, it in ipairs(anyTab.items) do
+									table.insert(sourceItems, it)
+								end
+							end
+						else
+							sourceItems = td.items
+						end
+
+						local shown = 0
+						local restoredIdx = nil
+						for _, it in ipairs(sourceItems) do
+							if f == ""
+								or string.find(string.lower(it.name), f, 1, true)
+								or string.find(string.lower(it.section or ""), f, 1, true)
+								or string.find(string.lower(it.tabName or ""), f, 1, true)
+							then
+								tv.lv:Add({ it.name, it.section or td.name, itemStateText(it) }, it)
+								shown += 1
+								if prevSel and it == prevSel then
+									restoredIdx = shown
+								end
+							end
+						end
+
+						if restoredIdx then
+							tv.lv:Select(restoredIdx, true)
+						elseif ti == activeIdx then
+							tv.setSelection(nil)
+						end
+
+						tv.renderControls(f)
+						if ti == activeIdx then
+							statusRight.Text = shown .. " item(s)"
+						end
+					end
+				end
+				if activeIdx == #tabsData + 1 then
+					statusRight.Text = #logEntries .. " log(s)"
+				end
+			end
+
+			filterBox:GetPropertyChangedSignal("Text"):Connect(function()
+				refresh(false)
+			end)
+
+			Tree(dynamicRoot, 6, 58, 150, 338, treeNodes, function(node, isDouble)
+				if node.isLog then
+					tabsCtrl.Select(#tabsData + 1)
+					setStatus("Selected: Logs")
+				elseif node.isAll then
+					showAllInList = true
+					if tabsCtrl.ActiveIndex > #tabsData then
+						tabsCtrl.Select(1)
+					end
+					refresh(false)
+					setStatus("Showing all scripts across tabs")
+				elseif node.tabIndex and not node.item then
+					showAllInList = false
+					tabsCtrl.Select(node.tabIndex)
+					refresh(false)
+					setStatus("Selected tab: " .. node.text)
+				elseif node.item then
+					showAllInList = false
+					tabsCtrl.Select(node.tabIndex)
+					refresh(false)
+					local tv = tabViews[node.tabIndex]
+					if tv then
+						for ri, row in ipairs(tv.lv.Rows) do
+							if row.meta == node.item then
+								tv.lv:Select(ri, true)
+								break
+							end
+						end
+					end
+					if isDouble then
+						executeItem(node.item, "Execute")
+					else
+						setStatus("Selected: " .. node.item.name)
+					end
+				end
+			end)
+
+			refresh(false)
+			if #logEntries == 0 then
+				addLog("Info", "-", fullTitle .. " started")
+			end
+		end
+
+		function windowObj:CreateTab(tabOpts)
+			tabOpts = tabOpts or {}
+			local tabName = tabOpts.Name or ("Tab " .. (#tabsData + 1))
+			local td = {
+				name = tabName,
+				items = {},
+				emptySections = {},
+				currentSection = tabName,
+			}
+			table.insert(tabsData, td)
+			scheduleRebuild()
+
+			local tabApi = {}
+
+			function tabApi:CreateSection(secOpts)
+				local sName = (type(secOpts) == "table" and secOpts.Name) or tostring(secOpts or "Section")
+				td.currentSection = sName
+				table.insert(td.emptySections, sName)
+				scheduleRebuild()
+				return {}
+			end
+
+			function tabApi:CreateButton(btnOpts)
+				btnOpts = btnOpts or {}
+				local item = {
+					kind = "Button",
+					name = btnOpts.Name or "Button",
+					section = td.currentSection,
+					tabName = tabName,
+					callback = btnOpts.Callback,
+				}
+				table.insert(td.items, item)
+				-- Remove section from emptySections since it now has an item
+				for i = #td.emptySections, 1, -1 do
+					if td.emptySections[i] == td.currentSection then
+						table.remove(td.emptySections, i)
+					end
+				end
+				scheduleRebuild()
+				return item
+			end
+
+			function tabApi:CreateToggle(togOpts)
+				togOpts = togOpts or {}
+				local item = {
+					kind = "Toggle",
+					name = togOpts.Name or "Toggle",
+					section = td.currentSection,
+					tabName = tabName,
+					value = togOpts.CurrentValue or false,
+					flag = togOpts.Flag,
+					callback = togOpts.Callback,
+				}
+				table.insert(td.items, item)
+				for i = #td.emptySections, 1, -1 do
+					if td.emptySections[i] == td.currentSection then
+						table.remove(td.emptySections, i)
+					end
+				end
+				scheduleRebuild()
+				return item
+			end
+
+			function tabApi:CreateSlider(sldOpts)
+				sldOpts = sldOpts or {}
+				local range = sldOpts.Range or { 0, 100 }
+				local item = {
+					kind = "Slider",
+					name = sldOpts.Name or "Slider",
+					section = td.currentSection,
+					tabName = tabName,
+					min = range[1] or 0,
+					max = range[2] or 100,
+					inc = sldOpts.Increment or 1,
+					suffix = sldOpts.Suffix,
+					value = sldOpts.CurrentValue or range[1] or 0,
+					callback = sldOpts.Callback,
+				}
+				table.insert(td.items, item)
+				for i = #td.emptySections, 1, -1 do
+					if td.emptySections[i] == td.currentSection then
+						table.remove(td.emptySections, i)
+					end
+				end
+				scheduleRebuild()
+				return item
+			end
+
+			function tabApi:CreateDropdown(drpOpts)
+				drpOpts = drpOpts or {}
+				local optsList = drpOpts.Options or {}
+				local item = {
+					kind = "Dropdown",
+					name = drpOpts.Name or "Dropdown",
+					section = td.currentSection,
+					tabName = tabName,
+					options = optsList,
+					value = drpOpts.Value or drpOpts.CurrentOption or optsList[1],
+					callback = drpOpts.Callback,
+				}
+				table.insert(td.items, item)
+				for i = #td.emptySections, 1, -1 do
+					if td.emptySections[i] == td.currentSection then
+						table.remove(td.emptySections, i)
+					end
+				end
+				scheduleRebuild()
+				return item
+			end
+
+			function tabApi:CreateParagraph(pOpts)
+				pOpts = pOpts or {}
+				local sName = pOpts.Title or pOpts.Name or "Note"
+				if pOpts.Content then
+					sName = sName .. ": " .. pOpts.Content
+				end
+				return self:CreateSection({ Name = sName })
+			end
+
+			function tabApi:CreateLabel(lblOpts)
+				local sName = (type(lblOpts) == "table" and (lblOpts.Name or lblOpts.Text)) or tostring(lblOpts or "")
+				return self:CreateSection({ Name = sName })
+			end
+
+			return tabApi
+		end
+
+		function windowObj:Unload()
+			if win and win.Parent then
+				win:Destroy()
+			end
+		end
+
+		scheduleRebuild()
+		return windowObj
+	end
+
+	return Lib
+end)()
 
 local Window = Rayfield:CreateWindow({
    Name = "Gigachad Hub(Revamp)",
