@@ -1,10 +1,10 @@
 --[[
 	Dex++
-	Version 2.2
+	Version 3.3
 	
-	Developed by Chillz
+	Developed by drixpyyy
 	
-	Dex++ is a revival of Moon's Dex, made to fulfill Moon's Dex prophecy.
+	Dex++ is a skid of Moon's Dex, made to fulfill Moon's Dex prophecy.
 ]]
 
 local selection
@@ -16693,9 +16693,9 @@ Main = (function()
 			local duration = 1
 			local Infos = {
 				"Contributors >>",
-				"Toon (IY Dex and PRs)",
+				"Toon (biggest skid of em all)",
 				"Moon (Dex)",
-				"Cazan (3D Preview)",
+				"sulen(me)",
 			}
 			
 			if isInfoCD then return end
