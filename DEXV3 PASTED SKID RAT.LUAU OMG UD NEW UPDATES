@@ -4,7 +4,7 @@
 	
 	Developed by drixpyyy
 	
-	Dex++ is a skid of Moon's Dex, made to fulfill Moon's Dex prophecy.
+	Dex++ is a skid of Moon's Dex, made to decompile server scripts
 ]]
 
 local selection
@@ -1949,10 +1949,14 @@ local function main()
 		end
 
 		if presentClasses["LuaSourceContainer"] then
-			context:AddRegistered("VIEW_SCRIPT", not presentClasses.isViableDecompileScript or env.decompile == nil)
+			-- Allow View Script & Save Script on ALL scripts (including Server Scripts recovered via TextureId / Asset Delivery)
+			context:AddRegistered("VIEW_SCRIPT", env.decompile == nil and env.recoverScriptFromAsset == nil)
 			context:AddRegistered("DUMP_FUNCTIONS", not presentClasses.isViableDecompileScript or env.getupvalues == nil or env.getconstants == nil)
-			context:AddRegistered("SAVE_SCRIPT", not presentClasses.isViableDecompileScript or env.decompile == nil or env.writefile == nil)
+			context:AddRegistered("SAVE_SCRIPT", (env.decompile == nil and env.recoverScriptFromAsset == nil) or env.writefile == nil)
 			context:AddRegistered("SAVE_BYTECODE", not presentClasses.isViableDecompileScript or env.getscriptbytecode == nil or env.writefile == nil)
+		end
+		if presentClasses["Tool"] or presentClasses["HopperBin"] or presentClasses["Accessory"] or presentClasses["Model"] or presentClasses["LuaSourceContainer"] then
+			context:AddRegistered("RECOVER_ASSET_SCRIPTS", env.resolveContainerAssetData == nil)
 		end
 
 		context:AddRegistered("IMPORT_FILE", env.writefile == nil or env.listfiles == nil or env.makefolder == nil)
@@ -2518,8 +2522,11 @@ local function main()
 				end
 				lines[#lines+1] = "o DexPart"..partIndex.."_"..tostring(part.Name):gsub("[%s\r\n]+","_")
 				lines[#lines+1] = "usemtl DexMaterial"..materialIndex
+				local pSession = env.decompileSession
+				local pCF = (pSession and pSession.frozenCFrame and pSession.frozenCFrame[part]) or part.CFrame
+				local pSz = (pSession and pSession.frozenSize and pSession.frozenSize[part]) or part.Size
 				for _,corner in ipairs(corners) do
-					local point = part.CFrame:PointToWorldSpace(Vector3.new(corner.X*part.Size.X/2,corner.Y*part.Size.Y/2,corner.Z*part.Size.Z/2))
+					local point = pCF:PointToWorldSpace(Vector3.new(corner.X*pSz.X/2,corner.Y*pSz.Y/2,corner.Z*pSz.Z/2))
 					lines[#lines+1] = string.format("v %.6f %.6f %.6f",point.X,point.Y,point.Z)
 				end
 				for _,face in ipairs(faces) do
@@ -2545,18 +2552,26 @@ local function main()
 			end
 
 			if extension == "obj" then
+				local frozenObj = (obj ~= game and env.forceCloneBypassArchivable) and env.forceCloneBypassArchivable(obj, false) or nil
+				local objTarget = frozenObj or obj
+				local function cleanupObjClone()
+					if frozenObj then pcall(function() frozenObj:Destroy() end) end
+				end
 				-- Prefer a native full-fidelity mesh exporter when one exists.
 				if env.saveinstance and env.saveinstancemode == "native" then
-					pcall(env.saveinstance,obj,filename,{Decompile = false,ExportType = "obj"})
+					pcall(env.saveinstance,objTarget,filename,{Decompile = false,ExportType = "obj"})
 					if fileExists(filename) then
 						local data = readOutput(filename)
 						-- An XML model accidentally written with an .obj suffix is not
 						-- a successful OBJ export. Empty files are rejected as well.
-						if data and not data:find("<roblox",1,true) then return filename end
-						if not env.readfile then return filename end
+						if data and not data:find("<roblox",1,true) then cleanupObjClone() return filename end
+						if not env.readfile then cleanupObjClone() return filename end
 					end
 				end
-				return Explorer.ExportOBJ(obj,filename)
+				local okExport, exportRes = pcall(Explorer.ExportOBJ, objTarget, filename)
+				cleanupObjClone()
+				if not okExport then error(exportRes) end
+				return exportRes
 			end
 
 			if extension ~= "rbxm" and extension ~= "rbxmx" and extension ~= "rbxl" and extension ~= "rbxlx" then
@@ -2564,17 +2579,46 @@ local function main()
 			end
 			if not env.saveinstance then error("Your executor does not support 'saveinstance'") end
 
+			-- Freeze target at t=0 via SOI clone bypassing .Archivable so parts/scripts never drift mid-decompile
+			local saveTarget = obj
+			local frozenClone = nil
+			local gameSnapshot = nil
+			if obj == game and env.captureGameSOISnapshot then
+				gameSnapshot = env.captureGameSOISnapshot({Decompile = true})
+				if env.runDecompileBatch then
+					local job = env.runDecompileBatch(gameSnapshot.scripts)
+					job.waitPending()
+				end
+			elseif obj ~= game and env.forceCloneBypassArchivable then
+				frozenClone = env.forceCloneBypassArchivable(obj, false)
+				if frozenClone then
+					saveTarget = frozenClone
+					if env.runDecompileBatch then
+						local scripts = {frozenClone}
+						local okD, desc = pcall(frozenClone.GetDescendants, frozenClone)
+						if okD and desc then
+							for i = 1, #desc do scripts[#scripts + 1] = desc[i] end
+						end
+						local job = env.runDecompileBatch(scripts)
+						job.waitPending()
+					end
+				end
+			end
+
 			local base = filename:gsub("%.[^%.]+$","")
 			local captured
+			local ignoreList = gameSnapshot and gameSnapshot.mountFrozenState() or nil
 			local options = {
 				Decompile = true,
-				Object = obj,
+				Object = saveTarget,
 				IsModel = (extension == "rbxm" or extension == "rbxmx"),
+				IgnoreNotArchivable = true,
+				IgnoreList = (ignoreList and #ignoreList > 0) and ignoreList or nil,
 				-- USSI Object saves require non-optimized mode and ExtraInstances
 				-- when the selected object's descendants must be included.
-				mode = obj ~= game and "invalid" or nil,
+				mode = saveTarget ~= game and "invalid" or nil,
 				FilePath = base,
-				ExtraInstances = obj ~= game and {obj} or nil,
+				ExtraInstances = saveTarget ~= game and {saveTarget} or nil,
 				Callback = function(data)
 					if type(data) == "string" and #data > 0 then captured = data end
 				end
@@ -2588,10 +2632,12 @@ local function main()
 				end
 			end
 			if env.saveinstancemode == "ussi" then
-				ok,err = pcall(env.saveinstance,obj,base,options)
+				ok,err = pcall(env.saveinstance,saveTarget,base,options)
 			else
-				ok,err = pcall(env.saveinstance,obj,filename,{Decompile = true,ExportType = extension})
+				ok,err = pcall(env.saveinstance,saveTarget,filename,{Decompile = true,ExportType = extension})
 			end
+			if gameSnapshot then gameSnapshot.cleanup() end
+			if frozenClone then pcall(function() frozenClone:Destroy() end) end
 			captureReturnedData(err)
 
 			local candidates = {filename,base..".rbxmx",base..".rbxm",base..".rbxlx",base..".rbxl",filename..".rbxmx",base}
@@ -2687,23 +2733,23 @@ local function main()
 			if not SOI then
 				SOI = Instance.new("Folder")
 				SOI.Name = "SaveObjectInstance"
+				SOI.Archivable = true
 				SOI.Parent = game
 			end
 
 			local sList = selection.List
-			local newSelection = {}
-			local count = 1
-
 			for i = 1, #sList do
 				local node = sList[i]
-				local obj = node.Obj
-				
-				local s, cloned = pcall(function() return obj:Clone() end)
-				if s and cloned then
-					cloned.Parent = SOI
-					-- Optional: Select the new objects in the SOI folder?
-					-- The user said "just to save mutiple and save it somewhere else it doesnt really matter... until u just go to soi"
-					-- So we probably don't need to change selection, just notify or successfully clone.
+				local obj = node and node.Obj
+				if obj and obj ~= SOI then
+					local cloned = env.forceCloneBypassArchivable and env.forceCloneBypassArchivable(obj, true) or nil
+					if not cloned then
+						local s, rawClone = pcall(function() return obj:Clone() end)
+						if s then cloned = rawClone end
+					end
+					if cloned then
+						cloned.Parent = SOI
+					end
 				end
 			end
 		end})
@@ -2846,15 +2892,26 @@ local function main()
 
 		context:Register("SAVE_SCRIPT",{Name = "Save Script", IconMap = Explorer.MiscIcons, Icon = "Save", DisabledIcon = "Empty", OnClick = function()
 			for _, v in next, selection.List do
-				if v.Obj:IsA("LuaSourceContainer") and env.isViableDecompileScript(v.Obj) then
+				if v.Obj and v.Obj:IsA("LuaSourceContainer") then
 					local success, source = pcall(env.decompile, v.Obj)
-					if not success or not source then source = ("-- DEX - %s failed to decompile %s"):format(env.executor, v.Obj.ClassName) end
+					if (not success or type(source) ~= "string" or #source == 0) and env.recoverScriptFromAsset then
+						local rec = env.recoverScriptFromAsset(v.Obj)
+						if type(rec) == "string" and #rec > 0 then
+							success, source = true, rec
+						end
+					end
+					if not success or not source then source = ("-- DEX - %s failed to decompile/recover %s"):format(tostring(Main.Executor or "Executor"), v.Obj.ClassName) end
 					local fileName = ("%s_%s_%i_Source.txt"):format(env.parsefile(v.Obj.Name), v.Obj.ClassName, game.PlaceId)
-					--env.writefile(fileName, source)
 					Lib.SaveAsPrompt(fileName, source)
-					
 					task.wait(0.2)
 				end
+			end
+		end})
+
+		context:Register("RECOVER_ASSET_SCRIPTS",{Name = "Recover Gear/Asset Scripts", IconMap = Explorer.MiscIcons, Icon = "ViewScript", DisabledIcon = "Empty", OnClick = function()
+			local target = selection.List[1] and selection.List[1].Obj
+			if target and ScriptViewer and ScriptViewer.InspectRecoveredAsset then
+				ScriptViewer.InspectRecoveredAsset(target)
 			end
 		end})
 
@@ -4104,28 +4161,60 @@ return search]==]
 		end)
 	end
 
-	Explorer.VoxelizeUnion = function(union)
+	Explorer.VoxelizeUnion = function(union, frozenCF, frozenSize)
+		local session = env.decompileSession
+		local cf = frozenCF or (session and session.frozenCFrame and session.frozenCFrame[union]) or union.CFrame
+		local size = frozenSize or (session and session.frozenSize and session.frozenSize[union]) or union.Size
+
 		-- Adaptive Resolution: Scale with size to maintain density, cap at 64 for performance
-		local maxDim = math.max(union.Size.X, union.Size.Y, union.Size.Z)
+		local maxDim = math.max(size.X, size.Y, size.Z)
 		local res = math.clamp(math.ceil(maxDim * 5), 32, 64) 
 		print(string.format("Voxelizing %s... Resolution: %d (%d voxels). This may take a moment.", union.Name, res, res^3))
 
-		local cf, size = union.CFrame, union.Size
 		local grid = {}
 		local visited = {}
 		local parts = {}
 		local maxParts = 20000 -- Increased limit for high-res details
 		local processed = 0
 
+		-- Mount an invisible anchored probe clone at the exact t=0 CFrame so detached SOI clones & moving unions never drift mid-scan
+		local probeUnion = nil
+		local queryTarget = union
+		pcall(function()
+			local okClone, c = pcall(function()
+				local prevA = union.Archivable
+				union.Archivable = true
+				local cl = union:Clone()
+				union.Archivable = prevA
+				return cl
+			end)
+			if okClone and c then
+				for _, d in ipairs(c:GetDescendants()) do
+					if d:IsA("BaseScript") then d.Disabled = true end
+				end
+				c.Anchored = true
+				c.CanCollide = false
+				c.CanTouch = false
+				c.CanQuery = true
+				c.Transparency = 1
+				c.Size = size
+				c.CFrame = cf
+				c.Parent = workspace
+				probeUnion = c
+				queryTarget = c
+			end
+		end)
+
 		local params = OverlapParams.new()
 		params.FilterType = Enum.RaycastFilterType.Include
-		params.FilterDescendantsInstances = {union}
+		params.FilterDescendantsInstances = {queryTarget}
 
 		-- 3D Occupancy Scan
 		local scanPart = Instance.new("Part")
 		scanPart.Size = size / res
 		scanPart.Anchored = true
 		scanPart.CanCollide = false
+		scanPart.CanTouch = false
 		scanPart.Transparency = 1
 		scanPart.Parent = workspace
 
@@ -4210,13 +4299,16 @@ return search]==]
 						-- Only check if resolution is reasonably high (e.g. >= 48) to avoid weird blocky wedges
 						if res >= 48 then
 							-- Fire ray from part center towards union center (but slightly outwards first)
-							local dir = (partCF.Position - union.Position)
+							local dir = (partCF.Position - cf.Position)
 							if dir.Magnitude > 0.1 then -- Avoid center point issues
 								local rayOrigin = partCF.Position + dir.Unit * (size.Magnitude/res * 1.5)
 								local rayDir = -dir.Unit * (size.Magnitude/res * 3)
-								local result = workspace:Raycast(rayOrigin, rayDir, params)
+								local rayParams = RaycastParams.new()
+								rayParams.FilterType = Enum.RaycastFilterType.Include
+								rayParams.FilterDescendantsInstances = {queryTarget}
+								local result = workspace:Raycast(rayOrigin, rayDir, rayParams)
 								
-								if result and result.Instance == union then -- Check if we hit the union
+								if result and result.Instance == queryTarget then -- Check if we hit the union
 									local normal = result.Normal
 									-- Check if normal is diagonal-ish (not axis aligned)
 									local ax, ay, az = math.abs(normal.X), math.abs(normal.Y), math.abs(normal.Z)
@@ -4277,14 +4369,75 @@ return search]==]
 			end
 		end
 
+		if probeUnion then
+			pcall(function() probeUnion:Destroy() end)
+		end
 		return parts
 	end
 
 	Explorer.SerializeDES = function(obj)
 		local http = service.HttpService
 		local BGetPT = getgenv().BGetPT
+		local session = env.decompileSession
+		local frozenCFMap = session and session.frozenCFrame or nil
+		local frozenSizeMap = session and session.frozenSize or nil
+
+		-- 1) Capture synchronous t=0 frozen SOI clone (bypassing .Archivable) so moving parts/limbs/guns never drift across MeshPart/Union/decompile yields
+		local frozenRoot = env.forceCloneBypassArchivable and env.forceCloneBypassArchivable(obj, false) or nil
+		local serializeTarget = frozenRoot or obj
+
+		-- 2) Pre-decompile viable scripts on the frozen SOI snapshot via OPS / All-At-Once / Session Cache
+		if env.runDecompileBatch and env.decompile then
+			local desScripts = {serializeTarget}
+			local okD, desc = pcall(serializeTarget.GetDescendants, serializeTarget)
+			if okD and desc then
+				for i = 1, #desc do
+					desScripts[#desScripts + 1] = desc[i]
+				end
+			end
+			local job = env.runDecompileBatch(desScripts)
+			job.waitPending()
+		end
+
+		local function dumpBinaryModelBlob(inst, frozenCF, frozenSz)
+			if not env.saveinstance or not env.readfile then return nil end
+			local blob = nil
+			pcall(function()
+				pcall(function()
+					inst.Archivable = true
+					if frozenCF then inst.CFrame = frozenCF end
+					if frozenSz then inst.Size = frozenSz end
+				end)
+				local tempBase = "temp_des_blob_" .. http:GenerateGUID(false)
+				local tempRbxm = tempBase .. ".rbxm"
+				local tempRbxmx = tempBase .. ".rbxmx"
+				if env.saveinstancemode == "ussi" then
+					pcall(env.saveinstance, inst, tempBase, {
+						Decompile = false,
+						Object = inst,
+						IsModel = true,
+						IgnoreNotArchivable = true,
+						mode = "invalid",
+						ExtraInstances = {inst}
+					})
+				else
+					pcall(env.saveinstance, inst, tempRbxm, {Decompile = false, IgnoreNotArchivable = true})
+				end
+				for _, candidate in ipairs({tempRbxm, tempRbxmx, tempBase}) do
+					local okR, b = pcall(env.readfile, candidate)
+					if okR and type(b) == "string" and #b > 0 and not blob then
+						blob = b
+					end
+					if env.delfile then pcall(env.delfile, candidate) end
+				end
+			end)
+			return blob
+		end
 
 		local function serializeInstance(inst)
+			local frozenCF = (frozenCFMap and frozenCFMap[inst]) or nil
+			local frozenSz = (frozenSizeMap and frozenSizeMap[inst]) or nil
+
 			local data = {
 				ClassName = inst.ClassName,
 				Name = inst.Name,
@@ -4294,23 +4447,22 @@ return search]==]
 
 			-- Special Case: Union Reconstruction
 			if inst:IsA("UnionOperation") then
-				-- Attempt to use saveinstance for 1:1 fidelity
-				if env.saveinstance and env.readfile then
-					local success, blob = pcall(function()
-						local tempName = "temp_union_" .. game:GetService("HttpService"):GenerateGUID(false) .. ".rbxm"
-						env.saveinstance(inst, tempName)
-						local b = env.readfile(tempName)
-						if env.delfile then pcall(env.delfile, tempName) end
-						return b
-					end)
+				local curCF = frozenCF or inst.CFrame
+				local curSz = frozenSz or inst.Size
 
-					if success and blob and #blob > 0 then
-						data.ClassName = "UnionOperation"
-						data.UnionBlob = (blob:gsub('.', function (c)
-							return string.format('%02X', string.byte(c))
-						end))
-						return data
+				-- Attempt to use saveinstance for 1:1 fidelity at exact t=0 CFrame
+				local blob = dumpBinaryModelBlob(inst, curCF, curSz)
+				if blob and #blob > 0 then
+					data.ClassName = "UnionOperation"
+					data.UnionBlob = (blob:gsub('.', function (c)
+						return string.format('%02X', string.byte(c))
+					end))
+					data.Properties.CFrame = {Type = "CFrame", Value = {curCF:GetComponents()}}
+					data.Properties.Size = {Type = "Vector3", Value = {curSz.X, curSz.Y, curSz.Z}}
+					for _, child in pairs(inst:GetChildren()) do
+						table.insert(data.Children, serializeInstance(child))
 					end
+					return data
 				end
 
 				data.ClassName = "Model"
@@ -4333,8 +4485,8 @@ return search]==]
 					return data
 				end
 
-				-- Fallback to High-Res Octree Scan
-				local reconstructedParts = Explorer.VoxelizeUnion(inst)
+				-- Fallback to High-Res Octree Scan at exact t=0 CFrame & Size
+				local reconstructedParts = Explorer.VoxelizeUnion(inst, curCF, curSz)
 				
 				if #reconstructedParts == 0 then
 					warn("Voxelization failed for " .. inst.Name .. ", using bounding box fallback.")
@@ -4342,8 +4494,8 @@ return search]==]
 						ClassName = "Part",
 						Name = "UnionFallback",
 						Properties = {
-							Size = {Type = "Vector3", Value = {inst.Size.X, inst.Size.Y, inst.Size.Z}},
-							CFrame = {Type = "CFrame", Value = {inst.CFrame:GetComponents()}},
+							Size = {Type = "Vector3", Value = {curSz.X, curSz.Y, curSz.Z}},
+							CFrame = {Type = "CFrame", Value = {curCF:GetComponents()}},
 							Color = {Type = "Color3", Value = {inst.Color.r, inst.Color.g, inst.Color.b}},
 							Material = tostring(inst.Material):match("%.([^%.]+)$") or "Plastic",
 							Transparency = inst.Transparency,
@@ -4366,17 +4518,13 @@ return search]==]
 				return data -- Return immediately to avoid property mismatch
 			end
 
-			if inst:IsA("MeshPart") and env.saveinstance and env.readfile then
-				pcall(function()
-					local tempName = "temp_union_dump.rbxm"
-					env.saveinstance(inst, tempName, {Decompile = false})
-					local blob = env.readfile(tempName)
-					if blob and #blob > 0 then
-						data.UnionBlob = (blob:gsub('.', function (c)
-							return string.format('%02X', string.byte(c))
-						end))
-					end
-				end)
+			if inst:IsA("MeshPart") then
+				local blob = dumpBinaryModelBlob(inst, frozenCF, frozenSz)
+				if blob and #blob > 0 then
+					data.UnionBlob = (blob:gsub('.', function (c)
+						return string.format('%02X', string.byte(c))
+					end))
+				end
 			end
 
 			local propsToScan = {}
@@ -4412,6 +4560,30 @@ return search]==]
 							end
 						end
 						currentClass = currentClass.Superclass
+					end
+				end
+			end
+
+			-- Enforce exact t=0 frozen SOI world CFrame & Size on every BasePart/Camera
+			if frozenCF then
+				propsToScan.CFrame = frozenCF
+			end
+			if frozenSz then
+				propsToScan.Size = frozenSz
+			end
+
+			-- Embed cached/frozen decompiled OR TextureId-recovered Server Script Source into .des
+			if inst:IsA("LuaSourceContainer") and (type(propsToScan.Source) ~= "string" or #propsToScan.Source == 0) then
+				if env.decompile then
+					local okSrc, srcCode = pcall(env.decompile, inst)
+					if okSrc and type(srcCode) == "string" and #srcCode > 0 then
+						propsToScan.Source = srcCode
+					end
+				end
+				if (type(propsToScan.Source) ~= "string" or #propsToScan.Source == 0) and env.recoverScriptFromAsset then
+					local recSrc = env.recoverScriptFromAsset(inst)
+					if type(recSrc) == "string" and #recSrc > 0 then
+						propsToScan.Source = recSrc
 					end
 				end
 			end
@@ -4459,7 +4631,14 @@ return search]==]
 			return data
 		end
 
-		local serialized = serializeInstance(obj)
+		local okSer, serialized = pcall(serializeInstance, serializeTarget)
+		if frozenRoot then
+			pcall(function() frozenRoot:Destroy() end)
+		end
+		if not okSer then
+			error(serialized)
+		end
+
 		local json = http:JSONEncode(serialized)
 		local bytes = {}
 		for i = 1, #json do
@@ -14531,6 +14710,7 @@ local function main()
 		label.TextTruncate = Enum.TextTruncate.AtEnd
 		
 		checkbox:SetState(default)
+		checkbox.Frame = frame.Gui
 		
 		return checkbox
 	end
@@ -14579,13 +14759,13 @@ local function main()
 
 		textbox.Text = default
 
-		return {TextBox = textbox}
+		return {TextBox = textbox, Frame = frame.Gui, Label = label}
 	end
 	
 	SaveInstance.Init = function()
 		window = Lib.Window.new()
 		window:SetTitle("Save Instance")
-		window:Resize(350,350)
+		window:Resize(360,390)
 		SaveInstance.Window = window
 		
 		-- ListFrame
@@ -14632,20 +14812,54 @@ local function main()
 		Padding.PaddingTop = UDim.new(0, 5)
 		
 		-- Options
+		SaveInstanceArgs.UseOPS = (not Settings.Decompiler) or (Settings.Decompiler.UseOPS ~= false)
+		SaveInstanceArgs.OPS = (Settings.Decompiler and tonumber(Settings.Decompiler.OPS)) or 25
 		
 		local Decompile = AddCheckbox("Decompile Scripts (LocalScript and ModuleScript)", SaveInstanceArgs.Decompile)
+		local UseOPS = AddCheckbox("Use OPS (Objects Per Second)", SaveInstanceArgs.UseOPS)
+		local decompileOPS = AddTextbox("Decompile OPS (Objects/s)", SaveInstanceArgs.OPS, 22)
+		local decompileTimeout = AddTextbox("Decompile Timeout (s)", SaveInstanceArgs.DecompileTimeout, 15)
+		local decompileThread = AddTextbox("Decompiler Max Threads", "3", 15)
+
+		local function syncSpeedControlsVisibility()
+			local scriptsOn = SaveInstanceArgs.Decompile == true
+			local opsOn = SaveInstanceArgs.UseOPS == true
+			UseOPS.Frame.Visible = scriptsOn
+			-- When OPS is toggled OFF, disable/hide all decompiling speed settings and decompile all at once
+			decompileOPS.Frame.Visible = scriptsOn and opsOn
+			decompileTimeout.Frame.Visible = scriptsOn and opsOn
+			decompileThread.Frame.Visible = scriptsOn and opsOn
+		end
+		syncSpeedControlsVisibility()
+
 		Decompile.OnInput:Connect(function()
 			SaveInstanceArgs.Decompile = Decompile.Toggled
+			syncSpeedControlsVisibility()
+		end)
+
+		UseOPS.OnInput:Connect(function()
+			SaveInstanceArgs.UseOPS = UseOPS.Toggled
+			if Settings.Decompiler then
+				Settings.Decompiler.UseOPS = UseOPS.Toggled
+			end
+			syncSpeedControlsVisibility()
+		end)
+
+		decompileOPS.TextBox.FocusLost:Connect(function()
+			local parsed = math.max(0.1, tonumber(decompileOPS.TextBox.Text) or 25)
+			SaveInstanceArgs.OPS = parsed
+			decompileOPS.TextBox.Text = tostring(parsed)
+			if Settings.Decompiler then
+				Settings.Decompiler.OPS = parsed
+			end
 		end)
 		
-		local decompileTimeout = AddTextbox("Decompile Timeout (s)", SaveInstanceArgs.DecompileTimeout, 15)
 		decompileTimeout.TextBox.FocusLost:Connect(function()
-			SaveInstanceArgs.DecompileTimeout = tonumber(decompileTimeout.TextBox.Text)
+			SaveInstanceArgs.DecompileTimeout = tonumber(decompileTimeout.TextBox.Text) or 10
 		end)
 		
-		local decompileThread = AddTextbox("Decompiler Max Threads", "3", 15)
 		decompileThread.TextBox.FocusLost:Connect(function()
-			SaveInstanceArgs.MaxThreads = tonumber(decompileThread.TextBox.Text)
+			SaveInstanceArgs.MaxThreads = tonumber(decompileThread.TextBox.Text) or 3
 		end)
 		
 		local decompileIgnore = AddTextbox("Decompile Ignore", table.concat(SaveInstanceArgs.DecompileIgnore, ","), 50)
@@ -14726,18 +14940,94 @@ local function main()
 		
 		FilenameTextBox.TextBox.Text = fileName
 		Button.MouseButton1Click:Connect(function()
-			local fileName = FilenameTextBox.TextBox.Text:gsub("{TIMESTAMP}", os.date("%d-%m-%Y_%H-%M-%S"))
-			window:SetTitle("Save Instance - Saving")
-			local s, result = pcall(env.saveinstance, game, fileName, SaveInstanceArgs)
-			if s then
+			if Saving then return end
+			Saving = true
+			LabelButton.Gui.Text = "Saving..."
+
+			local outFileName = FilenameTextBox.TextBox.Text:gsub("{TIMESTAMP}", os.date("%d-%m-%Y_%H-%M-%S"))
+			window:SetTitle("Save Instance - Capturing SOI Snapshot...")
+
+			-- 1) Capture exact t=0 frozen SOI snapshot of Workspace & Services synchronously (bypassing .Archivable)
+			local snapshot = env.captureGameSOISnapshot and env.captureGameSOISnapshot(SaveInstanceArgs) or nil
+
+			local okRun, runErr = pcall(function()
+				-- 2) Decompile scripts from frozen t=0 SOI snapshot (OPS paced 1-by-1, or All-At-Once when OPS is OFF)
+				if SaveInstanceArgs.Decompile and snapshot and env.runDecompileBatch then
+					local useOPS = SaveInstanceArgs.UseOPS == true
+					local opsRate = tonumber(SaveInstanceArgs.OPS) or 25
+					if not useOPS then
+						window:SetTitle("Save Instance - Decompiling All At Once...")
+					else
+						window:SetTitle(("Save Instance - OPS Decompile (0/%d)..."):format(#snapshot.scripts))
+					end
+					local job = env.runDecompileBatch(snapshot.scripts, {
+						useOPS = useOPS,
+						ops = opsRate,
+						onProgress = function(launched, total, done)
+							if useOPS then
+								window:SetTitle(("Save Instance - OPS %g/s (%d/%d | %d cached)"):format(opsRate, launched, total, done))
+							else
+								window:SetTitle(("Save Instance - All At Once (%d/%d)..."):format(done, total))
+							end
+						end
+					})
+					job.waitPending(useOPS and (tonumber(SaveInstanceArgs.DecompileTimeout) or 10) or 60)
+				end
+
+				-- 3) Mount frozen t=0 SOI transforms & remount any destroyed/reparented objects, then serialize
+				window:SetTitle("Save Instance - Writing Frozen SOI State...")
+				local postSpawnIgnore = snapshot and snapshot.mountFrozenState() or nil
+
+				local execArgs = {}
+				for k, v in pairs(SaveInstanceArgs) do
+					execArgs[k] = v
+				end
+				execArgs.IgnoreNotArchivable = true
+				execArgs.noscripts = not SaveInstanceArgs.Decompile
+				if not SaveInstanceArgs.UseOPS then
+					execArgs.MaxThreads = 999
+					execArgs.DecompileTimeout = 999
+					execArgs.timeout = 999
+				else
+					execArgs.timeout = tonumber(SaveInstanceArgs.DecompileTimeout) or 10
+				end
+				if postSpawnIgnore and #postSpawnIgnore > 0 then
+					local mergedIgnore = {}
+					if type(execArgs.IgnoreList) == "table" then
+						for i = 1, #execArgs.IgnoreList do mergedIgnore[#mergedIgnore + 1] = execArgs.IgnoreList[i] end
+					end
+					for i = 1, #postSpawnIgnore do mergedIgnore[#mergedIgnore + 1] = postSpawnIgnore[i] end
+					execArgs.IgnoreList = mergedIgnore
+				end
+
+				local prevThrottle = env.bypassDecompileThrottle
+				if not SaveInstanceArgs.UseOPS then
+					env.bypassDecompileThrottle = true
+				end
+				local s, result = pcall(env.saveinstance, game, outFileName, execArgs)
+				env.bypassDecompileThrottle = prevThrottle
+				if not s then
+					error(result)
+				end
+			end)
+
+			if snapshot then
+				snapshot.cleanup()
+			end
+
+			LabelButton.Gui.Text = "Save"
+			Saving = false
+
+			if okRun then
 				window:SetTitle("Save Instance - Saved")
 			else
 				window:SetTitle("Save Instance - Error")
-				task.spawn(error("Failed to save the game: "..result))
+				warn("Failed to save the game: " .. tostring(runErr))
 			end
 			task.wait(5)
-			window:SetTitle("Save Instance")
-			---env.saveinstance(game, fileName, SaveInstanceArgs)
+			if not Saving then
+				window:SetTitle("Save Instance")
+			end
 		end)
 	end
 
@@ -15263,6 +15553,53 @@ local function main()
 		ScriptViewer.SetPathLinksEnabled(Settings.Explorer.PathLinks)
 	end
 
+	ScriptViewer.InspectRecoveredAsset = function(targetInst)
+		local editor = createEditor(nil)
+		editor.Window:SetTitle(targetInst.Name .. " - Asset Tree & Scripts")
+		editor.CodeFrame:SetText("-- Scanning TextureId / Asset IDs for " .. getPath(targetInst) .. "...")
+		editor.Window:ShowAndFocus()
+
+		task.spawn(function()
+			local t0 = tick()
+			local resolved, errMsg = nil, "Asset recovery unavailable."
+			if env.resolveContainerAssetData then
+				resolved, errMsg = env.resolveContainerAssetData(targetInst, function(msg)
+					editor.CodeFrame:SetText("-- " .. tostring(msg))
+				end)
+			end
+
+			if not resolved then
+				editor.CodeFrame:SetText(string.format(
+					"-- Target: %s\n-- Asset Recovery Failed: %s",
+					getPath(targetInst),
+					tostring(errMsg)
+				))
+				return
+			end
+
+			local out = {
+				string.format("-- Target: %s", getPath(targetInst)),
+				string.format("-- Real %s ID Found: %d | Catalog Name: %s (%.2fs)", tostring(resolved.assetTypeName), resolved.assetId, tostring(resolved.catalogName), tick() - t0),
+				"-- Virtual Asset Tree Structure:"
+			}
+			for i = 1, math.min(#resolved.treeLines, 120) do
+				out[#out + 1] = "--   " .. resolved.treeLines[i]
+			end
+			if #resolved.scripts == 0 then
+				out[#out + 1] = "\n-- (No embedded script sources were found in this asset payload.)"
+			else
+				for idx, entry in ipairs(resolved.scripts) do
+					out[#out + 1] = string.format(
+						"\n-- =====================================================================\n-- [%d/%d] [%s] %s\n-- =====================================================================\n%s",
+						idx, #resolved.scripts, entry.className, entry.relPath, entry.source
+					)
+				end
+			end
+			editor.CodeFrame:SetText(table.concat(out, "\n"))
+			editor.Window:Show()
+		end)
+	end
+
 	ScriptViewer.ViewScript = function(scr)
 		local editor = editorsByScript[scr]
 		if not editor then
@@ -15278,31 +15615,97 @@ local function main()
 		editor.DumpButton.Interactable = false
 		editor.DumpButton.TextColor3 = Color3.new(0.5,0.5,0.5)
 		editor.Window:SetTitle(scr.Name.." - Notepad")
-		editor.CodeFrame:SetText("-- Decompiling "..getPath(scr).."...")
+
+		local isClientScript = env.isViableDecompileScript and env.isViableDecompileScript(scr) or false
+		local alreadyCached = env.isScriptCached and env.isScriptCached(scr)
+		if not alreadyCached then
+			if isClientScript then
+				editor.CodeFrame:SetText("-- Decompiling "..getPath(scr).."...")
+			else
+				editor.CodeFrame:SetText("-- Server Script detected: Scanning TextureId / Asset IDs for "..getPath(scr).."...")
+			end
+		end
 		editor.Window:ShowAndFocus()
 
-		local oldTick = tick()
-		local success,source = pcall(env.decompile or function() end,scr)
-		local header = "-- Script Path: "..getPath(scr).."\n"
-		if not success or type(source) ~= "string" then
-			header = header.."-- Unable to view source.\n"
-			if (scr.ClassName == "Script" and (scr.RunContext == Enum.RunContext.Legacy or scr.RunContext == Enum.RunContext.Server)) or not scr:IsA("LocalScript") then
-				header = header.."-- Reason: The script is not running on client.\n"
-			elseif not env.decompile then
-				header = header.."-- Reason: Your executor does not support decompiler.\n"
-			else
-				header = header.."-- Reason: "..tostring(source).."\n"
+		task.spawn(function()
+			local oldTick = tick()
+			local success, source = false, nil
+			local recoveredInfo = nil
+			local recoveryErr = nil
+
+			if isClientScript and env.decompile and not env.onlyAssetRecoveryDecompile then
+				-- Also pre-recover any sibling Server Scripts on the owning Tool/Gear via TextureId in the background
+				if env.recoverContainerServerScripts then
+					task.spawn(env.recoverContainerServerScripts, scr)
+				end
+				success, source = pcall(env.decompile, scr)
 			end
-			source = header.."-- Executor: "..executorName.." ("..executorVersion..")"
-		else
-			editor.CanDump = env.getgc ~= nil
-			editor.DumpButton.Interactable = editor.CanDump
-			editor.DumpButton.TextColor3 = editor.CanDump and Color3.new(1,1,1) or Color3.new(0.5,0.5,0.5)
-			header = header.."-- Took "..tostring(math.floor((tick()-oldTick)*100)/100).."s to decompile.\n"
-			source = header.."-- Executor: "..executorName.." ("..executorVersion..")\n\n"..source
-		end
-		editor.CodeFrame:SetText(source)
-		editor.Window:Show()
+
+			if (not success or type(source) ~= "string" or #source == 0) and env.recoverScriptFromAsset then
+				local recSrc, metaOrErr = env.recoverScriptFromAsset(scr, function(progressText)
+					if editor.Script == scr then
+						editor.CodeFrame:SetText("-- Script Path: " .. getPath(scr) .. "\n-- " .. tostring(progressText))
+					end
+				end)
+				if type(recSrc) == "string" and #recSrc > 0 then
+					success = true
+					source = recSrc
+					recoveredInfo = type(metaOrErr) == "table" and metaOrErr or nil
+				else
+					recoveryErr = metaOrErr
+				end
+			end
+
+			if not recoveredInfo and env.decompileSession and env.decompileSession.recoveredMeta then
+				recoveredInfo = env.decompileSession.recoveredMeta[scr]
+			end
+
+			local header = "-- Script Path: "..getPath(scr).."\n"
+			if not success or type(source) ~= "string" then
+				header = header.."-- Unable to view source.\n"
+				if not isClientScript then
+					header = header.."-- Reason: The script is not running on client, and public Gear/Asset recovery did not find a match.\n"
+					if recoveryErr then
+						header = header.."-- Asset Scan: "..tostring(recoveryErr).."\n"
+					end
+				elseif not env.decompile or env.onlyAssetRecoveryDecompile then
+					header = header.."-- Reason: Your executor does not support decompiler.\n"
+				else
+					header = header.."-- Reason: "..tostring(source).."\n"
+				end
+				source = header.."-- Executor: "..executorName.." ("..executorVersion..")"
+			else
+				editor.CanDump = isClientScript and (env.getgc ~= nil)
+				editor.DumpButton.Interactable = editor.CanDump
+				editor.DumpButton.TextColor3 = editor.CanDump and Color3.new(1,1,1) or Color3.new(0.5,0.5,0.5)
+				local cacheTag = (alreadyCached or env.lastDecompileWasCached) and " (Instant Session Cache)" or ""
+				local elapsed = tostring(math.floor((tick()-oldTick)*100)/100)
+				if recoveredInfo then
+					header = header..string.format(
+						"-- Recovered via %s Asset Delivery! (ID: %s | Name: %s | Entry: %s)\n",
+						tostring(recoveredInfo.assetTypeName or "Catalog"),
+						tostring(recoveredInfo.assetId or "?"),
+						tostring(recoveredInfo.catalogName or "?"),
+						tostring(recoveredInfo.matchedPath or scr.Name)
+					)
+					header = header.."-- Took "..elapsed.."s"..cacheTag..".\n"
+					if type(recoveredInfo.treeLines) == "table" and #recoveredInfo.treeLines > 0 then
+						header = header.."-- Asset Hierarchy:\n"
+						for i = 1, math.min(#recoveredInfo.treeLines, 25) do
+							header = header.."--   "..recoveredInfo.treeLines[i].."\n"
+						end
+						if #recoveredInfo.treeLines > 25 then
+							header = header..string.format("--   ... (%d more nodes)\n", #recoveredInfo.treeLines - 25)
+						end
+					end
+				else
+					header = header.."-- Took "..elapsed.."s to decompile"..cacheTag..".\n"
+				end
+				source = header.."-- Executor: "..executorName.." ("..executorVersion..")\n\n"..source
+			end
+			editor.CodeFrame:SetText(source)
+			editor.Window:Show()
+		end)
 	end
 
 	return ScriptViewer
@@ -15448,6 +15851,12 @@ DefaultSettings = (function()
 			TitleOnMiddle = false,
 			Transparency = .2
 		},
+		Decompiler = {
+			_Recurse = true,
+			PreDecompile = false,
+			UseOPS = true,
+			OPS = 25
+		},
 		RemoteBlockWriteAttribute = false, -- writes attribute to remote instance if remote is blocked/unblocked
 		ClassIcon = "NewDark",
 		-- What available icons:
@@ -15501,7 +15910,7 @@ Main = (function()
 	Main.Elevated = false
 	Main.AllowDraggableOnMobile = true
 	Main.MissingEnv = {}
-	Main.Version = "2.2"
+	Main.Version = "3.3"
 	Main.Mouse = plr:GetMouse()
 	Main.AppControls = {}
 	Main.Apps = Apps
@@ -15847,59 +16256,1907 @@ Main = (function()
 			return false
 		end
 		env.request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
-		
-		env.decompile = decompile or (function()
-			-- by lovrewe
-			--warn("No built-in decompiler exists, using Konstant decompiler...")
-			--assert(getscriptbytecode, "Exploit not supported.")
-			
-			if not env.getscriptbytecode then --[[warn('Konstant decompiler is not supported. "getscriptbytecode" is missing.')]] return end
 
-			local API = "http://api.plusgiant5.com"
+		-- Session-persistent Decompile Cache, OPS Scheduler & SOI Snapshot State (lives in RAM until game closes)
+		local globalEnv = (type(getgenv) == "function" and getgenv()) or _G
+		local dexSession = globalEnv.__DexSessionDecompile
+		if type(dexSession) ~= "table" then
+			dexSession = {
+				scriptSource = {},
+				bytecodeSource = {},
+				inFlight = setmetatable({}, {__mode = "k"}),
+				snapshotOrigin = setmetatable({}, {__mode = "k"}),
+				frozenBytecode = setmetatable({}, {__mode = "k"}),
+				frozenCFrame = setmetatable({}, {__mode = "k"}),
+				frozenSize = setmetatable({}, {__mode = "k"}),
+				rawDecompile = nil,
+				preDecompileActive = false,
+				preDecompileToken = 0,
+				preDecompileConn = nil
+			}
+			globalEnv.__DexSessionDecompile = dexSession
+		else
+			dexSession.frozenCFrame = dexSession.frozenCFrame or setmetatable({}, {__mode = "k"})
+			dexSession.frozenSize = dexSession.frozenSize or setmetatable({}, {__mode = "k"})
+		end
+		dexSession.assetContainerCache = dexSession.assetContainerCache or setmetatable({}, {__mode = "k"})
+		dexSession.assetPayloadCache = dexSession.assetPayloadCache or {}
+		dexSession.recoveredMeta = dexSession.recoveredMeta or setmetatable({}, {__mode = "k"})
+		env.decompileSession = dexSession
+		env.gethiddenproperty = gethiddenproperty or get_hidden_property or get_hidden_prop
 
-			local last_call = 0
+		local baseDecompile = dexSession.rawDecompile
+		if not baseDecompile then
+			if decompile and decompile ~= globalEnv.__DexWrappedDecompile then
+				baseDecompile = decompile
+			elseif env.getscriptbytecode and env.request then
+				local API = "http://api.plusgiant5.com"
+				local last_call = 0
+				local reqFn = env.request
+				baseDecompile = function(scriptPath)
+					local orig = dexSession.snapshotOrigin[scriptPath] or scriptPath
+					local bytecode = dexSession.frozenBytecode[scriptPath] or dexSession.frozenBytecode[orig]
+					if type(bytecode) ~= "string" or #bytecode == 0 then
+						local success, bc = pcall(env.getscriptbytecode, orig)
+						if not success or type(bc) ~= "string" then
+							success, bc = pcall(env.getscriptbytecode, scriptPath)
+						end
+						if not success then
+							return `-- Failed to get script bytecode, error:\n\n--[[\n{bc}\n--]]`
+						end
+						bytecode = bc
+					end
 
-			local request = env.request
+					local throttleDisabled = env.bypassDecompileThrottle or (Settings.Decompiler and Settings.Decompiler.UseOPS == false)
+					if not throttleDisabled then
+						local time_elapsed = os.clock() - last_call
+						if time_elapsed <= .5 then
+							task.wait(.5 - time_elapsed)
+						end
+					end
 
-			local function call(konstantType, scriptPath)
-				local success, bytecode = pcall(env.getscriptbytecode, scriptPath)
+					local httpResult = reqFn({
+						Url = API .. "/konstant/decompile",
+						Body = bytecode,
+						Method = "POST",
+						Headers = {
+							["Content-Type"] = "text/plain"
+						}
+					})
 
-				if (not success) then
-					return `-- Failed to get script bytecode, error:\n\n--[[\n{bytecode}\n--]]`
+					last_call = os.clock()
+
+					if (httpResult.StatusCode ~= 200) then
+						return `-- Error occurred while requesting Konstant API, error:\n\n--[[\n{httpResult.Body}\n--]]`
+					else
+						return httpResult.Body
+					end
+				end
+			end
+			dexSession.rawDecompile = baseDecompile
+		end
+
+		local function isCacheableDecompileOutput(srcText)
+			if type(srcText) ~= "string" or #srcText == 0 then return false end
+			if srcText:find("^%-%- Failed to get script bytecode") then return false end
+			if srcText:find("^%-%- Error occurred while requesting Konstant API") then return false end
+			if srcText:find("^%-%- Decompilation timed out") then return false end
+			return true
+		end
+
+		local function getScriptBytecodeSafe(scr)
+			if not scr then return nil end
+			local orig = dexSession.snapshotOrigin[scr] or scr
+			local bc = dexSession.frozenBytecode[scr] or dexSession.frozenBytecode[orig]
+			if type(bc) == "string" and #bc > 0 then
+				return bc
+			end
+			if env.getscriptbytecode then
+				local ok, rawBc = pcall(env.getscriptbytecode, orig)
+				if (not ok or type(rawBc) ~= "string" or #rawBc == 0) and orig ~= scr then
+					ok, rawBc = pcall(env.getscriptbytecode, scr)
+				end
+				if ok and type(rawBc) == "string" and #rawBc > 0 then
+					dexSession.frozenBytecode[orig] = rawBc
+					dexSession.frozenBytecode[scr] = rawBc
+					return rawBc
+				end
+			end
+			return nil
+		end
+
+		env.isScriptCached = function(scr)
+			if not scr then return false end
+			local orig = dexSession.snapshotOrigin[scr] or scr
+			if dexSession.scriptSource[scr] or dexSession.scriptSource[orig] then
+				return true
+			end
+			local bc = dexSession.frozenBytecode[scr] or dexSession.frozenBytecode[orig]
+			if type(bc) == "string" and dexSession.bytecodeSource[bc] then
+				return true
+			end
+			return false
+		end
+
+		if baseDecompile then
+			local function cachedDecompile(scr, ...)
+				if typeof(scr) ~= "Instance" then
+					return baseDecompile(scr, ...)
+				end
+				local orig = dexSession.snapshotOrigin[scr] or scr
+				local hit = dexSession.scriptSource[scr] or dexSession.scriptSource[orig]
+				if hit then
+					dexSession.scriptSource[scr] = hit
+					dexSession.scriptSource[orig] = hit
+					env.lastDecompileWasCached = true
+					return hit
+				end
+				local bc = getScriptBytecodeSafe(scr)
+				if bc and dexSession.bytecodeSource[bc] then
+					local bcHit = dexSession.bytecodeSource[bc]
+					dexSession.scriptSource[orig] = bcHit
+					dexSession.scriptSource[scr] = bcHit
+					env.lastDecompileWasCached = true
+					return bcHit
+				end
+				env.lastDecompileWasCached = false
+				local okViable, isClientViable = pcall(env.isViableDecompileScript, orig)
+				if not okViable or not isClientViable then
+					if env.recoverScriptFromAsset then
+						local recovered, recErr = env.recoverScriptFromAsset(scr)
+						if type(recovered) == "string" and #recovered > 0 then
+							return recovered
+						end
+						error(recErr or "Server script is not running on client and no public Gear/Model asset matched.", 2)
+					end
 				end
 
-				local time_elapsed = os.clock() - last_call
-				if time_elapsed <= .5 then
-					task.wait(.5 - time_elapsed)
+				-- When decompiling a client script inside a Tool/Model, also pre-recover its sibling server scripts via TextureId
+				if env.recoverContainerServerScripts then
+					task.spawn(env.recoverContainerServerScripts, orig)
 				end
 
-				local httpResult = request({
-					Url = API .. konstantType,
-					Body = bytecode,
-					Method = "POST",
-					Headers = {
-						["Content-Type"] = "text/plain"
-					}
+				local ok, res = pcall(baseDecompile, orig, ...)
+				if (not ok or not isCacheableDecompileOutput(res)) and orig ~= scr then
+					local ok2, res2 = pcall(baseDecompile, scr, ...)
+					if ok2 and isCacheableDecompileOutput(res2) then
+						ok, res = ok2, res2
+					end
+				end
+				if (not ok or not isCacheableDecompileOutput(res)) and env.recoverScriptFromAsset then
+					local recovered = env.recoverScriptFromAsset(scr)
+					if type(recovered) == "string" and #recovered > 0 then
+						return recovered
+					end
+				end
+				if not ok then
+					error(res, 2)
+				end
+				if isCacheableDecompileOutput(res) then
+					dexSession.scriptSource[orig] = res
+					dexSession.scriptSource[scr] = res
+					if bc then
+						dexSession.bytecodeSource[bc] = res
+					end
+				end
+				return res
+			end
+			globalEnv.__DexWrappedDecompile = cachedDecompile
+			globalEnv.decompile = cachedDecompile
+			env.decompile = cachedDecompile
+		else
+			env.decompile = function(scr)
+				if typeof(scr) == "Instance" and env.recoverScriptFromAsset then
+					local recovered, recErr = env.recoverScriptFromAsset(scr)
+					if type(recovered) == "string" and #recovered > 0 then
+						return recovered
+					end
+					error(recErr or "Your executor does not support decompiler.", 2)
+				end
+				error("Your executor does not support decompiler.", 2)
+			end
+			env.onlyAssetRecoveryDecompile = true
+		end
+
+		-- =====================================================================
+		-- Public Gear / Object Asset ID Scanner (from TextureId / MeshId) &
+		-- Pure-Luau assetdelivery XML (.rbxmx) + Binary (.rbxm) Script Recovery
+		-- =====================================================================
+		local ASSET_TYPE_NAMES = {
+			[8] = "Hat",
+			[10] = "Model",
+			[19] = "Gear",
+			[38] = "Plugin",
+			[41] = "HairAccessory",
+			[42] = "FaceAccessory",
+			[43] = "NeckAccessory",
+			[44] = "ShoulderAccessory",
+			[45] = "FrontAccessory",
+			[46] = "BackAccessory",
+			[47] = "WaistAccessory"
+		}
+
+		local function extractNumericAssetId(rawVal)
+			if type(rawVal) == "number" then
+				local n = math.floor(rawVal)
+				return n > 0 and n or nil
+			elseif type(rawVal) == "string" then
+				local byParam = rawVal:match("[?&]id=(%d+)") or rawVal:match("rbxassetid://(%d+)") or rawVal:match("(%d+)")
+				local n = tonumber(byParam)
+				return (n and n > 0) and n or nil
+			end
+			return nil
+		end
+
+		local function decodeXmlEntities(str)
+			if type(str) ~= "string" or not str:find("&", 1, true) then
+				return str
+			end
+			str = str:gsub("&#x([%da-fA-F]+);", function(hex)
+				local code = tonumber(hex, 16)
+				if code and code >= 0 and code <= 255 then return string.char(code) end
+				if code and utf8 and utf8.char then
+					local ok, ch = pcall(utf8.char, code)
+					if ok then return ch end
+				end
+				return ""
+			end)
+			str = str:gsub("&#(%d+);", function(dec)
+				local code = tonumber(dec, 10)
+				if code and code >= 0 and code <= 255 then return string.char(code) end
+				if code and utf8 and utf8.char then
+					local ok, ch = pcall(utf8.char, code)
+					if ok then return ch end
+				end
+				return ""
+			end)
+			str = str:gsub("&quot;", "\"")
+			str = str:gsub("&apos;", "'")
+			str = str:gsub("&lt;", "<")
+			str = str:gsub("&gt;", ">")
+			str = str:gsub("&amp;", "&")
+			return str
+		end
+
+		-- Step 1 (Luau port): Fetch raw asset bytes from Roblox's assetdelivery pipeline
+		local function fetchRobloxAssetBytes(assetId)
+			local urls = {
+				"https://assetdelivery.roblox.com/v1/asset/?id=" .. tostring(assetId),
+				"https://assetdelivery.roblox.com/v1/asset?id=" .. tostring(assetId)
+			}
+			local headers = {
+				["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)"
+			}
+
+			if env.request then
+				for i = 1, #urls do
+					local ok, resp = pcall(env.request, {
+						Url = urls[i],
+						Method = "GET",
+						Headers = headers
+					})
+					if ok and type(resp) == "table" and resp.StatusCode == 200 and type(resp.Body) == "string" and #resp.Body > 0 then
+						return resp.Body
+					end
+				end
+
+				local okV2, respV2 = pcall(env.request, {
+					Url = "https://assetdelivery.roblox.com/v2/assetId/" .. tostring(assetId),
+					Method = "GET",
+					Headers = headers
 				})
-
-				last_call = os.clock()
-
-				if (httpResult.StatusCode ~= 200) then
-					return `-- Error occurred while requesting Konstant API, error:\n\n--[[\n{httpResult.Body}\n--]]`
-				else
-					return httpResult.Body
+				if okV2 and type(respV2) == "table" and respV2.StatusCode == 200 and type(respV2.Body) == "string" then
+					local okJson, decoded = pcall(function()
+						return service.HttpService:JSONDecode(respV2.Body)
+					end)
+					local cdnUrl = okJson and decoded and decoded.locations and decoded.locations[1] and decoded.locations[1].location
+					if type(cdnUrl) == "string" and #cdnUrl > 0 then
+						local okCdn, cdnResp = pcall(env.request, {
+							Url = cdnUrl,
+							Method = "GET",
+							Headers = headers
+						})
+						if okCdn and type(cdnResp) == "table" and cdnResp.StatusCode == 200 and type(cdnResp.Body) == "string" and #cdnResp.Body > 0 then
+							return cdnResp.Body
+						end
+					end
 				end
 			end
 
-			local function decompile(scriptPath)
-				return call("/konstant/decompile", scriptPath)
+			for i = 1, #urls do
+				local okHttp, body = pcall(oldgame.HttpGet, oldgame, urls[i], true)
+				if okHttp and type(body) == "string" and #body > 0 then
+					return body
+				end
+			end
+			return nil
+		end
+
+		-- Step 2 & 3 (Luau port): Parse Roblox XML (.rbxmx) model hierarchy & ProtectedString Source nodes
+		local function parseXmlAssetHierarchy(rawData)
+			if type(rawData) ~= "string" or rawData:sub(1, 8) == "<roblox!" then
+				return nil
+			end
+			local xmlStart = rawData:find("<roblox", 1, true)
+			if not xmlStart then
+				return nil
 			end
 
-			getgenv().decompile = decompile
-			
-			env.decompile = decompile
-			return decompile
-		end)()
+			local xml = rawData:sub(xmlStart)
+			local len = #xml
+			local pos = 1
+			local rootNodes = {}
+			local itemStack = {}
+			local inPropertiesDepth = 0
+
+			local function readElementInnerText(afterOpenTagPos, closeTagLiteral)
+				local cur = afterOpenTagPos
+				local chunks = {}
+				while cur <= len do
+					local nextLt = xml:find("<", cur, true)
+					if not nextLt then
+						chunks[#chunks + 1] = decodeXmlEntities(xml:sub(cur))
+						return table.concat(chunks), len + 1
+					end
+					if nextLt > cur then
+						chunks[#chunks + 1] = decodeXmlEntities(xml:sub(cur, nextLt - 1))
+					end
+					if xml:sub(nextLt, nextLt + 8) == "<![CDATA[" then
+						local cdataEnd = xml:find("]]>", nextLt + 9, true)
+						if not cdataEnd then
+							chunks[#chunks + 1] = xml:sub(nextLt + 9)
+							return table.concat(chunks), len + 1
+						end
+						chunks[#chunks + 1] = xml:sub(nextLt + 9, cdataEnd - 1)
+						cur = cdataEnd + 3
+					elseif xml:sub(nextLt, nextLt + #closeTagLiteral - 1) == closeTagLiteral then
+						return table.concat(chunks), nextLt + #closeTagLiteral
+					elseif xml:sub(nextLt, nextLt + 3) == "<!--" then
+						local commEnd = xml:find("-->", nextLt + 4, true)
+						cur = commEnd and (commEnd + 3) or (len + 1)
+					else
+						local gt = xml:find(">", nextLt + 1, true)
+						if not gt then
+							return table.concat(chunks), len + 1
+						end
+						cur = gt + 1
+					end
+				end
+				return table.concat(chunks), len + 1
+			end
+
+			while pos <= len do
+				local lt = xml:find("<", pos, true)
+				if not lt then break end
+
+				if xml:sub(lt, lt + 3) == "<!--" then
+					local commEnd = xml:find("-->", lt + 4, true)
+					pos = commEnd and (commEnd + 3) or (len + 1)
+				elseif xml:sub(lt, lt + 8) == "<![CDATA[" then
+					local cdataEnd = xml:find("]]>", lt + 9, true)
+					pos = cdataEnd and (cdataEnd + 3) or (len + 1)
+				elseif xml:sub(lt, lt + 1) == "<?" then
+					local piEnd = xml:find("?>", lt + 2, true)
+					pos = piEnd and (piEnd + 2) or (len + 1)
+				else
+					local gt = xml:find(">", lt + 1, true)
+					if not gt then break end
+					local rawTag = xml:sub(lt + 1, gt - 1)
+					local isClosing = rawTag:sub(1, 1) == "/"
+					local isSelfClosing = (not isClosing) and (rawTag:sub(-1) == "/")
+					local tagBody = isClosing and rawTag:sub(2) or (isSelfClosing and rawTag:sub(1, -2) or rawTag)
+					local tagName = tagBody:match("^%s*([%w_:%-]+)")
+					pos = gt + 1
+
+					if tagName == "Item" then
+						if isClosing then
+							itemStack[#itemStack] = nil
+						else
+							local cls = tagBody:match('class%s*=%s*"([^"]*)"') or tagBody:match("class%s*=%s*'([^']*)'") or "UnknownClass"
+							local node = {
+								className = cls,
+								name = cls,
+								source = nil,
+								children = {}
+							}
+							local parentNode = itemStack[#itemStack]
+							if parentNode then
+								parentNode.children[#parentNode.children + 1] = node
+							else
+								rootNodes[#rootNodes + 1] = node
+							end
+							if not isSelfClosing then
+								itemStack[#itemStack + 1] = node
+							end
+						end
+					elseif tagName == "Properties" then
+						if isClosing then
+							inPropertiesDepth = math.max(0, inPropertiesDepth - 1)
+						elseif not isSelfClosing then
+							inPropertiesDepth = inPropertiesDepth + 1
+						end
+					elseif inPropertiesDepth > 0 and #itemStack > 0 and not isClosing then
+						local propName = tagBody:match('name%s*=%s*"([^"]*)"') or tagBody:match("name%s*=%s*'([^']*)'")
+						local curItem = itemStack[#itemStack]
+						if propName == "Name" and tagName == "string" then
+							if isSelfClosing then
+								curItem.name = ""
+							else
+								local val, nextPos = readElementInnerText(pos, "</string>")
+								if val and #val > 0 then curItem.name = val end
+								pos = nextPos
+							end
+						elseif propName == "Source" and (tagName == "ProtectedString" or tagName == "string") then
+							if isSelfClosing then
+								curItem.source = ""
+							else
+								local val, nextPos = readElementInnerText(pos, "</" .. tagName .. ">")
+								curItem.source = val or ""
+								pos = nextPos
+							end
+						end
+					end
+				end
+			end
+
+			if #rootNodes == 0 then
+				return nil
+			end
+
+			local scripts = {}
+			local treeLines = {}
+
+			local function walkNode(node, depth, relPrefix, isRoot)
+				local indent = string.rep("    ", depth)
+				treeLines[#treeLines + 1] = string.format("%s|-- [%s] %s", indent, node.className, node.name or "Unnamed")
+				local myRel = isRoot and "" or (relPrefix == "" and node.name or (relPrefix .. "/" .. node.name))
+
+				if node.className:find("Script", 1, true) and type(node.source) == "string" then
+					local lineCount = select(2, node.source:gsub("\n", "\n")) + 1
+					local firstLine = (node.source:match("^%s*([^\r\n]*)") or ""):sub(1, 60)
+					treeLines[#treeLines + 1] = string.format('%s    Source Preview: "%s..." (%d lines)', indent, firstLine, lineCount)
+					scripts[#scripts + 1] = {
+						className = node.className,
+						name = node.name,
+						relPath = myRel ~= "" and myRel or node.name,
+						source = node.source
+					}
+				end
+
+				for i = 1, #node.children do
+					walkNode(node.children[i], depth + 1, myRel, false)
+				end
+			end
+
+			for i = 1, #rootNodes do
+				walkNode(rootNodes[i], 0, "", true)
+			end
+
+			return {
+				format = "xml",
+				scripts = scripts,
+				treeLines = treeLines,
+				rootName = rootNodes[1] and rootNodes[1].name or nil
+			}
+		end
+
+		-- Pure-Luau LZ4 Raw Block Decoder + .rbxm Binary Chunk Parser & Header Inspector
+		local function lz4DecompressBlock(comp, uncompLen)
+			if type(lz4decompress) == "function" then
+				local okNative, nativeOut = pcall(lz4decompress, comp, uncompLen)
+				if okNative and type(nativeOut) == "string" and #nativeOut == uncompLen then
+					return nativeOut
+				end
+			end
+
+			local out = table.create(uncompLen)
+			local outLen = 0
+			local pos = 1
+			local n = #comp
+
+			while pos <= n and outLen < uncompLen do
+				local token = string.byte(comp, pos)
+				pos = pos + 1
+				local litLen = bit32.rshift(token, 4)
+				if litLen == 15 then
+					while pos <= n do
+						local b = string.byte(comp, pos)
+						pos = pos + 1
+						litLen = litLen + b
+						if b ~= 255 then break end
+					end
+				end
+				for k = 0, litLen - 1 do
+					if pos + k > n then break end
+					outLen = outLen + 1
+					out[outLen] = string.byte(comp, pos + k)
+				end
+				pos = pos + litLen
+				if pos > n or outLen >= uncompLen then break end
+
+				if pos + 1 > n then return nil end
+				local offLo, offHi = string.byte(comp, pos, pos + 1)
+				pos = pos + 2
+				local offset = offLo + offHi * 256
+				if offset <= 0 or offset > outLen then return nil end
+
+				local matchLen = bit32.band(token, 0x0F) + 4
+				if bit32.band(token, 0x0F) == 15 then
+					while pos <= n do
+						local b = string.byte(comp, pos)
+						pos = pos + 1
+						matchLen = matchLen + b
+						if b ~= 255 then break end
+					end
+				end
+
+				local srcIdx = outLen - offset + 1
+				for k = 0, matchLen - 1 do
+					if outLen >= uncompLen then break end
+					outLen = outLen + 1
+					out[outLen] = out[srcIdx + k]
+				end
+			end
+
+			if outLen ~= uncompLen then return nil end
+			local strChunks = {}
+			local step = 4096
+			for i = 1, outLen, step do
+				strChunks[#strChunks + 1] = string.char(table.unpack(out, i, math.min(i + step - 1, outLen)))
+			end
+			return table.concat(strChunks)
+		end
+
+		local function parseBinaryRbxmHierarchy(rawData, assetId)
+			if type(rawData) ~= "string" or rawData:sub(1, 8) ~= "<roblox!" then
+				return nil
+			end
+
+			local scripts = {}
+			local treeLines = {}
+			local rootName = nil
+
+			-- Pass A: Try executor GetObjects + Source / gethiddenproperty extraction first
+			pcall(function()
+				local objs = nil
+				if assetId then
+					local okG, resG = pcall(oldgame.GetObjects, oldgame, "rbxassetid://" .. tostring(assetId))
+					if okG and type(resG) == "table" and #resG > 0 then objs = resG end
+				end
+				if (not objs or #objs == 0) and env.getobjects and env.writefile then
+					local tmpFile = "temp_asset_inspect_" .. tostring(assetId or os.time()) .. ".rbxm"
+					pcall(env.writefile, tmpFile, rawData)
+					local okLocal, resLocal = pcall(env.getobjects, tmpFile)
+					if env.delfile then pcall(env.delfile, tmpFile) end
+					if okLocal and type(resLocal) == "table" and #resLocal > 0 then objs = resLocal end
+				end
+				if objs and #objs > 0 then
+					rootName = objs[1].Name
+					local function walkLiveObj(inst, depth, relPrefix, isRoot)
+						local indent = string.rep("    ", depth)
+						treeLines[#treeLines + 1] = string.format("%s|-- [%s] %s", indent, inst.ClassName, inst.Name)
+						local myRel = isRoot and "" or (relPrefix == "" and inst.Name or (relPrefix .. "/" .. inst.Name))
+						if inst:IsA("LuaSourceContainer") then
+							local srcVal = nil
+							local okS, sVal = pcall(function() return inst.Source end)
+							if okS and type(sVal) == "string" and #sVal > 0 then
+								srcVal = sVal
+							elseif env.gethiddenproperty then
+								local okH, hVal = pcall(env.gethiddenproperty, inst, "Source")
+								if okH and type(hVal) == "string" and #hVal > 0 then
+									srcVal = hVal
+								end
+							end
+							if type(srcVal) == "string" and #srcVal > 0 then
+								scripts[#scripts + 1] = {
+									className = inst.ClassName,
+									name = inst.Name,
+									relPath = myRel ~= "" and myRel or inst.Name,
+									source = srcVal
+								}
+							end
+						end
+						for _, ch in ipairs(inst:GetChildren()) do
+							walkLiveObj(ch, depth + 1, myRel, false)
+						end
+					end
+					for i = 1, #objs do
+						walkLiveObj(objs[i], 0, "", true)
+						pcall(function() objs[i]:Destroy() end)
+					end
+				end
+			end)
+
+			if #scripts > 0 then
+				return {
+					format = "rbxm",
+					scripts = scripts,
+					treeLines = treeLines,
+					rootName = rootName
+				}
+			end
+
+			-- Pass B: Pure-Luau .rbxm INST / SSTR / PROP / PRNT binary chunk parser
+			pcall(function()
+				if #rawData < 32 then return end
+				local function readU32LE(buf, p)
+					local b1, b2, b3, b4 = string.byte(buf, p, p + 3)
+					if not b4 then return nil end
+					return b1 + b2 * 256 + b3 * 65536 + b4 * 16777216
+				end
+				local function decodeReferentArray(buf, p, count)
+					if p + count * 4 - 1 > #buf then return nil, p end
+					local refs = table.create(count)
+					local acc = 0
+					for i = 1, count do
+						local b1 = string.byte(buf, p + i - 1)
+						local b2 = string.byte(buf, p + count + i - 1)
+						local b3 = string.byte(buf, p + count * 2 + i - 1)
+						local b4 = string.byte(buf, p + count * 3 + i - 1)
+						local u = bit32.bor(bit32.lshift(b1, 24), bit32.lshift(b2, 16), bit32.lshift(b3, 8), b4)
+						local delta
+						if bit32.band(u, 1) == 0 then
+							delta = bit32.rshift(u, 1)
+						else
+							delta = -bit32.rshift(u, 1) - 1
+						end
+						acc = acc + delta
+						refs[i] = acc
+					end
+					return refs, p + count * 4
+				end
+
+				local classesById = {}
+				local instByRef = {}
+				local sharedStrings = {}
+				local parentMap = {}
+				local childOrder = {}
+
+				local cursor = 33
+				while cursor + 15 <= #rawData do
+					local cName = rawData:sub(cursor, cursor + 3)
+					local compLen = readU32LE(rawData, cursor + 4)
+					local uncompLen = readU32LE(rawData, cursor + 8)
+					if not compLen or not uncompLen then break end
+					local payloadLen = compLen > 0 and compLen or uncompLen
+					local dataStart = cursor + 16
+					if dataStart + payloadLen - 1 > #rawData then break end
+					local rawChunk = rawData:sub(dataStart, dataStart + payloadLen - 1)
+					cursor = dataStart + payloadLen
+					if cName == "END\0" then break end
+
+					local chunk = nil
+					if compLen == 0 then
+						chunk = rawChunk
+					elseif rawChunk:sub(1, 4) ~= "\40\181\47\253" then
+						chunk = lz4DecompressBlock(rawChunk, uncompLen)
+					end
+
+					if chunk then
+						if cName == "SSTR" and #chunk >= 8 then
+							local sCount = readU32LE(chunk, 5) or 0
+							local sp = 9
+							for idx = 0, sCount - 1 do
+								if sp + 19 > #chunk then break end
+								sp = sp + 16
+								local sLen = readU32LE(chunk, sp) or 0
+								sp = sp + 4
+								sharedStrings[idx] = chunk:sub(sp, sp + sLen - 1)
+								sp = sp + sLen
+							end
+						elseif cName == "INST" and #chunk >= 13 then
+							local classId = readU32LE(chunk, 1)
+							local nameLen = readU32LE(chunk, 5)
+							if classId and nameLen and 9 + nameLen + 4 <= #chunk then
+								local clsName = chunk:sub(9, 8 + nameLen)
+								local instCount = readU32LE(chunk, 10 + nameLen)
+								local refs = instCount and decodeReferentArray(chunk, 14 + nameLen, instCount) or nil
+								if refs then
+									local list = table.create(instCount)
+									for i = 1, instCount do
+										local rec = {ref = refs[i], className = clsName, name = clsName, source = nil, children = {}}
+										list[i] = rec
+										instByRef[refs[i]] = rec
+									end
+									classesById[classId] = {className = clsName, count = instCount, list = list}
+								end
+							end
+						elseif cName == "PROP" and #chunk >= 9 then
+							local classId = readU32LE(chunk, 1)
+							local pNameLen = readU32LE(chunk, 5)
+							local clsInfo = classId and classesById[classId]
+							if clsInfo and pNameLen and 9 + pNameLen <= #chunk then
+								local propName = chunk:sub(9, 8 + pNameLen)
+								local typeId = string.byte(chunk, 9 + pNameLen)
+								local vp = 10 + pNameLen
+								if (propName == "Name" or propName == "Source") and typeId == 0x01 then
+									for i = 1, clsInfo.count do
+										local sLen = readU32LE(chunk, vp)
+										if not sLen or vp + 4 + sLen - 1 > #chunk then break end
+										local strVal = chunk:sub(vp + 4, vp + 3 + sLen)
+										vp = vp + 4 + sLen
+										if propName == "Name" and #strVal > 0 then
+											clsInfo.list[i].name = strVal
+										elseif propName == "Source" then
+											clsInfo.list[i].source = strVal
+										end
+									end
+								elseif (propName == "Name" or propName == "Source") and (typeId == 0x1C or typeId == 0x1E) then
+									local cnt = clsInfo.count
+									if vp + cnt * 4 - 1 <= #chunk then
+										for i = 1, cnt do
+											local b1 = string.byte(chunk, vp + i - 1)
+											local b2 = string.byte(chunk, vp + cnt + i - 1)
+											local b3 = string.byte(chunk, vp + cnt * 2 + i - 1)
+											local b4 = string.byte(chunk, vp + cnt * 3 + i - 1)
+											local sIdx = b1 * 16777216 + b2 * 65536 + b3 * 256 + b4
+											local sVal = sharedStrings[sIdx]
+											if type(sVal) == "string" then
+												if propName == "Name" and #sVal > 0 then clsInfo.list[i].name = sVal
+												elseif propName == "Source" then clsInfo.list[i].source = sVal end
+											end
+										end
+									end
+								end
+							end
+						elseif cName == "PRNT" and #chunk >= 5 then
+							local pCount = readU32LE(chunk, 2)
+							if pCount then
+								local childRefs, nextP = decodeReferentArray(chunk, 6, pCount)
+								local parentRefs = childRefs and decodeReferentArray(chunk, nextP, pCount) or nil
+								if childRefs and parentRefs then
+									for i = 1, pCount do
+										parentMap[childRefs[i]] = parentRefs[i]
+										childOrder[#childOrder + 1] = childRefs[i]
+									end
+								end
+							end
+						end
+					end
+				end
+
+				local roots = {}
+				for i = 1, #childOrder do
+					local cRef = childOrder[i]
+					local pRef = parentMap[cRef]
+					local cRec = instByRef[cRef]
+					if cRec then
+						if pRef and pRef ~= -1 and instByRef[pRef] then
+							local pChildren = instByRef[pRef].children
+							pChildren[#pChildren + 1] = cRec
+						else
+							roots[#roots + 1] = cRec
+						end
+					end
+				end
+
+				if #roots > 0 then
+					treeLines = {}
+					rootName = roots[1].name
+					local function walkRec(rec, depth, relPrefix, isRoot)
+						local indent = string.rep("    ", depth)
+						treeLines[#treeLines + 1] = string.format("%s|-- [%s] %s", indent, rec.className, rec.name)
+						local myRel = isRoot and "" or (relPrefix == "" and rec.name or (relPrefix .. "/" .. rec.name))
+						if rec.className:find("Script", 1, true) and type(rec.source) == "string" and #rec.source > 0 then
+							scripts[#scripts + 1] = {
+								className = rec.className,
+								name = rec.name,
+								relPath = myRel ~= "" and myRel or rec.name,
+								source = rec.source
+							}
+						end
+						for i = 1, #rec.children do
+							walkRec(rec.children[i], depth + 1, myRel, false)
+						end
+					end
+					for i = 1, #roots do
+						walkRec(roots[i], 0, "", true)
+					end
+				else
+					for _, clsInfo in pairs(classesById) do
+						if clsInfo.className:find("Script", 1, true) then
+							for i = 1, clsInfo.count do
+								local rec = clsInfo.list[i]
+								if type(rec.source) == "string" and #rec.source > 0 then
+									scripts[#scripts + 1] = {
+										className = rec.className,
+										name = rec.name,
+										relPath = rec.name,
+										source = rec.source
+									}
+								end
+							end
+						end
+					end
+				end
+			end)
+
+			-- Pass C (Luau port of Python inspect_binary_headers): Printable class signature scan fallback
+			if #treeLines == 0 then
+				treeLines[#treeLines + 1] = string.format("Compiled Roblox Binary Payload (.rbxm) - %d bytes", #rawData)
+				local knownClasses = {
+					Part = true, Script = true, LocalScript = true, ModuleScript = true,
+					Folder = true, Model = true, MeshPart = true, SpecialMesh = true,
+					Attachment = true, Decal = true, Texture = true, Tool = true, Sound = true
+				}
+				local foundClasses = {}
+				for token in rawData:gmatch("[%w_][%w_][%w_][%w_]+") do
+					if knownClasses[token] and not foundClasses[token] then
+						foundClasses[token] = true
+						treeLines[#treeLines + 1] = "    |-- Component type: " .. token
+					end
+				end
+			end
+
+			return {
+				format = "rbxm",
+				scripts = scripts,
+				treeLines = treeLines,
+				rootName = rootName
+			}
+		end
+
+		env.fetchAndParseRobloxAsset = function(assetId)
+			assetId = tonumber(assetId)
+			if not assetId or assetId <= 0 then return nil end
+			if dexSession.assetPayloadCache[assetId] ~= nil then
+				return dexSession.assetPayloadCache[assetId] or nil
+			end
+
+			local rawBytes = fetchRobloxAssetBytes(assetId)
+			local parsed = nil
+			if type(rawBytes) == "string" and #rawBytes > 0 then
+				parsed = parseXmlAssetHierarchy(rawBytes) or parseBinaryRbxmHierarchy(rawBytes, assetId)
+			else
+				parsed = parseBinaryRbxmHierarchy("<roblox!", assetId)
+			end
+
+			if parsed then
+				parsed.assetId = assetId
+				dexSession.assetPayloadCache[assetId] = parsed
+				return parsed
+			end
+			dexSession.assetPayloadCache[assetId] = false
+			return nil
+		end
+
+		-- Locate owning Tool / HopperBin / Accessory / Model & collect seed TextureId / MeshId / AssetId numbers
+		local function findAssetContainerAndSeeds(targetInst)
+			local orig = dexSession.snapshotOrigin[targetInst] or targetInst
+			if typeof(orig) ~= "Instance" then return nil, {} end
+
+			local plrsSvc = service.Players
+			local charSet = {}
+			pcall(function()
+				for _, p in ipairs(plrsSvc:GetPlayers()) do
+					if p.Character then charSet[p.Character] = true end
+				end
+			end)
+
+			local toolContainer = nil
+			local modelContainer = nil
+			local cur = orig
+			while cur and cur ~= game do
+				if (cur:IsA("Tool") or cur:IsA("HopperBin")) and not toolContainer then
+					toolContainer = cur
+				elseif (cur:IsA("Accessory") or cur:IsA("Accoutrement") or (cur:IsA("Model") and not charSet[cur])) and not modelContainer then
+					modelContainer = cur
+				end
+				if cur.Parent == game or cur:IsA("Backpack") or cur:IsA("StarterGear") or cur == service.Workspace or cur == service.ReplicatedStorage or cur == service.StarterPack then
+					break
+				end
+				cur = cur.Parent
+			end
+
+			local container = toolContainer or modelContainer or ((orig:IsA("Tool") or orig:IsA("Model")) and orig) or orig.Parent
+			if not container or container == game then return nil, {} end
+
+			local seeds = {}
+			local seenSeed = {}
+			local function addSeed(rawVal, kind, directAsset)
+				local num = extractNumericAssetId(rawVal)
+				if num and num > 100 and not seenSeed[num] then
+					seenSeed[num] = true
+					seeds[#seeds + 1] = {id = num, kind = kind, direct = directAsset == true}
+				end
+			end
+
+			pcall(function()
+				for _, attrKey in ipairs({"AssetId", "GearId", "ModelId", "ItemId", "ID"}) do
+					addSeed(container:GetAttribute(attrKey), attrKey, true)
+				end
+				for _, ch in ipairs(container:GetChildren()) do
+					if (ch:IsA("IntValue") or ch:IsA("NumberValue") or ch:IsA("StringValue")) and ch.Name:lower():find("id", 1, true) then
+						addSeed(ch.Value, ch.Name, true)
+					end
+				end
+			end)
+
+			pcall(function()
+				if container:IsA("Tool") or container:IsA("HopperBin") then
+					addSeed(container.TextureId, "TextureId", false)
+				end
+			end)
+
+			pcall(function()
+				local list = container:GetDescendants()
+				for i = 1, #list do
+					if #seeds >= 5 then break end
+					local d = list[i]
+					if d:IsA("SpecialMesh") or d:IsA("FileMesh") then
+						addSeed(d.TextureId, "MeshTextureId", false)
+						addSeed(d.MeshId, "MeshId", false)
+					elseif d:IsA("MeshPart") then
+						addSeed(d.TextureID, "MeshPartTextureID", false)
+						addSeed(d.MeshId, "MeshPartMeshId", false)
+					elseif d:IsA("Decal") or d:IsA("Texture") then
+						addSeed(d.Texture, d.ClassName, false)
+					elseif d:IsA("Sound") then
+						addSeed(d.SoundId, "SoundId", false)
+					end
+				end
+			end)
+
+			return container, seeds
+		end
+
+		-- Scan MarketplaceService:GetProductInfo from TextureId/seed IDs to locate Gear (19) or Model (10), then parse scripts
+		env.resolveContainerAssetData = function(targetInst, onStatus)
+			local container, seeds = findAssetContainerAndSeeds(targetInst)
+			if not container then
+				return nil, "No owning Tool or Model container found."
+			end
+
+			if dexSession.assetContainerCache[container] ~= nil then
+				local cached = dexSession.assetContainerCache[container]
+				if cached == false then
+					return nil, "No public Gear/Model asset matched near " .. container.Name .. "'s TextureId/AssetIds."
+				end
+				return cached
+			end
+
+			if #seeds == 0 then
+				dexSession.assetContainerCache[container] = false
+				return nil, container.Name .. " has no TextureId or MeshId/AssetId to scan from."
+			end
+
+			local mps = game:GetService("MarketplaceService")
+			local containerNameLower = tostring(container.Name):lower()
+
+			local function tryCandidateAsset(candId, info)
+				if onStatus then
+					pcall(onStatus, string.format("Fetching Asset ID %d (%s) from assetdelivery.roblox.com...", candId, tostring(info and info.Name or "?")))
+				end
+				local parsed = env.fetchAndParseRobloxAsset(candId)
+				if parsed and (#parsed.scripts > 0 or #parsed.treeLines > 0) then
+					parsed.assetId = candId
+					parsed.catalogName = (info and info.Name) or parsed.rootName or container.Name
+					parsed.assetTypeId = info and info.AssetTypeId or 19
+					parsed.assetTypeName = ASSET_TYPE_NAMES[parsed.assetTypeId] or ("Type " .. tostring(parsed.assetTypeId))
+					return parsed
+				end
+				return nil
+			end
+
+			local resolved = nil
+			for sIdx = 1, #seeds do
+				if resolved then break end
+				local seed = seeds[sIdx]
+				local baseId = seed.id
+
+				if seed.direct then
+					local okD, dInfo = pcall(mps.GetProductInfo, mps, baseId, Enum.InfoType.Asset)
+					if okD and dInfo and (dInfo.AssetTypeId == 19 or dInfo.AssetTypeId == 10 or ASSET_TYPE_NAMES[dInfo.AssetTypeId]) then
+						local hit = tryCandidateAsset(baseId, dInfo)
+						if hit and #hit.scripts > 0 then
+							resolved = hit
+							break
+						end
+					end
+				end
+
+				if onStatus then
+					pcall(onStatus, string.format("Scanning %s (%d) for %s Gear/Object ID...", seed.kind, baseId, container.Name))
+				end
+
+				local maxForward = 100
+				local batchSize = 10
+				local gearHits = {}
+				local modelHits = {}
+
+				for offset = 1, maxForward, batchSize do
+					if #gearHits > 0 then break end
+					local activeTasks = 0
+					for i = offset, math.min(offset + batchSize - 1, maxForward) do
+						activeTasks = activeTasks + 1
+						task.spawn(function()
+							local testId = baseId + i
+							local okInfo, info = pcall(mps.GetProductInfo, mps, testId, Enum.InfoType.Asset)
+							if okInfo and type(info) == "table" then
+								if info.AssetTypeId == 19 then
+									gearHits[#gearHits + 1] = {id = testId, dist = i, info = info}
+								elseif info.AssetTypeId == 10 or ASSET_TYPE_NAMES[info.AssetTypeId] then
+									local iName = tostring(info.Name or ""):lower()
+									if iName == containerNameLower or iName:find(containerNameLower, 1, true) or containerNameLower:find(iName, 1, true) then
+										modelHits[#modelHits + 1] = {id = testId, dist = i, info = info}
+									end
+								end
+							end
+							activeTasks = activeTasks - 1
+						end)
+					end
+					local waitDeadline = os.clock() + 8
+					while activeTasks > 0 and #gearHits == 0 and os.clock() < waitDeadline do
+						task.wait()
+					end
+				end
+
+				if #gearHits == 0 and #modelHits == 0 and sIdx == 1 then
+					local activeTasks = 0
+					for i = 1, 20 do
+						activeTasks = activeTasks + 1
+						task.spawn(function()
+							local testId = baseId - i
+							if testId > 0 then
+								local okInfo, info = pcall(mps.GetProductInfo, mps, testId, Enum.InfoType.Asset)
+								if okInfo and type(info) == "table" then
+									if info.AssetTypeId == 19 then
+										gearHits[#gearHits + 1] = {id = testId, dist = i, info = info}
+									elseif info.AssetTypeId == 10 and tostring(info.Name or ""):lower() == containerNameLower then
+										modelHits[#modelHits + 1] = {id = testId, dist = i, info = info}
+									end
+								end
+							end
+							activeTasks = activeTasks - 1
+						end)
+					end
+					local waitDeadline = os.clock() + 6
+					while activeTasks > 0 and #gearHits == 0 and os.clock() < waitDeadline do
+						task.wait()
+					end
+				end
+
+				table.sort(gearHits, function(a, b)
+					local aExact = tostring(a.info.Name or ""):lower() == containerNameLower
+					local bExact = tostring(b.info.Name or ""):lower() == containerNameLower
+					if aExact ~= bExact then return aExact end
+					return a.dist < b.dist
+				end)
+				table.sort(modelHits, function(a, b) return a.dist < b.dist end)
+
+				for _, hit in ipairs(gearHits) do
+					local parsed = tryCandidateAsset(hit.id, hit.info)
+					if parsed and #parsed.scripts > 0 then
+						resolved = parsed
+						break
+					elseif parsed and not resolved then
+						resolved = parsed
+					end
+				end
+				if not resolved or #resolved.scripts == 0 then
+					for _, hit in ipairs(modelHits) do
+						local parsed = tryCandidateAsset(hit.id, hit.info)
+						if parsed and #parsed.scripts > 0 then
+							resolved = parsed
+							break
+						end
+					end
+				end
+			end
+
+			if not resolved then
+				dexSession.assetContainerCache[container] = false
+				return nil, string.format("Could not find public Gear/Model ID near %s's TextureId (%d).", container.Name, seeds[1].id)
+			end
+
+			dexSession.assetContainerCache[container] = resolved
+
+			local function relPathWithinContainer(inst)
+				local parts = {}
+				local c = inst
+				while c and c ~= container and c ~= game do
+					table.insert(parts, 1, c.Name)
+					c = c.Parent
+				end
+				return table.concat(parts, "/")
+			end
+
+			local function matchParsedScriptForInstance(scrInst)
+				local myRel = relPathWithinContainer(scrInst)
+				local myNameLower = scrInst.Name:lower()
+				for _, entry in ipairs(resolved.scripts) do
+					if entry.relPath == myRel and entry.className == scrInst.ClassName then
+						return entry
+					end
+				end
+				for _, entry in ipairs(resolved.scripts) do
+					if entry.name == scrInst.Name and entry.className == scrInst.ClassName then
+						return entry
+					end
+				end
+				for _, entry in ipairs(resolved.scripts) do
+					if entry.name:lower() == myNameLower then
+						return entry
+					end
+				end
+				local sameClass = {}
+				for _, entry in ipairs(resolved.scripts) do
+					if entry.className == scrInst.ClassName then
+						sameClass[#sameClass + 1] = entry
+					end
+				end
+				if #sameClass == 1 then
+					return sameClass[1]
+				elseif #sameClass > 1 then
+					local chunks = {}
+					for idx, e in ipairs(sameClass) do
+						chunks[#chunks + 1] = string.format("-- [[ Asset %s #%d: %s ]]\n%s", e.className, idx, e.relPath, e.source)
+					end
+					return {className = scrInst.ClassName, name = scrInst.Name, relPath = myRel, source = table.concat(chunks, "\n\n")}
+				end
+				return nil
+			end
+
+			pcall(function()
+				for _, desc in ipairs(container:GetDescendants()) do
+					if desc:IsA("LuaSourceContainer") then
+						local matched = matchParsedScriptForInstance(desc)
+						if matched and type(matched.source) == "string" and #matched.source > 0 then
+							if not dexSession.scriptSource[desc] then
+								dexSession.scriptSource[desc] = matched.source
+							end
+							dexSession.recoveredMeta[desc] = {
+								assetId = resolved.assetId,
+								catalogName = resolved.catalogName,
+								assetTypeName = resolved.assetTypeName,
+								matchedPath = matched.relPath,
+								treeLines = resolved.treeLines
+							}
+						end
+					end
+				end
+			end)
+
+			resolved.matchForScript = matchParsedScriptForInstance
+			return resolved
+		end
+
+		env.recoverScriptFromAsset = function(scr, onStatus)
+			if typeof(scr) ~= "Instance" or not scr:IsA("LuaSourceContainer") then
+				return nil, "Target is not a script."
+			end
+			local orig = dexSession.snapshotOrigin[scr] or scr
+			if dexSession.scriptSource[scr] or dexSession.scriptSource[orig] then
+				local hit = dexSession.scriptSource[scr] or dexSession.scriptSource[orig]
+				dexSession.scriptSource[scr] = hit
+				dexSession.scriptSource[orig] = hit
+				return hit, dexSession.recoveredMeta[orig] or dexSession.recoveredMeta[scr]
+			end
+
+			local resolved, errMsg = env.resolveContainerAssetData(orig, onStatus)
+			if not resolved then
+				return nil, errMsg
+			end
+
+			local hit = dexSession.scriptSource[orig] or dexSession.scriptSource[scr]
+			if not hit and resolved.matchForScript then
+				local matched = resolved.matchForScript(orig)
+				if matched and type(matched.source) == "string" and #matched.source > 0 then
+					hit = matched.source
+					dexSession.scriptSource[orig] = hit
+					dexSession.scriptSource[scr] = hit
+					dexSession.recoveredMeta[orig] = {
+						assetId = resolved.assetId,
+						catalogName = resolved.catalogName,
+						assetTypeName = resolved.assetTypeName,
+						matchedPath = matched.relPath,
+						treeLines = resolved.treeLines
+					}
+				end
+			end
+
+			if hit then
+				dexSession.scriptSource[scr] = hit
+				dexSession.recoveredMeta[scr] = dexSession.recoveredMeta[orig]
+				pcall(function() scr.Source = hit end)
+				return hit, dexSession.recoveredMeta[orig]
+			end
+			return nil, string.format("Asset %d (%s) was parsed, but contained no readable source for %s.", resolved.assetId, tostring(resolved.catalogName), orig.Name)
+		end
+
+		env.recoverContainerServerScripts = function(targetInst)
+			if typeof(targetInst) ~= "Instance" then return end
+			local orig = dexSession.snapshotOrigin[targetInst] or targetInst
+			local container, seeds = findAssetContainerAndSeeds(orig)
+			if not container or #seeds == 0 or dexSession.assetContainerCache[container] ~= nil then
+				return
+			end
+			local hasServerScript = false
+			pcall(function()
+				for _, d in ipairs(container:GetDescendants()) do
+					if d:IsA("LuaSourceContainer") and not env.isViableDecompileScript(d) and not dexSession.scriptSource[d] then
+						hasServerScript = true
+						break
+					end
+				end
+			end)
+			if hasServerScript then
+				env.resolveContainerAssetData(container)
+			end
+		end
+
+		-- Link cloned hierarchy back to original instances & snapshot exact t=0 world transforms + script bytecodes
+		local function linkCloneHierarchy(origRoot, cloneRoot, neutralizeClientRunContext)
+			dexSession.snapshotOrigin[cloneRoot] = origRoot
+			pcall(function() cloneRoot.Archivable = true end)
+			pcall(function()
+				if origRoot:IsA("BasePart") and not origRoot:IsA("Terrain") then
+					local cf, sz = origRoot.CFrame, origRoot.Size
+					dexSession.frozenCFrame[cloneRoot] = cf
+					dexSession.frozenSize[cloneRoot] = sz
+					cloneRoot.CFrame = cf
+				elseif origRoot:IsA("Camera") then
+					dexSession.frozenCFrame[cloneRoot] = origRoot.CFrame
+				end
+			end)
+			local okScript, isViable = pcall(env.isViableDecompileScript, origRoot)
+			if okScript and isViable then
+				getScriptBytecodeSafe(origRoot)
+				if dexSession.frozenBytecode[origRoot] then
+					dexSession.frozenBytecode[cloneRoot] = dexSession.frozenBytecode[origRoot]
+				end
+			end
+			if origRoot:IsA("LuaSourceContainer") and dexSession.scriptSource[origRoot] then
+				dexSession.scriptSource[cloneRoot] = dexSession.scriptSource[origRoot]
+				dexSession.recoveredMeta[cloneRoot] = dexSession.recoveredMeta[origRoot]
+				pcall(function() cloneRoot.Source = dexSession.scriptSource[origRoot] end)
+			end
+			if neutralizeClientRunContext then
+				pcall(function()
+					if cloneRoot:IsA("BaseScript") and cloneRoot.RunContext == Enum.RunContext.Client then
+						cloneRoot.Disabled = true
+					end
+				end)
+			end
+			local okO, origChildren = pcall(origRoot.GetChildren, origRoot)
+			local okC, cloneChildren = pcall(cloneRoot.GetChildren, cloneRoot)
+			if okO and okC and #origChildren == #cloneChildren then
+				for i = 1, #origChildren do
+					linkCloneHierarchy(origChildren[i], cloneChildren[i], neutralizeClientRunContext)
+				end
+			elseif okO and okC then
+				local used = {}
+				for i = 1, #cloneChildren do
+					local cChild = cloneChildren[i]
+					for j = 1, #origChildren do
+						local oChild = origChildren[j]
+						if not used[j] and oChild.Name == cChild.Name and oChild.ClassName == cChild.ClassName then
+							used[j] = true
+							linkCloneHierarchy(oChild, cChild, neutralizeClientRunContext)
+							break
+						end
+					end
+				end
+			end
+		end
+		env.linkCloneHierarchy = linkCloneHierarchy
+
+		-- Clone any Instance or Service synchronously while bypassing .Archivable == false on it and all descendants
+		env.forceCloneBypassArchivable = function(targetObj, forLiveDataModelParent)
+			if typeof(targetObj) ~= "Instance" then return nil end
+			local flipped = {}
+			local function ensureArchivable(inst)
+				local ok, arch = pcall(function() return inst.Archivable end)
+				if ok and arch == false then
+					local okSet = pcall(function() inst.Archivable = true end)
+					if okSet then
+						flipped[#flipped + 1] = inst
+					end
+				end
+			end
+
+			if targetObj ~= game then
+				ensureArchivable(targetObj)
+			end
+			local okDesc, descendants = pcall(targetObj.GetDescendants, targetObj)
+			if okDesc and descendants then
+				for i = 1, #descendants do
+					ensureArchivable(descendants[i])
+				end
+			end
+
+			local okClone, cloned = false, nil
+			if targetObj ~= game then
+				okClone, cloned = pcall(targetObj.Clone, targetObj)
+			end
+
+			for i = 1, #flipped do
+				pcall(function() flipped[i].Archivable = false end)
+			end
+
+			if okClone and cloned then
+				linkCloneHierarchy(targetObj, cloned, forLiveDataModelParent)
+				return cloned
+			end
+
+			-- Fallback for DataModel / non-cloneable Service roots (Workspace, ReplicatedStorage, etc.)
+			local container = Instance.new("Folder")
+			container.Archivable = true
+			container.Name = targetObj == game and ("GameSnapshot_" .. tostring(os.time())) or targetObj.Name
+			dexSession.snapshotOrigin[container] = targetObj
+			local okChildren, children = pcall(targetObj.GetChildren, targetObj)
+			if okChildren and children then
+				for i = 1, #children do
+					local child = children[i]
+					if child.Name ~= "SaveObjectInstance" and not child:IsA("Terrain") and not (Main.MainGui and (child == Main.MainGui or child:IsDescendantOf(Main.MainGui))) then
+						local childClone = env.forceCloneBypassArchivable(child, forLiveDataModelParent)
+						if childClone then
+							childClone.Parent = container
+						end
+					end
+				end
+			end
+			return container
+		end
+
+		-- OPS (Objects Per Second) & All-At-Once Decompile Batch Engine
+		env.runDecompileBatch = function(scriptList, opts)
+			opts = opts or {}
+			if not env.decompile or type(scriptList) ~= "table" or #scriptList == 0 then
+				return {total = 0, completed = function() return 0 end, active = function() return 0 end, waitPending = function() end}
+			end
+
+			local useOPS = opts.useOPS
+			if useOPS == nil then
+				useOPS = (not Settings.Decompiler) or (Settings.Decompiler.UseOPS ~= false)
+			end
+			local opsRate = math.max(0.1, tonumber(opts.ops) or (Settings.Decompiler and tonumber(Settings.Decompiler.OPS)) or 25)
+			local onProgress = opts.onProgress
+			local cancelCheck = opts.shouldCancel
+
+			local queue = {}
+			local seen = {}
+			for i = 1, #scriptList do
+				local scr = scriptList[i]
+				if typeof(scr) == "Instance" then
+					local orig = dexSession.snapshotOrigin[scr] or scr
+					if not seen[orig] then
+						seen[orig] = true
+						local okV, viable = pcall(env.isViableDecompileScript, orig)
+						if not okV or not viable then
+							okV, viable = pcall(env.isViableDecompileScript, scr)
+						end
+						if okV and viable and not env.isScriptCached(scr) then
+							queue[#queue + 1] = scr
+						end
+					end
+				end
+			end
+
+			local total = #queue
+			if total == 0 then
+				if onProgress then pcall(onProgress, 0, 0, 0) end
+				return {total = 0, completed = function() return 0 end, active = function() return 0 end, waitPending = function() end}
+			end
+
+			local activeCount = 0
+			local completedCount = 0
+			local prevThrottle = env.bypassDecompileThrottle
+
+			local function launchOne(scr, idx)
+				local orig = dexSession.snapshotOrigin[scr] or scr
+				if env.isScriptCached(scr) then
+					completedCount = completedCount + 1
+					if onProgress then pcall(onProgress, idx, total, completedCount) end
+					return
+				end
+				if dexSession.inFlight[orig] then
+					return
+				end
+				dexSession.inFlight[orig] = true
+				activeCount = activeCount + 1
+				task.spawn(function()
+					pcall(env.decompile, scr)
+					dexSession.inFlight[orig] = nil
+					activeCount = activeCount - 1
+					completedCount = completedCount + 1
+					if onProgress then pcall(onProgress, idx, total, completedCount) end
+				end)
+			end
+
+			if not useOPS then
+				-- OPS OFF: Disable all decompile speed throttles and fire every script simultaneously all at once
+				env.bypassDecompileThrottle = true
+				for i = 1, total do
+					if cancelCheck and cancelCheck() then break end
+					launchOne(queue[i], i)
+				end
+			else
+				-- OPS ON: Launch 1 object at a time at OPS rate without waiting for prior decompile to finish
+				local interval = 1 / opsRate
+				local startClock = os.clock()
+				for i = 1, total do
+					if cancelCheck and cancelCheck() then break end
+					launchOne(queue[i], i)
+					if onProgress then pcall(onProgress, i, total, completedCount) end
+					if i < total then
+						local targetClock = startClock + (i * interval)
+						local waitSec = targetClock - os.clock()
+						if waitSec > 0 then
+							task.wait(waitSec)
+						end
+					end
+				end
+			end
+
+			local function waitPending(maxWaitSec)
+				local limit = tonumber(maxWaitSec) or (useOPS and 10 or 45)
+				local deadline = os.clock() + math.max(0.5, limit)
+				while activeCount > 0 and os.clock() < deadline do
+					if cancelCheck and cancelCheck() then break end
+					task.wait(0.05)
+				end
+				if not useOPS then
+					env.bypassDecompileThrottle = prevThrottle
+				end
+			end
+
+			return {
+				total = total,
+				completed = function() return completedCount end,
+				active = function() return activeCount end,
+				waitPending = waitPending
+			}
+		end
+
+		-- Background Pre-Decompile Controller (toggled from top-center Dex++ menu)
+		env.setPreDecompileEnabled = function(enabled, statusCallback)
+			enabled = enabled == true
+			dexSession.preDecompileActive = enabled
+			dexSession.preDecompileToken = dexSession.preDecompileToken + 1
+			local myToken = dexSession.preDecompileToken
+
+			if dexSession.preDecompileConn then
+				pcall(function() dexSession.preDecompileConn:Disconnect() end)
+				dexSession.preDecompileConn = nil
+			end
+
+			if not enabled then
+				if statusCallback then pcall(statusCallback, "Pre Decompile") end
+				return
+			end
+
+			if not env.decompile then
+				if statusCallback then pcall(statusCallback, "Pre Decompile (No Decompiler)") end
+				return
+			end
+
+			local function isIgnoredSystemInst(inst)
+				if Main.MainGui and inst:IsDescendantOf(Main.MainGui) then return true end
+				local okCore, inCore = pcall(function()
+					return inst:IsDescendantOf(service.CoreGui) or inst:IsDescendantOf(game:GetService("CorePackages"))
+				end)
+				return okCore and inCore or false
+			end
+
+			dexSession.preDecompileConn = game.DescendantAdded:Connect(function(desc)
+				if not dexSession.preDecompileActive or dexSession.preDecompileToken ~= myToken then return end
+				local okV, viable = pcall(env.isViableDecompileScript, desc)
+				if okV and viable and not isIgnoredSystemInst(desc) and not env.isScriptCached(desc) then
+					task.defer(function()
+						if dexSession.preDecompileActive and not env.isScriptCached(desc) then
+							pcall(env.decompile, desc)
+						end
+					end)
+				end
+			end)
+
+			task.spawn(function()
+				local candidates = {}
+				local seen = {}
+				local function consider(inst)
+					if typeof(inst) ~= "Instance" or seen[inst] then return end
+					seen[inst] = true
+					if isIgnoredSystemInst(inst) then return end
+					local okV, viable = pcall(env.isViableDecompileScript, inst)
+					if okV and viable then
+						getScriptBytecodeSafe(inst)
+						if not env.isScriptCached(inst) then
+							candidates[#candidates + 1] = inst
+						end
+					elseif inst:IsA("Tool") or inst:IsA("HopperBin") then
+						task.spawn(function()
+							if dexSession.preDecompileActive and dexSession.preDecompileToken == myToken and env.recoverContainerServerScripts then
+								env.recoverContainerServerScripts(inst)
+							end
+						end)
+					end
+				end
+
+				local okDesc, allDesc = pcall(game.GetDescendants, game)
+				if okDesc and allDesc then
+					for i = 1, #allDesc do
+						consider(allDesc[i])
+					end
+				end
+				if env.getloadedmodules then
+					local okMod, mods = pcall(env.getloadedmodules)
+					if okMod and type(mods) == "table" then
+						for i = 1, #mods do consider(mods[i]) end
+					end
+				end
+				if env.getnilinstances then
+					local okNil, nils = pcall(env.getnilinstances)
+					if okNil and type(nils) == "table" then
+						for i = 1, #nils do consider(nils[i]) end
+					end
+				end
+
+				if #candidates == 0 then
+					if statusCallback and dexSession.preDecompileToken == myToken and dexSession.preDecompileActive then
+						pcall(statusCallback, "Pre Decompile (Cached)")
+					end
+					return
+				end
+
+				local useOPS = (not Settings.Decompiler) or (Settings.Decompiler.UseOPS ~= false)
+				local opsVal = (Settings.Decompiler and tonumber(Settings.Decompiler.OPS)) or 25
+				local job = env.runDecompileBatch(candidates, {
+					useOPS = useOPS,
+					ops = opsVal,
+					shouldCancel = function()
+						return (not dexSession.preDecompileActive) or (dexSession.preDecompileToken ~= myToken)
+					end,
+					onProgress = function(_, total, done)
+						if statusCallback and dexSession.preDecompileToken == myToken and dexSession.preDecompileActive then
+							if done >= total then
+								pcall(statusCallback, "Pre Decompile (Cached)")
+							else
+								pcall(statusCallback, ("Pre Decompile (%d/%d)"):format(done, total))
+							end
+						end
+					end
+				})
+				job.waitPending(useOPS and 20 or 60)
+				if statusCallback and dexSession.preDecompileToken == myToken and dexSession.preDecompileActive then
+					pcall(statusCallback, "Pre Decompile (Cached)")
+				end
+			end)
+		end
+
+		-- Synchronous t=0 Full-Game SOI Snapshot Engine (freezes Workspace & Services + bypasses .Archivable)
+		env.captureGameSOISnapshot = function(saveArgs)
+			saveArgs = saveArgs or {}
+			local serviceNames = {
+				"Workspace", "ReplicatedStorage", "ReplicatedFirst", "Lighting",
+				"StarterGui", "StarterPack", "StarterPlayer", "Teams",
+				"SoundService", "TextChatService", "Chat", "MaterialService",
+				"LocalizationService", "Players"
+			}
+
+			local ignoreDecompileNames = {}
+			if type(saveArgs.DecompileIgnore) == "table" then
+				for i = 1, #saveArgs.DecompileIgnore do
+					local entry = saveArgs.DecompileIgnore[i]
+					if type(entry) == "string" then
+						local trimmed = entry:match("^%s*(.-)%s*$")
+						if trimmed and #trimmed > 0 then
+							ignoreDecompileNames[trimmed] = true
+						end
+					end
+				end
+			end
+
+			local playerCharSet = {}
+			local okPlrs, plrsList = pcall(function() return game:GetService("Players"):GetPlayers() end)
+			if okPlrs and plrsList then
+				for i = 1, #plrsList do
+					local ch = plrsList[i].Character
+					if ch then playerCharSet[ch] = true end
+				end
+			end
+
+			local function isDecompileIgnored(inst)
+				local cur = inst
+				while cur and cur ~= game do
+					if ignoreDecompileNames[cur.Name] or ignoreDecompileNames[cur.ClassName] then
+						return true
+					end
+					cur = cur.Parent
+				end
+				return false
+			end
+
+			local soiRoot = Instance.new("Folder")
+			soiRoot.Name = "SOI_FrozenGameSnapshot"
+
+			local trackedServices = {}
+			local serviceSet = {}
+			local snapshotSet = {}
+			local origParent = {}
+			local origArchivable = {}
+			local liveToClone = {}
+			local partCFrames = {}
+			local partSizes = {}
+			local jointC0 = {}
+			local jointC1 = {}
+			local motorTransforms = {}
+			local snapshotScripts = {}
+			local orderedRecords = {}
+
+			local function mapLiveAndClone(liveInst, cloneInst)
+				if cloneInst then
+					liveToClone[liveInst] = cloneInst
+					local okO, oCh = pcall(liveInst.GetChildren, liveInst)
+					local okC, cCh = pcall(cloneInst.GetChildren, cloneInst)
+					if okO and okC and #oCh == #cCh then
+						for i = 1, #oCh do
+							mapLiveAndClone(oCh[i], cCh[i])
+						end
+					end
+				end
+			end
+
+			local function recordLiveTree(inst)
+				snapshotSet[inst] = true
+				origParent[inst] = inst.Parent
+				local okA, arch = pcall(function() return inst.Archivable end)
+				if okA then origArchivable[inst] = arch end
+				orderedRecords[#orderedRecords + 1] = inst
+
+				if inst:IsA("BasePart") and not inst:IsA("Terrain") then
+					pcall(function()
+						partCFrames[inst] = inst.CFrame
+						partSizes[inst] = inst.Size
+					end)
+				elseif inst:IsA("Camera") then
+					pcall(function()
+						partCFrames[inst] = inst.CFrame
+					end)
+				elseif inst:IsA("JointInstance") then
+					pcall(function()
+						jointC0[inst] = inst.C0
+						jointC1[inst] = inst.C1
+						if inst:IsA("Motor6D") then
+							motorTransforms[inst] = inst.Transform
+						end
+					end)
+				end
+
+				local okV, viable = pcall(env.isViableDecompileScript, inst)
+				if okV and viable and not isDecompileIgnored(inst) then
+					getScriptBytecodeSafe(inst)
+					snapshotScripts[#snapshotScripts + 1] = liveToClone[inst] or inst
+				elseif (inst:IsA("Tool") or inst:IsA("HopperBin")) and not isDecompileIgnored(inst) and env.recoverContainerServerScripts then
+					task.spawn(env.recoverContainerServerScripts, inst)
+				end
+
+				local okCh, children = pcall(inst.GetChildren, inst)
+				if okCh and children then
+					for i = 1, #children do
+						recordLiveTree(children[i])
+					end
+				end
+			end
+
+			for sIdx = 1, #serviceNames do
+				local okSvc, svc = pcall(game.GetService, game, serviceNames[sIdx])
+				if okSvc and svc then
+					trackedServices[#trackedServices + 1] = svc
+					serviceSet[svc] = true
+					snapshotSet[svc] = true
+					local svcFolder = Instance.new("Folder")
+					svcFolder.Name = svc.Name
+					svcFolder.Parent = soiRoot
+
+					local okCh, children = pcall(svc.GetChildren, svc)
+					if okCh and children then
+						for i = 1, #children do
+							local child = children[i]
+							local skip = (child.Name == "SaveObjectInstance")
+								or (Main.MainGui and (child == Main.MainGui or child:IsDescendantOf(Main.MainGui)))
+								or (saveArgs.RemovePlayerCharacters and playerCharSet[child])
+							if not skip then
+								if not child:IsA("Terrain") and not child:IsA("Player") then
+									local cloned = env.forceCloneBypassArchivable(child, false)
+									if cloned then
+										cloned.Parent = svcFolder
+										mapLiveAndClone(child, cloned)
+									end
+								elseif child:IsA("Player") and (child == plr or saveArgs.SavePlayers) then
+									local plrFolder = env.forceCloneBypassArchivable(child, false)
+									if plrFolder then
+										plrFolder.Parent = svcFolder
+										mapLiveAndClone(child, plrFolder)
+									end
+								end
+								recordLiveTree(child)
+							end
+						end
+					end
+				end
+			end
+
+			if saveArgs.NilInstances and env.getnilinstances then
+				local okNil, nils = pcall(env.getnilinstances)
+				if okNil and type(nils) == "table" then
+					for i = 1, #nils do
+						local ni = nils[i]
+						if typeof(ni) == "Instance" and ni ~= soiRoot and not ni:IsDescendantOf(soiRoot) then
+							local okV, viable = pcall(env.isViableDecompileScript, ni)
+						if okV and viable then
+								getScriptBytecodeSafe(ni)
+								snapshotScripts[#snapshotScripts + 1] = ni
+							end
+						end
+					end
+				end
+			end
+
+			local mounted = false
+			local pinConns = {}
+			local tempMountedClones = {}
+			local postSpawnArchivable = {}
+			local postSpawnIgnore = {}
+			local liveBeforeMountCF = {}
+			local liveBeforeMountTransform = {}
+			local liveSOIFolder = nil
+
+			local function applyFrozenTransforms()
+				for joint, c0 in pairs(jointC0) do
+					if joint.Parent then
+						pcall(function()
+							joint.C0 = c0
+							if jointC1[joint] then joint.C1 = jointC1[joint] end
+							if motorTransforms[joint] then joint.Transform = motorTransforms[joint] end
+						end)
+					end
+				end
+				for part, cf in pairs(partCFrames) do
+					if part.Parent then
+						pcall(function()
+							part.CFrame = cf
+							if partSizes[part] and part:IsA("BasePart") then
+								part.Size = partSizes[part]
+								part.AssemblyLinearVelocity = Vector3.zero
+								part.AssemblyAngularVelocity = Vector3.zero
+							end
+						end)
+					end
+				end
+			end
+
+			local function mountFrozenState()
+				if mounted then return postSpawnIgnore end
+				mounted = true
+
+				-- Hide user SaveObjectInstance folder from whole-game serialization so SOI isn't duplicated
+				liveSOIFolder = game:FindFirstChild("SaveObjectInstance")
+				if liveSOIFolder then
+					pcall(function() liveSOIFolder.Parent = nil end)
+				end
+
+				-- Hide any instances spawned AFTER Save was clicked
+				for sIdx = 1, #trackedServices do
+					local svc = trackedServices[sIdx]
+					local okD, curDesc = pcall(svc.GetDescendants, svc)
+					if okD and curDesc then
+						for i = 1, #curDesc do
+							local inst = curDesc[i]
+							if not snapshotSet[inst] and (not Main.MainGui or not inst:IsDescendantOf(Main.MainGui)) then
+								local okA, curA = pcall(function() return inst.Archivable end)
+								if okA then postSpawnArchivable[inst] = curA end
+								pcall(function() inst.Archivable = false end)
+								if snapshotSet[inst.Parent] then
+									postSpawnIgnore[#postSpawnIgnore + 1] = inst
+								end
+							end
+						end
+					end
+				end
+
+				-- Force .Archivable = true on all t=0 instances & remount SOI clones for any t=0 objects destroyed/moved mid-decompile
+				local replacementSubtree = {}
+				for i = 1, #orderedRecords do
+					local inst = orderedRecords[i]
+					local expectedParent = origParent[inst]
+					if replacementSubtree[expectedParent] then
+						-- Ancestor subtree was already remounted as a complete SOI clone containing this descendant
+						replacementSubtree[inst] = true
+						if inst.Parent ~= nil and inst.Parent ~= expectedParent and postSpawnArchivable[inst] == nil then
+							pcall(function() inst.Archivable = false end)
+							postSpawnIgnore[#postSpawnIgnore + 1] = inst
+						end
+					elseif inst.Parent == expectedParent then
+						pcall(function() inst.Archivable = true end)
+					else
+						-- Original instance was destroyed or reparented elsewhere since t=0: hide displaced original & mount frozen SOI clone at t=0 parent
+						if inst.Parent ~= nil and postSpawnArchivable[inst] == nil then
+							pcall(function() inst.Archivable = false end)
+							postSpawnIgnore[#postSpawnIgnore + 1] = inst
+						end
+						local parentMounted = expectedParent and (serviceSet[expectedParent] or expectedParent.Parent ~= nil)
+						if parentMounted then
+							local preservedClone = liveToClone[inst]
+							if preservedClone then
+								local okMount, mountedClone = pcall(preservedClone.Clone, preservedClone)
+								if okMount and mountedClone then
+									linkCloneHierarchy(inst, mountedClone, true)
+									pcall(function()
+										mountedClone.Archivable = true
+										mountedClone.Parent = expectedParent
+									end)
+									replacementSubtree[inst] = true
+									tempMountedClones[#tempMountedClones + 1] = mountedClone
+								end
+							end
+						end
+					end
+				end
+
+				-- Record current live CFrames so gameplay resumes seamlessly after serialization, then lock t=0 transforms
+				for part in pairs(partCFrames) do
+					if part.Parent then
+						pcall(function() liveBeforeMountCF[part] = part.CFrame end)
+					end
+				end
+				for joint in pairs(motorTransforms) do
+					if joint.Parent then
+						pcall(function() liveBeforeMountTransform[joint] = joint.Transform end)
+					end
+				end
+
+				applyFrozenTransforms()
+				local runSvc = game:GetService("RunService")
+				pinConns[#pinConns + 1] = runSvc.Stepped:Connect(applyFrozenTransforms)
+				pinConns[#pinConns + 1] = runSvc.Heartbeat:Connect(applyFrozenTransforms)
+				pcall(function()
+					pinConns[#pinConns + 1] = runSvc.RenderStepped:Connect(applyFrozenTransforms)
+				end)
+
+				return postSpawnIgnore
+			end
+
+			local cleaned = false
+			local function restoreAndCleanup()
+				if cleaned then return end
+				cleaned = true
+
+				for i = 1, #pinConns do
+					pcall(function() pinConns[i]:Disconnect() end)
+				end
+				for i = 1, #tempMountedClones do
+					pcall(function() tempMountedClones[i]:Destroy() end)
+				end
+				for joint, tr in pairs(liveBeforeMountTransform) do
+					if joint.Parent then
+						pcall(function() joint.Transform = tr end)
+					end
+				end
+				for part, cf in pairs(liveBeforeMountCF) do
+					if part.Parent then
+						pcall(function() part.CFrame = cf end)
+					end
+				end
+				for inst, origA in pairs(origArchivable) do
+					pcall(function() inst.Archivable = origA end)
+				end
+				for inst, postA in pairs(postSpawnArchivable) do
+					pcall(function() inst.Archivable = postA end)
+				end
+				if liveSOIFolder then
+					pcall(function() liveSOIFolder.Parent = game end)
+				end
+				pcall(function() soiRoot:Destroy() end)
+			end
+
+			return {
+				soiRoot = soiRoot,
+				scripts = snapshotScripts,
+				mountFrozenState = mountFrozenState,
+				cleanup = restoreAndCleanup
+			}
+		end
 
 		if identifyexecutor then
 			Main.Executor = identifyexecutor()
@@ -16595,6 +18852,11 @@ Main = (function()
 
 		control.Enable = enable
 		control.Disable = disable
+		control.SetLabel = function(txt)
+			local ySz = service.TextService:GetTextSize(txt,14,Enum.Font.SourceSans,Vector2.new(62,999999)).Y
+			app.Main.Size = UDim2.new(1,0,0,math.clamp(46+ySz,60,74))
+			app.Main.AppName.Text = txt
+		end
 		Main.MenuApps[data.Name] = control
 		return control
 	end
@@ -16763,6 +19025,36 @@ Main = (function()
 		Main.CreateApp({Name = "AntiSpam", IconMap = Main.MiscIcons, Icon = "Collapse", Open = Settings.Explorer.AntiSpam, OnClick = function(open)
 			Explorer.SetAntiSpamEnabled(open)
 		end})
+
+		local preDecompileControl
+		preDecompileControl = Main.CreateApp({
+			Name = "Pre Decompile",
+			IconMap = Main.MiscIcons,
+			Icon = "ViewScript",
+			Open = Settings.Decompiler and Settings.Decompiler.PreDecompile or false,
+			OnClick = function(open)
+				if Settings.Decompiler then
+					Settings.Decompiler.PreDecompile = open
+				end
+				if env.writefile then
+					pcall(env.writefile, "DexPlusPlusSettings.json", Main.ExportSettings())
+				end
+				if env.setPreDecompileEnabled then
+					env.setPreDecompileEnabled(open, function(statusText)
+						if preDecompileControl and preDecompileControl.SetLabel then
+							preDecompileControl.SetLabel(statusText)
+						end
+					end)
+				end
+			end
+		})
+		if Settings.Decompiler and Settings.Decompiler.PreDecompile and env.setPreDecompileEnabled then
+			env.setPreDecompileEnabled(true, function(statusText)
+				if preDecompileControl and preDecompileControl.SetLabel then
+					preDecompileControl.SetLabel(statusText)
+				end
+			end)
+		end
 
 		Main.CreateApp({Name = "Close All", IconMap = Main.MiscIcons, Icon = "Collapse", Momentary = true, OnClick = function()
 			Explorer.CloseAll()
